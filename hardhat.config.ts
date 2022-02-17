@@ -1,0 +1,113 @@
+import * as dotenv from "dotenv";
+
+import { HardhatUserConfig, task } from "hardhat/config";
+import "@nomiclabs/hardhat-etherscan";
+import "@nomiclabs/hardhat-waffle";
+import "@typechain/hardhat";
+import "hardhat-gas-reporter";
+import "solidity-coverage";
+import "hardhat-deploy";
+
+import "./tasks/basic";
+// import './tasks/polygonscan';
+
+dotenv.config();
+
+// This is a sample Hardhat task. To learn how to create your own go to
+// https://hardhat.org/guides/create-task.html
+task("accounts", "Prints the list of accounts", async (_taskArgs, hre) => {
+  const accounts = await hre.ethers.getSigners();
+
+  for (const account of accounts) {
+    console.log(account.address);
+  }
+});
+
+// You need to export an object to set up your config
+// Go to https://hardhat.org/config/ to learn more
+
+const gasPrice = parseFloat(process.env.GAS_PRICE || "1");
+
+const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY ?? "";
+const MAINNET_API_URL = process.env.MAINNET_API_URL ?? "";
+const MUMBAI_API_URL = process.env.MUMBAI_API_URL ?? "";
+
+const PRIVATE_KEY = process.env.PRIVATE_KEY ?? "";
+const TEST_PRIVATE_KEY =
+  process.env.TEST_PRIVATE_KEY ??
+  "0x8bbdbafd5ef4afcf96b62eb5a4846e386b785bee7942440fa313100c1e25a15d";
+
+const ACCOUNTS = [PRIVATE_KEY, TEST_PRIVATE_KEY];
+
+const config: HardhatUserConfig = {
+  defaultNetwork: "localhost",
+  solidity: {
+    compilers: [
+      {
+        version: "0.8.4",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200,
+          },
+        },
+      },
+      {
+        version: "0.6.12",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200,
+          },
+        },
+      },
+    ],
+  },
+  networks: {
+    hardhat: {
+      chainId: 137,
+      forking: {
+        url: MAINNET_API_URL,
+        blockNumber: 25025883,
+      },
+      mining: {
+        auto: true,
+        // interval: 1000,
+      },
+    },
+    localhost: {
+      chainId: 137,
+      url: "http://localhost:8545",
+      accounts: ACCOUNTS,
+    },
+    matic: {
+      chainId: 137,
+      url: MAINNET_API_URL,
+      gasPrice: gasPrice * 10 ** 9,
+      accounts: ACCOUNTS,
+    },
+    mumbai: {
+      chainId: 80001,
+      url: MUMBAI_API_URL,
+      gasPrice: gasPrice * 10 ** 9,
+      accounts: ACCOUNTS,
+    },
+  },
+  gasReporter: {
+    enabled: process.env.REPORT_GAS !== undefined,
+    currency: "USD",
+  },
+  etherscan: {
+    apiKey: ETHERSCAN_API_KEY,
+  },
+  namedAccounts: {
+    deployer: {
+      default: 0, // here this will by default take the first account as deployer
+    },
+    tester: {
+      default: 1,
+    },
+  },
+};
+
+export default config;
