@@ -3,6 +3,7 @@ node_modules
 coverage
 coverage.json
 typechain
+deployments/localhost
 
 #Hardhat files
 cache
