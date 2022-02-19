@@ -56,7 +56,11 @@ interface IPeronio {
   function setMarkup(uint256 markup_) external;
 
   // Receive Collateral token and mints the proportional tokens
-  function deposit(address to, uint256 usdcAmount) external;
+  function mint(
+    address to,
+    uint256 usdcAmount,
+    uint256 minReceive
+  ) external returns (uint256 peAmount);
 
   // Receives Main token burns it and returns Collateral Token proportionally
   function withdraw(address to, uint256 peAmount) external;
@@ -74,11 +78,16 @@ interface IPeronio {
 
   function reservesValue() external view returns (uint256 totalUSDC);
 
-  // Gets current ratio: Total Supply / Collateral Balance in vault
-  function collateralPrice() external view returns (uint256);
+  function usdcPrice() external view returns (uint256);
 
-  // Gets current ratio: collateralRatio + markup
   function buyingPrice() external view returns (uint256);
 
+  function collateralRatio() external view returns (uint256);
+
   function getPendingRewardsAmount() external view returns (uint256 amount);
+
+  function getLpReserves()
+    external
+    view
+    returns (uint112 usdcReserves, uint112 maiReserves);
 }

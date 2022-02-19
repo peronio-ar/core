@@ -133,7 +133,11 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl {
   }
 
   // Receive Collateral token and mints the proportional tokens
-  function deposit(address to, uint256 usdcAmount) external override {
+  function mint(
+    address to,
+    uint256 usdcAmount,
+    uint256 minReceive
+  ) external override returns (uint256 peAmount) {
     // Gets current staked LP Tokens
     uint256 stakedAmount = _stakedBalance();
 
@@ -155,9 +159,10 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl {
     console.log("-- COMPUTE");
     // Compute %
     uint256 ratio = lpAmount.mul(10e8).div(stakedAmount);
-    uint256 peAmount = ratio.mul(totalSupply()).div(10e8);
+    peAmount = ratio.mul(totalSupply()).div(10e8);
 
     console.log("-- FINAL MINT");
+    require(peAmount > minReceive, "Minimum required not met");
     _mint(to, peAmount);
     emit Minted(_msgSender(), usdcAmount, peAmount);
   }
@@ -220,28 +225,49 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl {
 
   // Gets current staking value in USDC
   function stakedValue() public view override returns (uint256 totalUSDC) {
-    uint256 lpAmount = stakedBalance();
-    uint256 ratio = lpAmount.mul(10e8).div(IERC20(LP_ADDRESS).totalSupply());
-    totalUSDC = ratio.mul(reservesValue()).div(10e20);
+    uint256 usdcReserves;
+    uint256 maiReserves;
+    uint256 usdcAmount;
+    uint256 maiAmount;
+    (usdcReserves, maiReserves) = _getLpReserves();
+    (usdcAmount, maiAmount) = _stakedTokens();
+
+    // Simulate Swap
+    totalUSDC = usdcAmount.add(
+      _getAmountOut(maiAmount, maiReserves, usdcReserves)
+    );
+  }
+
+  function stakedTokens()
+    public
+    view
+    returns (uint256 usdcAmount, uint256 maiAmount)
+  {
+    return _stakedTokens();
   }
 
   function reservesValue() public view override returns (uint256 totalUSDC) {
     uint256 usdcReserves;
-    (usdcReserves, ) = _sortedReserves();
+    uint256 maiReserves;
+    (usdcReserves, maiReserves) = _getLpReserves();
     console.log("usdcReserves", usdcReserves);
     totalUSDC = usdcReserves.mul(2);
   }
 
-  // Gets current ratio: Total Supply / Collateral Balance in vault
-  function collateralPrice() public view override returns (uint256) {
+  // Gets current ratio: Total Supply / Collateral USDC Balance in vault
+  function usdcPrice() public view override returns (uint256) {
     return (this.totalSupply().mul(10**decimals())).div(stakedValue());
   }
 
   // Gets current ratio: collateralRatio + markup
   function buyingPrice() external view override returns (uint256) {
-    uint256 basePrice = collateralPrice();
+    uint256 basePrice = collateralRatio();
     uint256 fee = (basePrice.mul(markup)).div(10**MARKUP_DECIMALS);
     return basePrice + fee;
+  }
+
+  function collateralRatio() public view override returns (uint256) {
+    return stakedValue().mul(10**decimals()).div(this.totalSupply());
   }
 
   function getPendingRewardsAmount()
@@ -253,7 +279,16 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl {
     amount = _getPendingRewardsAmount();
   }
 
-  function _sortedReserves()
+  function getLpReserves()
+    external
+    view
+    override
+    returns (uint112 usdcReserves, uint112 maiReserves)
+  {
+    return _getLpReserves();
+  }
+
+  function _getLpReserves()
     private
     view
     returns (uint112 usdcReserves, uint112 maiReserves)
@@ -261,16 +296,33 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl {
     uint112 reserve0;
     uint112 reserve1;
     (reserve0, reserve1, ) = IUniswapV2Pair(LP_ADDRESS).getReserves();
-    (usdcReserves, maiReserves) = USDC_ADDRESS < USDC_ADDRESS
+    (usdcReserves, maiReserves) = USDC_ADDRESS < MAI_ADDRESS
       ? (reserve0, reserve1)
       : (reserve1, reserve0);
+  }
+
+  function _stakedTokens()
+    private
+    view
+    returns (uint256 usdcAmount, uint256 maiAmount)
+  {
+    uint256 lpAmount = _stakedBalance();
+    // Add 6 precision decimals
+    uint256 ratio = lpAmount.mul(10e18).div(IERC20(LP_ADDRESS).totalSupply());
+    uint112 usdcReserves;
+    uint112 maiReserves;
+
+    (usdcReserves, maiReserves) = _getLpReserves();
+
+    usdcAmount = ratio.mul(usdcReserves).div(10e18);
+    maiAmount = ratio.mul(maiReserves).div(10e18);
   }
 
   function _stakedBalance() private view returns (uint256) {
     return Farm(QIDAO_FARM_ADDRESS).deposited(QIDAO_POOL_ID, address(this));
   }
 
-  // Zaps USDC into MAI/USDC Pool and deposit into QiDao Farm
+  // Zaps USDC into MAI/USDC Pool and mint into QiDao Farm
   function _zapIn(uint256 amount) internal returns (uint256 lpAmount) {
     // Provide USDC Liquidity (MAI/USDC) and get LP Tokens in return
     uint256 amountToSwap = amount.div(2);
@@ -438,7 +490,23 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl {
   }
 
   function _getRewardsAmount() internal view returns (uint256 amount) {
-    // Get QI Dao balanced deposited
+    // Get QI Dao balanced minted
     amount = IERC20(QI_ADDRESS).balanceOf(address(this));
+  }
+
+  function _getAmountOut(
+    uint256 amountIn,
+    uint256 reserveIn,
+    uint256 reserveOut
+  ) internal pure returns (uint256 amountOut) {
+    require(amountIn > 0, "UniswapV2Library: INSUFFICIENT_INPUT_AMOUNT");
+    require(
+      reserveIn > 0 && reserveOut > 0,
+      "UniswapV2Library: INSUFFICIENT_LIQUIDITY"
+    );
+    uint256 amountInWithFee = amountIn.mul(997);
+    uint256 numerator = amountInWithFee.mul(reserveOut);
+    uint256 denominator = reserveIn.mul(1000).add(amountInWithFee);
+    amountOut = numerator / denominator;
   }
 }
