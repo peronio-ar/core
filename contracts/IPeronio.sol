@@ -49,20 +49,16 @@ interface IPeronio {
 
   function decimals() external view returns (uint8);
 
-  // Sets initial minting. Can only be runned once
   function initialize(uint256 usdcAmount, uint256 startingRatio) external;
 
-  // Sets markup for minting function
   function setMarkup(uint256 markup_) external;
 
-  // Receive Collateral token and mints the proportional tokens
   function mint(
     address to,
     uint256 usdcAmount,
     uint256 minReceive
   ) external returns (uint256 peAmount);
 
-  // Receives Main token burns it and returns Collateral Token proportionally
   function withdraw(address to, uint256 peAmount) external;
 
   function claimRewards() external;
@@ -73,10 +69,7 @@ interface IPeronio {
 
   function stakedBalance() external view returns (uint256);
 
-  // Gets current ratio: Collateral Balance in vault / Total Supply
   function stakedValue() external view returns (uint256 totalUSDC);
-
-  function reservesValue() external view returns (uint256 totalUSDC);
 
   function usdcPrice() external view returns (uint256);
 

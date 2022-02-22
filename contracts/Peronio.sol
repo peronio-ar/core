@@ -9,14 +9,11 @@ import "@openzeppelin/contracts_latest/token/ERC20/extensions/draft-ERC20Permit.
 import "@openzeppelin/contracts_latest/token/ERC20/extensions/ERC20Burnable.sol";
 
 // QiDao
-import "./qidao/StakingRewards.sol";
+import "./qidao/IFarm.sol";
 
 // UniSwap
 import "./uniswap/interfaces/IUniswapV2Router02.sol";
 import "./uniswap/interfaces/IUniswapV2Pair.sol";
-
-// HARDHAT / REMOVE!!!
-import "hardhat/console.sol";
 
 // Interface
 import "./IPeronio.sol";
@@ -30,7 +27,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl {
   // MAI Token Address
   address public immutable override MAI_ADDRESS;
 
-  // LP USDC/MAI Address
+  // LP USDC/MAI Address from QuickSwap
   address public immutable override LP_ADDRESS;
 
   // QuickSwap Router
@@ -55,7 +52,6 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl {
   bytes32 public constant override MARKUP_ROLE = keccak256("MARKUP_ROLE");
   bytes32 public constant override REWARDS_ROLE = keccak256("REWARDS_ROLE");
 
-  // Collateral without decimals
   constructor(
     string memory name,
     string memory symbol,
@@ -88,7 +84,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl {
     _setupRole(REWARDS_ROLE, _msgSender());
   }
 
-  // 6 Decimals
+  // Fixed 6 Decimals
   function decimals()
     public
     view
@@ -99,13 +95,12 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl {
     return 6;
   }
 
-  // Sets initial minting. Can only be runned once
+  // Sets initial minting. Can be runned just once
   function initialize(uint256 usdcAmount, uint256 startingRatio)
     external
     override
     onlyRole(DEFAULT_ADMIN_ROLE)
   {
-    console.log("calling address", _msgSender());
     require(!initialized, "Contract already initialized");
 
     // Get USDT from user
@@ -115,10 +110,18 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl {
       usdcAmount
     );
 
+    // Unlmited ERC20 approval for Router
+    uint256 unlimitedAmount = 2**256 - 1;
+    IERC20(MAI_ADDRESS).approve(QUICKSWAP_ROUTER_ADDRESS, unlimitedAmount);
+    IERC20(USDC_ADDRESS).approve(QUICKSWAP_ROUTER_ADDRESS, unlimitedAmount);
+    IERC20(LP_ADDRESS).approve(QUICKSWAP_ROUTER_ADDRESS, unlimitedAmount);
+    IERC20(QI_ADDRESS).approve(QUICKSWAP_ROUTER_ADDRESS, unlimitedAmount);
+
     // Zaps into amUSDT
     _zapIn(usdcAmount);
 
-    console.log("to MINT:", startingRatio.mul(usdcAmount));
+    usdcAmount = _stakedValue();
+    // Mints exactly startingRatio for each USDC deposit
     _mint(_msgSender(), startingRatio.mul(usdcAmount));
 
     // Lock contract to prevent to be initialized twice
@@ -132,7 +135,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl {
     emit MarkupUpdated(_msgSender(), markup_);
   }
 
-  // Receive Collateral token and mints the proportional tokens
+  // Mints new tokens providing proportional collateral (USDC)
   function mint(
     address to,
     uint256 usdcAmount,
@@ -151,17 +154,14 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl {
     // Zaps USDC directly into MAI/USDC Vault
     uint256 lpAmount = _zapIn(usdcAmount);
 
-    console.log("-- FEE");
     // Fee - Swap fee (+0.15% positive bonus)
     uint256 markupFee = lpAmount.mul(markup - swapFee).div(10**MARKUP_DECIMALS); // Calculate fee to substract
     lpAmount = lpAmount.sub(markupFee); // remove 5% fee
 
-    console.log("-- COMPUTE");
     // Compute %
     uint256 ratio = lpAmount.mul(10e8).div(stakedAmount);
     peAmount = ratio.mul(totalSupply()).div(10e8);
 
-    console.log("-- FINAL MINT");
     require(peAmount > minReceive, "Minimum required not met");
     _mint(to, peAmount);
     emit Minted(_msgSender(), usdcAmount, peAmount);
@@ -181,19 +181,21 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl {
     // Swap MAI into USDC
     uint256 usdcTotal = usdcAmount + _swapMAItoUSDC(maiAmount);
 
-    // Transfer back Collateral Token (USDT) the user
-    IERC20(USDC_ADDRESS).safeTransfer(to, usdcTotal);
-
     //Burn tokens
     _burn(_msgSender(), peAmount);
+
+    // Transfer back Collateral Token (USDT) the user
+    IERC20(USDC_ADDRESS).safeTransfer(to, usdcTotal);
 
     emit Withdrawal(_msgSender(), usdcTotal, peAmount);
   }
 
+  // Claim QI rewards from Farm
   function claimRewards() external override onlyRole(REWARDS_ROLE) {
-    Farm(QIDAO_FARM_ADDRESS).deposit(QIDAO_POOL_ID, 0);
+    IFarm(QIDAO_FARM_ADDRESS).deposit(QIDAO_POOL_ID, 0);
   }
 
+  // Reinvest the QI into the Farm
   function compoundRewards()
     external
     override
@@ -213,18 +215,75 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl {
         address(this),
         block.timestamp + 3600
       );
-    usdcAmount = amounts[0];
+    usdcAmount = amounts[1];
     lpAmount = _zapIn(usdcAmount);
 
     emit CompoundRewards(amount, usdcAmount, lpAmount);
   }
 
-  function stakedBalance() public view override returns (uint256) {
+  // Returns LP Amount staked in the Farm
+  function stakedBalance() external view override returns (uint256) {
     return _stakedBalance();
   }
 
-  // Gets current staking value in USDC
-  function stakedValue() public view override returns (uint256 totalUSDC) {
+  // Returns current staking value in USDC
+  function stakedValue() external view override returns (uint256 totalUSDC) {
+    return _stakedValue();
+  }
+
+  // Returns current USDC and MAI token balances in the FARM
+  function stakedTokens()
+    external
+    view
+    returns (uint256 usdcAmount, uint256 maiAmount)
+  {
+    return _stakedTokens();
+  }
+
+  // Gets current ratio: Total Supply / Collateral USDC Balance in vault
+  function usdcPrice() external view override returns (uint256) {
+    return (this.totalSupply().mul(10**decimals())).div(_stakedValue());
+  }
+
+  // Gets current ratio: collateralRatio + markup
+  function buyingPrice() external view override returns (uint256) {
+    uint256 basePrice = _collateralRatio();
+    uint256 fee = (basePrice.mul(markup)).div(10**MARKUP_DECIMALS);
+    return basePrice + fee;
+  }
+
+  // Gets current ratio: Collateral USDC Balance / Total Supply
+  function collateralRatio() external view override returns (uint256) {
+    return _collateralRatio();
+  }
+
+  // Fetch pending rewards (QI) from Mai Farm
+  function getPendingRewardsAmount()
+    external
+    view
+    override
+    returns (uint256 amount)
+  {
+    amount = _getPendingRewardsAmount();
+  }
+
+  // Return all QuickSwap Liquidity Pool (MAI/USDC) reserves
+  function getLpReserves()
+    external
+    view
+    override
+    returns (uint112 usdcReserves, uint112 maiReserves)
+  {
+    return _getLpReserves();
+  }
+
+  // Collateral USDC Balance / Total Supply
+  function _collateralRatio() internal view returns (uint256) {
+    return _stakedValue().mul(10**decimals()).div(this.totalSupply());
+  }
+
+  // Returns current staking value in USDC
+  function _stakedValue() internal view returns (uint256 totalUSDC) {
     uint256 usdcReserves;
     uint256 maiReserves;
     uint256 usdcAmount;
@@ -238,58 +297,9 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl {
     );
   }
 
-  function stakedTokens()
-    public
-    view
-    returns (uint256 usdcAmount, uint256 maiAmount)
-  {
-    return _stakedTokens();
-  }
-
-  function reservesValue() public view override returns (uint256 totalUSDC) {
-    uint256 usdcReserves;
-    uint256 maiReserves;
-    (usdcReserves, maiReserves) = _getLpReserves();
-    console.log("usdcReserves", usdcReserves);
-    totalUSDC = usdcReserves.mul(2);
-  }
-
-  // Gets current ratio: Total Supply / Collateral USDC Balance in vault
-  function usdcPrice() public view override returns (uint256) {
-    return (this.totalSupply().mul(10**decimals())).div(stakedValue());
-  }
-
-  // Gets current ratio: collateralRatio + markup
-  function buyingPrice() external view override returns (uint256) {
-    uint256 basePrice = collateralRatio();
-    uint256 fee = (basePrice.mul(markup)).div(10**MARKUP_DECIMALS);
-    return basePrice + fee;
-  }
-
-  function collateralRatio() public view override returns (uint256) {
-    return stakedValue().mul(10**decimals()).div(this.totalSupply());
-  }
-
-  function getPendingRewardsAmount()
-    external
-    view
-    override
-    returns (uint256 amount)
-  {
-    amount = _getPendingRewardsAmount();
-  }
-
-  function getLpReserves()
-    external
-    view
-    override
-    returns (uint112 usdcReserves, uint112 maiReserves)
-  {
-    return _getLpReserves();
-  }
-
+  // Return all QuickSwap Liquidity Pool (MAI/USDC) reserves
   function _getLpReserves()
-    private
+    internal
     view
     returns (uint112 usdcReserves, uint112 maiReserves)
   {
@@ -301,25 +311,28 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl {
       : (reserve1, reserve0);
   }
 
+  // Returns current USDC and MAI token balances in the FARM
   function _stakedTokens()
-    private
+    internal
     view
     returns (uint256 usdcAmount, uint256 maiAmount)
   {
     uint256 lpAmount = _stakedBalance();
-    // Add 6 precision decimals
+    // Add 18 precision decimals
     uint256 ratio = lpAmount.mul(10e18).div(IERC20(LP_ADDRESS).totalSupply());
     uint112 usdcReserves;
     uint112 maiReserves;
 
     (usdcReserves, maiReserves) = _getLpReserves();
 
+    // Remove 18 precision decimals
     usdcAmount = ratio.mul(usdcReserves).div(10e18);
     maiAmount = ratio.mul(maiReserves).div(10e18);
   }
 
-  function _stakedBalance() private view returns (uint256) {
-    return Farm(QIDAO_FARM_ADDRESS).deposited(QIDAO_POOL_ID, address(this));
+  // Returns LP Amount staked in the QiDao Farm
+  function _stakedBalance() internal view returns (uint256) {
+    return IFarm(QIDAO_FARM_ADDRESS).deposited(QIDAO_POOL_ID, address(this));
   }
 
   // Zaps USDC into MAI/USDC Pool and mint into QiDao Farm
@@ -329,15 +342,10 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl {
     uint256 usdcAmount = amount.sub(amountToSwap);
     uint256 maiAmount = _swapUSDCtoMAI(amountToSwap);
 
-    console.log("remaining usdc", usdcAmount);
-    console.log("swapped mai", maiAmount);
-
     lpAmount = _addLiquidity(usdcAmount, maiAmount);
 
     // Stake LP Tokens
     _stakeLP(lpAmount);
-
-    console.log("Staked");
   }
 
   // Zaps out USDC from MAI/USDC Pool
@@ -351,22 +359,13 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl {
     (usdcAmount, maiAmount) = _removeLiquidity(lpAmount);
   }
 
+  // Adds liquidity into the Quickswap pool MAI/USDC
   function _addLiquidity(uint256 usdcAmount, uint256 maiAmount)
     internal
     returns (uint256 lpAmount)
   {
-    console.log("Adding Liquidity");
-    console.log("usdcAmount:", usdcAmount);
-    console.log("maiAmount:", maiAmount);
-
     uint256 token0;
     uint256 token1;
-
-    console.log("approving USDC", usdcAmount);
-    IERC20(USDC_ADDRESS).approve(QUICKSWAP_ROUTER_ADDRESS, usdcAmount);
-
-    console.log("approving MAI", maiAmount);
-    IERC20(MAI_ADDRESS).approve(QUICKSWAP_ROUTER_ADDRESS, maiAmount);
 
     // 5% Slippage
     uint256 minUSDCAmount = usdcAmount.mul(95).div(100);
@@ -383,22 +382,13 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl {
         address(this),
         block.timestamp + 3600
       );
-
-    console.log("token0", token0);
-    console.log("token1", token1);
-    console.log("lpAmount", lpAmount);
   }
 
+  // Removes liquidity from Quickswap pool MAI/USDC
   function _removeLiquidity(uint256 lpAmount)
     internal
     returns (uint256 usdcAmount, uint256 maiAmount)
   {
-    console.log("Removing Liquidity");
-    console.log("lpAmount:", lpAmount);
-
-    // Approve LP transfer
-    IERC20(LP_ADDRESS).approve(QUICKSWAP_ROUTER_ADDRESS, lpAmount);
-
     (usdcAmount, maiAmount) = IUniswapV2Router02(QUICKSWAP_ROUTER_ADDRESS)
       .removeLiquidity(
         USDC_ADDRESS,
@@ -409,23 +399,16 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl {
         address(this),
         block.timestamp + 3600
       );
-
-    console.log("usdcAmount:", usdcAmount);
-    console.log("maiAmount:", maiAmount);
   }
 
+  // Swaps MAI token into USDC on QuickSwap pool
   function _swapMAItoUSDC(uint256 amount)
     internal
     returns (uint256 usdcAmount)
   {
-    console.log("Swapping ");
-    console.log("maiAmount:", amount);
     address[] memory path = new address[](2);
     path[0] = MAI_ADDRESS;
     path[1] = USDC_ADDRESS;
-
-    // Approve MAI
-    IERC20(MAI_ADDRESS).approve(QUICKSWAP_ROUTER_ADDRESS, amount);
 
     uint256[] memory amounts = IUniswapV2Router02(QUICKSWAP_ROUTER_ADDRESS)
       .swapExactTokensForTokens(
@@ -436,18 +419,13 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl {
         block.timestamp + 3600
       );
     usdcAmount = amounts[1];
-    console.log("usdcAmount:", usdcAmount);
   }
 
+  // Swaps USDC into MAI on QuickSwap pool
   function _swapUSDCtoMAI(uint256 amount) internal returns (uint256 maiAmount) {
-    console.log("Swapping ");
-    console.log("usdcAmount:", amount);
     address[] memory path = new address[](2);
     path[0] = USDC_ADDRESS;
     path[1] = MAI_ADDRESS;
-
-    // Approve USDC
-    IERC20(USDC_ADDRESS).approve(QUICKSWAP_ROUTER_ADDRESS, amount);
 
     uint256[] memory amounts = IUniswapV2Router02(QUICKSWAP_ROUTER_ADDRESS)
       .swapExactTokensForTokens(
@@ -458,42 +436,42 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl {
         block.timestamp + 3600
       );
     maiAmount = amounts[1];
-    console.log("maiAmount:", maiAmount);
   }
 
+  // Stake LP tokens (MAI/USDC) into QiDAO Farm
   function _stakeLP(uint256 lpAmount) internal {
-    console.log("Stake LP Tokens");
-    console.log("lpAmount:", lpAmount);
     // Approve LP Tokens for QiDao Farm
     IERC20(LP_ADDRESS).approve(QIDAO_FARM_ADDRESS, lpAmount);
 
     // Deposit LP Tokens into Farm
-    Farm(QIDAO_FARM_ADDRESS).deposit(QIDAO_POOL_ID, lpAmount);
+    IFarm(QIDAO_FARM_ADDRESS).deposit(QIDAO_POOL_ID, lpAmount);
   }
 
+  // Unstake LP tokens (MAI/USDC) into QiDAO Farm
   function _unstakeLP(uint256 lpAmount) internal {
-    console.log("Unstake LP Tokens");
-    console.log("lpAmount:", lpAmount);
-
     // Deposit LP Tokens into Farm
-    Farm(QIDAO_FARM_ADDRESS).withdraw(QIDAO_POOL_ID, lpAmount);
+    IFarm(QIDAO_FARM_ADDRESS).withdraw(QIDAO_POOL_ID, lpAmount);
   }
 
+  // Returns LP Balance
   function _getLPBalanceAmount() internal view returns (uint256 lpAmount) {
     // Get current LP Balance
     lpAmount = IERC20(LP_ADDRESS).balanceOf(address(this));
   }
 
+  // Returns pending rewards (QI) amount from Mai Farm
   function _getPendingRewardsAmount() internal view returns (uint256 amount) {
     // Get rewards on Farm
-    amount = Farm(QIDAO_FARM_ADDRESS).pending(QIDAO_POOL_ID, address(this));
+    amount = IFarm(QIDAO_FARM_ADDRESS).pending(QIDAO_POOL_ID, address(this));
   }
 
+  // Returns QI Balance in the contract
   function _getRewardsAmount() internal view returns (uint256 amount) {
     // Get QI Dao balanced minted
     amount = IERC20(QI_ADDRESS).balanceOf(address(this));
   }
 
+  //**  UNISWAP Library Functions Below **/
   function _getAmountOut(
     uint256 amountIn,
     uint256 reserveIn,
