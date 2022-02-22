@@ -47,12 +47,12 @@
     "typescript": "^4.5.5"
   },
   "scripts": {
-    "chain": "hardhat node --network hardhat",
+    "chain": "hardhat node --network hardhat --no-deploy",
     "test": "hardhat test",
     "compile": "hardhat compile",
     "console": "hardhat console",
-    "deploy": "hardhat deploy --export-all ./build/contracts/all_contracts.json",
-    "postdeploy": "hardhat run scripts/publish.js && hardhat run scripts/polygonscan.js --network matic",
+    "deploy": "hardhat deploy",
+    "postdeploy": "hardhat run scripts/polygonscan.js --network matic",
     "accounts": "hardhat accounts",
     "balance": "hardhat balance",
     "send": "hardhat send",
