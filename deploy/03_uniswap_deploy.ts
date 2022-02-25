@@ -24,7 +24,7 @@ module.exports = async () => {
   );
 
   console.info("Setting fee receiver to " + process.env.TREASURY_ADDRESS);
-  (await factoryContract.setFeeTo(process.env.TREASURY_ADDRESS ?? "")).wait();
+  await factoryContract.setFeeTo(process.env.TREASURY_ADDRESS ?? "");
 
   console.info("Deploying Router");
   await deploy("UniswapV2Router02", {

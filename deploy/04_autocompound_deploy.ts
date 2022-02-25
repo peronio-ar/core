@@ -17,14 +17,16 @@ module.exports = async () => {
   );
 
   console.info("Deploying AutoCompound");
-  const { address: autocompoundAddress } = await deploy("Autocompounder", {
-    contract: "Autocompounder",
+  const { address: autocompoundAddress } = await deploy("AutoCompounder", {
+    contract: "AutoCompounder",
     from: deployer,
     log: true,
     args: [peronioContract.address],
   });
 
-  console.info("Setting fee receiver to " + autocompoundAddress);
+  console.info(
+    `Setting REWARD Role to AutoCompounder (${autocompoundAddress})`
+  );
   const rewardRole =
     "0x5407862f04286ebe607684514c14b7fffc750b6bf52ba44ea49569174845a5bd";
   await peronioContract.grantRole(rewardRole, peronioContract.address);
