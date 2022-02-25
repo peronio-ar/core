@@ -52,7 +52,7 @@
     "compile": "hardhat compile",
     "console": "hardhat console",
     "deploy": "hardhat deploy",
-    "postdeploy": "hardhat run scripts/polygonscan.js --network matic",
+    "postdeploy": "hardhat run scripts/publish.ts --network matic",
     "accounts": "hardhat accounts",
     "balance": "hardhat balance",
     "send": "hardhat send",
