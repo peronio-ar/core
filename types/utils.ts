@@ -1,4 +1,4 @@
-import ethers from "ethers";
+import ethers, { BigNumber } from "ethers";
 
 export interface IPeronioConstructorParams {
   name: string;
@@ -15,4 +15,11 @@ export interface IPeronioConstructorParams {
 export interface IPeronioInitializeParams {
   usdcAmount: ethers.BigNumber;
   startingRatio: number;
+}
+
+export interface BalanceType {
+  pe: BigNumber;
+  usdc: BigNumber;
+  matic: BigNumber;
+  wmatic: BigNumber;
 }

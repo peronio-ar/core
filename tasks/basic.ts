@@ -1,6 +1,6 @@
 import { task } from "hardhat/config";
 import { ERC20 } from "../typechain";
-import { BalanceType } from "./types.d";
+import { BalanceType } from "../types/utils";
 
 task("check_balance", "Check current balance")
   .addOptionalParam("address", "Address")
