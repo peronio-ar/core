@@ -1,5 +1,5 @@
 import { task } from "hardhat/config";
-import { ERC20 } from "../typechain";
+import { ERC20, Peronio } from "../typechain";
 import { BalanceType } from "../types/utils";
 
 task("check_balance", "Check current balance")
@@ -59,4 +59,87 @@ task("check_balance", "Check current balance")
     }
 
     return balances;
+  });
+
+task("withdraw", "Withdraw Peronio")
+  .addOptionalParam("pe", "PE to spend")
+  .setAction(async ({ pe }, { getNamedAccounts, ethers, deployments }) => {
+    const { deployer } = await getNamedAccounts();
+
+    const peAmount = pe ?? "250";
+
+    console.info("Amount to deposit", `PE ${peAmount}`);
+
+    const peronioAddress = (await deployments.get("Peronio")).address;
+    const peronioContract: Peronio = await ethers.getContractAt(
+      "Peronio",
+      peronioAddress
+    );
+
+    const collateralRatio = await peronioContract.collateralRatio();
+
+    console.info(
+      "collateral ratio: ",
+      ethers.utils.formatUnits(collateralRatio, 6)
+    );
+
+    const usdtAmount = ethers.utils
+      .parseUnits(peAmount, 6)
+      .mul(collateralRatio)
+      .div(ethers.BigNumber.from(Math.pow(10, 6)).toString());
+
+    console.info(
+      "USDT amount to receive ",
+      ethers.utils.formatUnits(usdtAmount, 6)
+    );
+
+    console.info(`Approving PE ${peAmount}...`);
+
+    await peronioContract.approve(
+      peronioAddress,
+      ethers.utils.parseUnits(peAmount, 6)
+    );
+
+    console.info("Withdrawing PE", peAmount);
+    await peronioContract.withdraw(
+      deployer,
+      ethers.utils.parseUnits(peAmount, 6)
+    );
+  });
+
+task("mint", "Mint Peronio")
+  .addOptionalParam("usdc", "USDC to spend")
+  .setAction(async ({ usdc }, { getNamedAccounts, ethers, deployments }) => {
+    const { deployer } = await getNamedAccounts();
+
+    const usdcAmount = usdc ?? "100";
+
+    console.info("Amount to deposit", `USDC ${usdcAmount}`);
+
+    const peronioAddress = (await deployments.get("Peronio")).address;
+    const usdcAddress = process.env.USDC_ADDRESS ?? "";
+
+    const peronioContract: Peronio = await ethers.getContractAt(
+      "Peronio",
+      peronioAddress
+    );
+
+    const usdcContract: ERC20 = await ethers.getContractAt(
+      "ERC20",
+      usdcAddress
+    );
+
+    console.info(`Approving USDC ${usdcAmount}...`);
+
+    await usdcContract.approve(
+      peronioAddress,
+      ethers.utils.parseUnits(usdcAmount, 6)
+    );
+
+    console.info("Minting USDC", usdcAmount);
+    await peronioContract.mint(
+      deployer,
+      ethers.utils.parseUnits(usdcAmount, 6),
+      ethers.utils.parseUnits("1", 6)
+    );
   });
