@@ -207,15 +207,15 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl {
     path[0] = QI_ADDRESS;
     path[1] = USDC_ADDRESS;
 
-    uint256[] memory amounts = IUniswapV2Router02(QUICKSWAP_ROUTER_ADDRESS)
-      .swapExactTokensForTokens(
-        amount,
-        1,
-        path,
-        address(this),
-        block.timestamp + 3600
-      );
-    usdcAmount = amounts[1];
+    IUniswapV2Router02(QUICKSWAP_ROUTER_ADDRESS).swapExactTokensForTokens(
+      amount,
+      1,
+      path,
+      address(this),
+      block.timestamp + 3600
+    );
+    // Sweep all remaining USDC in the contract
+    usdcAmount = IERC20(USDC_ADDRESS).balanceOf(address(this));
     lpAmount = _zapIn(usdcAmount);
 
     emit CompoundRewards(amount, usdcAmount, lpAmount);
