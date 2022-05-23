@@ -380,24 +380,16 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl {
     internal
     returns (uint256 lpAmount)
   {
-    uint256 token0;
-    uint256 token1;
-
-    // 5% Slippage
-    uint256 minUSDCAmount = usdcAmount.mul(95).div(100);
-    uint256 minMAIAmount = maiAmount.mul(95).div(100);
-
-    (token0, token1, lpAmount) = IUniswapV2Router02(QUICKSWAP_ROUTER_ADDRESS)
-      .addLiquidity(
-        USDC_ADDRESS,
-        MAI_ADDRESS,
-        usdcAmount,
-        maiAmount,
-        minUSDCAmount,
-        minMAIAmount,
-        address(this),
-        block.timestamp + 3600
-      );
+    (, , lpAmount) = IUniswapV2Router02(QUICKSWAP_ROUTER_ADDRESS).addLiquidity(
+      USDC_ADDRESS,
+      MAI_ADDRESS,
+      usdcAmount,
+      maiAmount,
+      1,
+      1,
+      address(this),
+      block.timestamp + 3600
+    );
   }
 
   // Removes liquidity from Quickswap pool MAI/USDC
