@@ -355,9 +355,10 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl {
   // Zaps USDC into MAI/USDC Pool and mint into QiDao Farm
   function _zapIn(uint256 amount) internal returns (uint256 lpAmount) {
     // Provide USDC Liquidity (MAI/USDC) and get LP Tokens in return
-    uint256 amountToSwap = amount.div(2);
-    uint256 usdcAmount = amount.sub(amountToSwap);
-    uint256 maiAmount = _swapUSDCtoMAI(amountToSwap);
+    uint256 usdcAmount;
+    uint256 maiAmount;
+
+    (usdcAmount, maiAmount) = _splitUSDC(amount);
 
     lpAmount = _addLiquidity(usdcAmount, maiAmount);
 
