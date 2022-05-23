@@ -190,9 +190,10 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl {
     uint256 lpAmount = ratio.mul(_stakedBalance()).div(10e8);
 
     uint256 usdcAmount;
-    uint256 maiAmount;
 
-    (usdcAmount, maiAmount) = _zapOut(lpAmount);
+    (usdcAmount, ) = _zapOut(lpAmount);
+
+    uint256 maiAmount = IERC20(MAI_ADDRESS).balanceOf(address(this));
 
     // Swap MAI into USDC
     uint256 usdcTotal = usdcAmount + _swapMAItoUSDC(maiAmount);
