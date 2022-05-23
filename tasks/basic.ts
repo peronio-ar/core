@@ -11,6 +11,7 @@ task("check_balance", "Check current balance")
     const balances: BalanceType = {
       pe: ethers.BigNumber.from("0"),
       usdc: ethers.BigNumber.from("0"),
+      mai: ethers.BigNumber.from("0"),
       matic: ethers.BigNumber.from("0"),
       wmatic: ethers.BigNumber.from("0"),
     };
@@ -30,6 +31,11 @@ task("check_balance", "Check current balance")
       process.env.USDC_ADDRESS ?? ""
     );
 
+    const maiContract: ERC20 = await ethers.getContractAt(
+      "ERC20",
+      process.env.MAI_ADDRESS ?? ""
+    );
+
     const wmaticContract: ERC20 = await ethers.getContractAt(
       "ERC20",
       process.env.WMATIC_ADDRESS ?? ""
@@ -37,6 +43,9 @@ task("check_balance", "Check current balance")
 
     balances.usdc = await usdcContract.balanceOf(addressToScan);
     console.info("USDC Balance:", ethers.utils.formatUnits(balances.usdc, 6));
+
+    balances.mai = await maiContract.balanceOf(addressToScan);
+    console.info("MAI Balance:", ethers.utils.formatUnits(balances.mai, 18));
 
     console.info(
       "WMATIC Balance:",
