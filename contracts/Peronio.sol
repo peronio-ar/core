@@ -18,6 +18,22 @@ import "./uniswap/interfaces/IUniswapV2Pair.sol";
 // Interface
 import "./IPeronio.sol";
 
+library Babylonian {
+  function sqrt(uint256 y) internal pure returns (uint256 z) {
+    if (y > 3) {
+      z = y;
+      uint256 x = y / 2 + 1;
+      while (x < z) {
+        z = x;
+        x = (y / x + x) / 2;
+      }
+    } else if (y != 0) {
+      z = 1;
+    }
+    // else z = 0
+  }
+}
+
 contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
