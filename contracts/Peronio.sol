@@ -133,7 +133,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl {
     IERC20(LP_ADDRESS).approve(QUICKSWAP_ROUTER_ADDRESS, unlimitedAmount);
     IERC20(QI_ADDRESS).approve(QUICKSWAP_ROUTER_ADDRESS, unlimitedAmount);
 
-    // Zaps into amUSDT
+    // Zaps into MAI/USDC LP
     _zapIn(usdcAmount);
 
     usdcAmount = _stakedValue();
@@ -369,7 +369,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl {
     internal
     returns (uint256 usdcAmount, uint256 maiAmount)
   {
-    // Provide USDC Liquidity (MAI/USDC) and get LP Tokens in return
+    // Get LP tokens out of the Farm
     _unstakeLP(lpAmount);
 
     (usdcAmount, maiAmount) = _removeLiquidity(lpAmount);
