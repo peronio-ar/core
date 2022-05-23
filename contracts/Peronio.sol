@@ -446,13 +446,14 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl {
 
     uint256[] memory amounts = IUniswapV2Router02(QUICKSWAP_ROUTER_ADDRESS)
       .swapExactTokensForTokens(
-        amount,
+        amountToSwap,
         1,
         path,
         address(this),
         block.timestamp + 3600
       );
     maiAmount = amounts[1];
+    usdcAmount = amount - amountToSwap;
   }
 
   // Stake LP tokens (MAI/USDC) into QiDAO Farm
