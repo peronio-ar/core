@@ -429,8 +429,17 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl {
     usdcAmount = amounts[1];
   }
 
-  // Swaps USDC into MAI on QuickSwap pool
-  function _swapUSDCtoMAI(uint256 amount) internal returns (uint256 maiAmount) {
+  // Splits USDC into USDC/MAI for Quickswap LP
+  function _splitUSDC(uint256 amount)
+    internal
+    returns (uint256 usdcAmount, uint256 maiAmount)
+  {
+    uint112 usdcReserves;
+    (usdcReserves, ) = _getLpReserves();
+    uint256 amountToSwap = _calculateSwapInAmount(usdcReserves, amount);
+
+    require(amountToSwap > 0, "Nothing to swap");
+
     address[] memory path = new address[](2);
     path[0] = USDC_ADDRESS;
     path[1] = MAI_ADDRESS;
