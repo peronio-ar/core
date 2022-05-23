@@ -489,6 +489,17 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl {
     amount = IERC20(QI_ADDRESS).balanceOf(address(this));
   }
 
+  function _calculateSwapInAmount(uint256 reserveIn, uint256 userIn)
+    internal
+    pure
+    returns (uint256)
+  {
+    return
+      (Babylonian.sqrt(
+        reserveIn * ((userIn * 3988000) + (reserveIn * 3988009))
+      ) - (reserveIn * 1997)) / 1994;
+  }
+
   //**  UNISWAP Library Functions Below **/
   function _getAmountOut(
     uint256 amountIn,
