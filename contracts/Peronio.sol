@@ -223,6 +223,24 @@ contract Peronio is
     emit Withdrawal(_msgSender(), usdcTotal, peAmount);
   }
 
+  // Receives Main token burns it and returns LP tokens
+  function withdrawLiquidity(address to, uint256 peAmount)
+    external
+    nonReentrant
+  {
+    // Burn tokens
+    _burn(_msgSender(), peAmount);
+
+    uint256 ratio = peAmount.mul(10e8).div(totalSupply());
+    uint256 lpAmount = ratio.mul(_stakedBalance()).div(10e8);
+
+    // Get LP tokens out of the Farm
+    _unstakeLP(lpAmount);
+
+    // Transfer LP to user
+    IERC20(LP_ADDRESS).safeTransfer(to, lpAmount);
+  }
+
   // Claim QI rewards from Farm
   function claimRewards() external override onlyRole(REWARDS_ROLE) {
     IFarm(QIDAO_FARM_ADDRESS).deposit(QIDAO_POOL_ID, 0);
