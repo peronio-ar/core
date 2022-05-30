@@ -7,6 +7,7 @@ import "@openzeppelin/contracts_latest/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts_latest/access/AccessControl.sol";
 import "@openzeppelin/contracts_latest/token/ERC20/extensions/draft-ERC20Permit.sol";
 import "@openzeppelin/contracts_latest/token/ERC20/extensions/ERC20Burnable.sol";
+import "@openzeppelin/contracts_latest/security/ReentrancyGuard.sol";
 
 // QiDao
 import "./qidao/IFarm.sol";
@@ -34,7 +35,14 @@ library Babylonian {
   }
 }
 
-contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl {
+contract Peronio is
+  IPeronio,
+  ERC20,
+  ERC20Burnable,
+  ERC20Permit,
+  AccessControl,
+  ReentrancyGuard
+{
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
 
@@ -156,7 +164,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl {
     address to,
     uint256 usdcAmount,
     uint256 minReceive
-  ) external override returns (uint256 peAmount) {
+  ) external override nonReentrant returns (uint256 peAmount) {
     // Gets current staked LP Tokens
     uint256 stakedAmount = _stakedBalance();
 
