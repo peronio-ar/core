@@ -184,7 +184,15 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl {
   }
 
   // Receives Main token burns it and returns Collateral Token proportionally
-  function withdraw(address to, uint256 peAmount) external override {
+  function withdraw(address to, uint256 peAmount)
+    external
+    override
+    nonReentrant
+    returns (uint256 usdcTotal)
+  {
+    // Burn tokens
+    _burn(_msgSender(), peAmount);
+
     // Transfer collateral back to user wallet to current contract
     uint256 ratio = peAmount.mul(10e8).div(totalSupply());
     uint256 lpAmount = ratio.mul(_stakedBalance()).div(10e8);

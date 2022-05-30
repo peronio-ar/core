@@ -59,7 +59,9 @@ interface IPeronio {
     uint256 minReceive
   ) external returns (uint256 peAmount);
 
-  function withdraw(address to, uint256 peAmount) external;
+  function withdraw(address to, uint256 peAmount)
+    external
+    returns (uint256 totalUSDC);
 
   function claimRewards() external;
 
