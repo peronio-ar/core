@@ -212,10 +212,7 @@ contract Peronio is
     uint256 maiAmount = IERC20(MAI_ADDRESS).balanceOf(address(this));
 
     // Swap MAI into USDC
-    uint256 usdcTotal = usdcAmount + _swapMAItoUSDC(maiAmount);
-
-    //Burn tokens
-    _burn(_msgSender(), peAmount);
+    usdcTotal = usdcAmount + _swapMAItoUSDC(maiAmount);
 
     // Transfer back Collateral Token (USDT) the user
     IERC20(USDC_ADDRESS).safeTransfer(to, usdcTotal);
