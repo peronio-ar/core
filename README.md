@@ -26,6 +26,12 @@ nano .env
 yarn typechain
 ```
 
+## Run a local fork on a parallel terminal
+
+```shell
+yarn chain
+```
+
 ## Deploy on local hardhat
 
 ```shell
