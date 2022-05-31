@@ -57,6 +57,8 @@
     "balance": "hardhat balance",
     "send": "hardhat send",
     "generate": "hardhat generate",
-    "account": "hardhat account"
+    "account": "hardhat account",
+    "typechain": "hardhat typechain",
+    "postinstall": "hardhat typechain"
   }
 }
