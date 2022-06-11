@@ -467,8 +467,7 @@ contract Peronio is
     internal
     returns (uint256 usdcAmount, uint256 maiAmount)
   {
-    uint112 usdcReserves;
-    (usdcReserves, ) = _getLpReserves();
+    (uint112 usdcReserves, ) = _getLpReserves();
     uint256 amountToSwap = _calculateSwapInAmount(usdcReserves, amount);
 
     require(amountToSwap > 0, "Nothing to swap");
