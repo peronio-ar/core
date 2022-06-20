@@ -85,4 +85,9 @@ interface IPeronio {
     external
     view
     returns (uint112 usdcReserves, uint112 maiReserves);
+
+  // Version 2
+  function quoteIn(uint256 usdc) external view returns (uint256 pe);
+
+  function quoteOut(uint256 pe) external view returns (uint256 usdc);
 }

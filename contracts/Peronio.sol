@@ -19,6 +19,8 @@ import "./uniswap/interfaces/IUniswapV2Pair.sol";
 // Interface
 import "./IPeronio.sol";
 
+import "hardhat/console.sol";
+
 library Babylonian {
   function sqrt(uint256 y) internal pure returns (uint256 z) {
     if (y > 3) {
@@ -165,6 +167,8 @@ contract Peronio is
     uint256 usdcAmount,
     uint256 minReceive
   ) external override nonReentrant returns (uint256 peAmount) {
+    console.log("-- mint:");
+
     // Gets current staked LP Tokens
     uint256 stakedAmount = _stakedBalance();
 
@@ -325,6 +329,56 @@ contract Peronio is
     return _getLpReserves();
   }
 
+  // NEEDS TESTING
+  function quoteIn(uint256 usdc) external view override returns (uint256 pe) {
+    console.log("-- quoteIn:");
+    uint256 stakedAmount = _stakedBalance();
+    (uint112 usdcReserves, uint112 maiReserves) = _getLpReserves(); // $$$$ remove maiReserves
+
+    uint256 amountToSwap = _calculateSwapInAmount(usdcReserves, usdc);
+    console.log("amountToSwap", amountToSwap);
+
+    uint256 maiAmount = _getAmountOut(amountToSwap, usdcReserves, maiReserves);
+
+    uint256 usdcAmount = usdc - amountToSwap;
+
+    console.log("usdcAmount", usdcAmount);
+
+    console.log("totalSupply before", IERC20(LP_ADDRESS).totalSupply());
+
+    uint256 lpAmount = usdcAmount.mul(IERC20(LP_ADDRESS).totalSupply()).div(
+      usdcReserves + amountToSwap
+    );
+
+    uint256 lpAmount2 = maiAmount.mul(IERC20(LP_ADDRESS).totalSupply()).div(
+      maiReserves - maiAmount
+    );
+
+    console.log("lpAmount", lpAmount);
+
+    console.log("lpAmount2", lpAmount2);
+
+    uint256 markupFee = lpAmount.mul(markup - swapFee).div(10**MARKUP_DECIMALS); // Calculate fee to substract
+    lpAmount = lpAmount.sub(markupFee); // remove 5% fee
+
+    // Compute %
+    uint256 ratio = lpAmount.mul(10e8).div(stakedAmount);
+    pe = ratio.mul(totalSupply()).div(10e8);
+  }
+
+  // NEEDS TESTING
+  function quoteOut(uint256 pe) external view override returns (uint256 usdc) {
+    (uint112 usdcReserves, uint112 maiReserves) = _getLpReserves();
+
+    uint256 ratio = pe.mul(10e8).div(totalSupply());
+
+    (uint256 stakedUsdc, uint256 stakedMai) = _stakedTokens();
+    uint256 usdcAmount = stakedUsdc.mul(ratio).div(10e8);
+    uint256 maiAmount = stakedMai.mul(ratio).div(10e8);
+
+    usdc = usdcAmount + _getAmountOut(maiAmount, maiReserves, usdcReserves);
+  }
+
   // Collateral USDC Balance / Total Supply
   function _collateralRatio() internal view returns (uint256) {
     return _stakedValue().mul(10**decimals()).div(this.totalSupply());
@@ -391,7 +445,13 @@ contract Peronio is
 
     (usdcAmount, maiAmount) = _splitUSDC(amount);
 
+    console.log("totalSupply before", IERC20(LP_ADDRESS).totalSupply());
+
     lpAmount = _addLiquidity(usdcAmount, maiAmount);
+
+    console.log("totalSupply after", IERC20(LP_ADDRESS).totalSupply());
+
+    console.log("lpAmount", lpAmount);
 
     // Stake LP Tokens
     _stakeLP(lpAmount);
@@ -470,6 +530,8 @@ contract Peronio is
     (uint112 usdcReserves, ) = _getLpReserves();
     uint256 amountToSwap = _calculateSwapInAmount(usdcReserves, amount);
 
+    console.log("amountToSwap", amountToSwap);
+
     require(amountToSwap > 0, "Nothing to swap");
 
     address[] memory path = new address[](2);
@@ -486,6 +548,8 @@ contract Peronio is
       );
     maiAmount = amounts[1];
     usdcAmount = amount - amountToSwap;
+
+    console.log("usdcAmount", usdcAmount);
   }
 
   // Stake LP tokens (MAI/USDC) into QiDAO Farm
