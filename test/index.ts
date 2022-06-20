@@ -117,6 +117,11 @@ describe("Peronio", function () {
 
       const amount = parseUnits("1", 6);
 
+      // Quote PE amount
+      const quotedPe = await contract.quoteIn(amount);
+
+      console.info("Quoted:", formatUnits(quotedPe, 6));
+
       // Approve
       await usdcContract.approve(contract.address, amount);
 
@@ -132,11 +137,8 @@ describe("Peronio", function () {
       // Should transfer usdc exactly as provided
       expect(mintedUsdc).to.be.equal(amount);
 
-      // Should be close to 237
-      expect(receivedPe).to.be.closeTo(
-        parseUnits("237", 6),
-        parseUnits("10", 6)
-      );
+      // Should be quoted amount
+      expect(receivedPe).to.be.equal(quotedPe);
     });
 
     it("should withdraw PE 250", async function () {
