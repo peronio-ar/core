@@ -147,6 +147,11 @@ describe("Peronio", function () {
 
       const amount = parseUnits("250", 6);
 
+      // Quote PE amount
+      const quotedUSDC = await contract.quoteOut(amount);
+
+      console.info("Quoted:", formatUnits(quotedUSDC, 6));
+
       // Approve
       await contract.approve(contract.address, amount);
 
@@ -163,6 +168,9 @@ describe("Peronio", function () {
         parseUnits("1", 6),
         parseUnits("0.1", 6)
       );
+
+      // Should be quoted amount
+      expect(receivedUsdc).to.be.equal(quotedUSDC);
     });
 
     it("should revert on not enough received PE", async function () {
