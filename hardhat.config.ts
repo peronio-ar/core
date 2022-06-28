@@ -23,9 +23,7 @@ const MAINNET_API_URL = process.env.MAINNET_API_URL ?? "";
 const MUMBAI_API_URL = process.env.MUMBAI_API_URL ?? "";
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY ?? "";
-const TEST_PRIVATE_KEY =
-  process.env.TEST_PRIVATE_KEY ??
-  "0x8bbdbafd5ef4afcf96b62eb5a4846e386b785bee7942440fa313100c1e25a15d";
+const TEST_PRIVATE_KEY = process.env.TEST_PRIVATE_KEY ?? "";
 
 const ACCOUNTS = [PRIVATE_KEY, TEST_PRIVATE_KEY];
 
