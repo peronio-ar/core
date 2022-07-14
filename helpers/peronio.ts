@@ -6,7 +6,7 @@ import {
 } from "../types/utils";
 
 export function getConstructorParams() {
-  const peronioContructor: IPeronioConstructorParams = {
+  const peronioConstructor: IPeronioConstructorParams = {
     name: process.env.TOKEN_NAME ?? "",
     symbol: process.env.TOKEN_SYMBOL ?? "",
     usdcAddress: process.env.USDC_ADDRESS ?? "",
@@ -18,11 +18,11 @@ export function getConstructorParams() {
     qiPoolId: process.env.QIDAO_POOL_ID ?? "",
   };
 
-  return peronioContructor;
+  return peronioConstructor;
 }
 
 export function getInitializeParams() {
-  const peronioContructor: IPeronioInitializeParams = {
+  const peronioConstructor: IPeronioInitializeParams = {
     usdcAmount: ethers.utils.parseUnits(
       process.env.INIT_USDC_AMOUNT ?? "10",
       6
@@ -30,5 +30,5 @@ export function getInitializeParams() {
     startingRatio: parseInt(process.env.INIT_RATIO ?? "250"),
   };
 
-  return peronioContructor;
+  return peronioConstructor;
 }
