@@ -5,6 +5,10 @@ Before you start
 ## Install
 
 ```shell
+nvm use
+```
+
+```shell
 yarn
 ```
 
