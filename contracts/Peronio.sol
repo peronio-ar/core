@@ -2,7 +2,6 @@
 pragma solidity ^0.8.2;
 
 // OpenZepellin imports
-import "@openzeppelin/contracts_latest/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts_latest/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts_latest/access/AccessControl.sol";
 import "@openzeppelin/contracts_latest/token/ERC20/extensions/draft-ERC20Permit.sol";
