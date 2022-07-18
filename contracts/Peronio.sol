@@ -20,6 +20,7 @@ import "./IPeronio.sol";
 
 import "hardhat/console.sol";
 
+
 library Babylonian
 {
     function sqrt(
@@ -43,6 +44,7 @@ library Babylonian
     }
 }
 
+
 contract Peronio is
     IPeronio,
     ERC20,
@@ -57,17 +59,16 @@ contract Peronio is
     address public immutable override USDC_ADDRESS;
     // MAI Token Address
     address public immutable override MAI_ADDRESS;
-
     // LP USDC/MAI Address from QuickSwap
     address public immutable override LP_ADDRESS;
+    // QI Token Address
+    address public immutable override QI_ADDRESS;
 
     // QuickSwap Router
     address public immutable override QUICKSWAP_ROUTER_ADDRESS;
 
     // QiDao Farm
     address public immutable override QIDAO_FARM_ADDRESS;
-    // QI Token Address
-    address public immutable override QI_ADDRESS;
     // QiDao Pool ID
     uint256 public immutable override QIDAO_POOL_ID;
 
@@ -124,7 +125,7 @@ contract Peronio is
         view
         virtual
         override(ERC20, IPeronio)
-        returns (uint8)
+        returns (uint8 decimals_)
     {
         return 6;
     }
@@ -190,11 +191,7 @@ contract Peronio is
         uint256 stakedAmount = _stakedBalance();
 
         // Transfer Collateral Token (USDT) to this contract
-        IERC20(USDC_ADDRESS).safeTransferFrom(
-            _msgSender(),
-            address(this),
-            usdcAmount
-        ); // Changed
+        IERC20(USDC_ADDRESS).safeTransferFrom(_msgSender(), address(this), usdcAmount); // Changed
 
         // Zaps USDC directly into MAI/USDC Vault
         uint256 lpAmount = _zapIn(usdcAmount);
@@ -305,7 +302,7 @@ contract Peronio is
         external
         view
         override
-        returns (uint256)
+        returns (uint256 lpAmount)
     {
         return _stakedBalance();
     }
@@ -315,7 +312,7 @@ contract Peronio is
         external
         view
         override
-        returns (uint256 totalUSDC)
+        returns (uint256 usdcAmount)
     {
         return _stakedValue();
     }
@@ -334,7 +331,7 @@ contract Peronio is
         external
         view
         override
-        returns (uint256)
+        returns (uint256 price)
     {
         return (this.totalSupply() * 10**decimals()) / _stakedValue();
     }
@@ -344,7 +341,7 @@ contract Peronio is
         external
         view
         override
-        returns (uint256)
+        returns (uint256 price)
     {
         uint256 basePrice = _collateralRatio();
         uint256 fee = (basePrice * markup) / 10**MARKUP_DECIMALS;
@@ -356,7 +353,7 @@ contract Peronio is
         external
         view
         override
-        returns (uint256)
+        returns (uint256 ratio)
     {
         return _collateralRatio();
     }
@@ -444,7 +441,7 @@ contract Peronio is
     function _collateralRatio()
         internal
         view
-        returns (uint256)
+        returns (uint256 ratio)
     {
         return (_stakedValue() * 10**decimals()) / this.totalSupply();
     }
@@ -503,7 +500,7 @@ contract Peronio is
     function _stakedBalance()
         internal
         view
-        returns (uint256)
+        returns (uint256 lpAmount)
     {
         return IFarm(QIDAO_FARM_ADDRESS).deposited(QIDAO_POOL_ID, address(this));
     }
@@ -698,7 +695,7 @@ contract Peronio is
     )
         internal
         pure
-        returns (uint256)
+        returns (uint256 amount)
     {
         return
             (Babylonian.sqrt(
