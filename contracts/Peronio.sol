@@ -136,11 +136,10 @@ contract Peronio is
     );
 
     // Unlmited ERC20 approval for Router
-    uint256 unlimitedAmount = 2**256 - 1;
-    IERC20(MAI_ADDRESS).approve(QUICKSWAP_ROUTER_ADDRESS, unlimitedAmount);
-    IERC20(USDC_ADDRESS).approve(QUICKSWAP_ROUTER_ADDRESS, unlimitedAmount);
-    IERC20(LP_ADDRESS).approve(QUICKSWAP_ROUTER_ADDRESS, unlimitedAmount);
-    IERC20(QI_ADDRESS).approve(QUICKSWAP_ROUTER_ADDRESS, unlimitedAmount);
+    IERC20( MAI_ADDRESS).approve(QUICKSWAP_ROUTER_ADDRESS, type(uint256).max);
+    IERC20(USDC_ADDRESS).approve(QUICKSWAP_ROUTER_ADDRESS, type(uint256).max);
+    IERC20(  LP_ADDRESS).approve(QUICKSWAP_ROUTER_ADDRESS, type(uint256).max);
+    IERC20(  QI_ADDRESS).approve(QUICKSWAP_ROUTER_ADDRESS, type(uint256).max);
 
     // Zaps into MAI/USDC LP
     _zapIn(usdcAmount);
