@@ -45,7 +45,6 @@ contract Peronio is
   AccessControl,
   ReentrancyGuard
 {
-  using SafeMath for uint256;
   using SafeERC20 for IERC20;
 
   // USDC Token Address
@@ -145,10 +144,10 @@ contract Peronio is
 
     // Zaps into MAI/USDC LP
     _zapIn(usdcAmount);
-
     usdcAmount = _stakedValue();
+
     // Mints exactly startingRatio for each USDC deposit
-    _mint(_msgSender(), startingRatio.mul(usdcAmount));
+    _mint(_msgSender(), startingRatio * usdcAmount);
 
     // Lock contract to prevent to be initialized twice
     initialized = true;
@@ -183,12 +182,12 @@ contract Peronio is
     uint256 lpAmount = _zapIn(usdcAmount);
 
     // Fee - Swap fee (+0.15% positive bonus)
-    uint256 markupFee = lpAmount.mul(markup - swapFee).div(10**MARKUP_DECIMALS); // Calculate fee to substract
-    lpAmount = lpAmount.sub(markupFee); // remove 5% fee
+    uint256 markupFee = (lpAmount * (markup - swapFee)) / 10**MARKUP_DECIMALS; // Calculate fee to substract
+    lpAmount = lpAmount - markupFee; // remove 5% fee
 
     // Compute %
-    uint256 ratio = lpAmount.mul(10e8).div(stakedAmount);
-    peAmount = ratio.mul(totalSupply()).div(10e8);
+    uint256 ratio = (lpAmount * 10e8) / stakedAmount;
+    peAmount = (ratio * totalSupply()) / 10e8;
 
     require(peAmount > minReceive, "Minimum required not met");
     _mint(to, peAmount);
@@ -206,8 +205,8 @@ contract Peronio is
     _burn(_msgSender(), peAmount);
 
     // Transfer collateral back to user wallet to current contract
-    uint256 ratio = peAmount.mul(10e8).div(totalSupply());
-    uint256 lpAmount = ratio.mul(_stakedBalance()).div(10e8);
+    uint256 ratio = (peAmount * 10e8) / totalSupply();
+    uint256 lpAmount = (ratio * _stakedBalance()) / 10e8;
 
     uint256 usdcAmount;
 
@@ -232,8 +231,8 @@ contract Peronio is
     // Burn tokens
     _burn(_msgSender(), peAmount);
 
-    uint256 ratio = peAmount.mul(10e8).div(totalSupply());
-    uint256 lpAmount = ratio.mul(_stakedBalance()).div(10e8);
+    uint256 ratio = (peAmount * 10e8) / totalSupply();
+    uint256 lpAmount = (ratio * _stakedBalance()) / 10e8;
 
     // Get LP tokens out of the Farm
     _unstakeLP(lpAmount);
@@ -294,13 +293,13 @@ contract Peronio is
 
   // Gets current ratio: Total Supply / Collateral USDC Balance in vault
   function usdcPrice() external view override returns (uint256) {
-    return (this.totalSupply().mul(10**decimals())).div(_stakedValue());
+    return (this.totalSupply() * 10**decimals()) / _stakedValue();
   }
 
   // Gets current ratio: collateralRatio + markup
   function buyingPrice() external view override returns (uint256) {
     uint256 basePrice = _collateralRatio();
-    uint256 fee = (basePrice.mul(markup)).div(10**MARKUP_DECIMALS);
+    uint256 fee = (basePrice * markup) / 10**MARKUP_DECIMALS;
     return basePrice + fee;
   }
 
@@ -346,42 +345,37 @@ contract Peronio is
 
     console.log("totalSupply before", IERC20(LP_ADDRESS).totalSupply());
 
-    uint256 lpAmount = usdcAmount.mul(IERC20(LP_ADDRESS).totalSupply()).div(
-      usdcReserves + amountToSwap
-    );
-
-    uint256 lpAmount2 = maiAmount.mul(IERC20(LP_ADDRESS).totalSupply()).div(
-      maiReserves - maiAmount
-    );
+    uint256 lpAmount = (usdcAmount * IERC20(LP_ADDRESS).totalSupply()) / (usdcReserves + amountToSwap);
+    uint256 lpAmount2 = (maiAmount * IERC20(LP_ADDRESS).totalSupply()) / (maiReserves - maiAmount);
 
     console.log("lpAmount", lpAmount);
 
     console.log("lpAmount2", lpAmount2);
 
-    uint256 markupFee = lpAmount.mul(markup - swapFee).div(10**MARKUP_DECIMALS); // Calculate fee to substract
-    lpAmount = lpAmount.sub(markupFee); // remove 5% fee
+    uint256 markupFee = (lpAmount * (markup - swapFee)) / 10**MARKUP_DECIMALS; // Calculate fee to substract
+    lpAmount = lpAmount - markupFee; // remove 5% fee
 
     // Compute %
-    uint256 ratio = lpAmount.mul(10e8).div(stakedAmount);
-    pe = ratio.mul(totalSupply()).div(10e8);
+    uint256 ratio = (lpAmount * 10e8) / stakedAmount;
+    pe = (ratio * totalSupply()) / 10e8;
   }
 
   // NEEDS TESTING
   function quoteOut(uint256 pe) external view override returns (uint256 usdc) {
     (uint112 usdcReserves, uint112 maiReserves) = _getLpReserves();
 
-    uint256 ratio = pe.mul(10e8).div(totalSupply());
+    uint256 ratio = (pe * 10e8) / totalSupply();
 
     (uint256 stakedUsdc, uint256 stakedMai) = _stakedTokens();
-    uint256 usdcAmount = stakedUsdc.mul(ratio).div(10e8);
-    uint256 maiAmount = stakedMai.mul(ratio).div(10e8);
+    uint256 usdcAmount = (stakedUsdc * ratio) / 10e8;
+    uint256 maiAmount = (stakedMai * ratio) / 10e8;
 
     usdc = usdcAmount + _getAmountOut(maiAmount, maiReserves, usdcReserves);
   }
 
   // Collateral USDC Balance / Total Supply
   function _collateralRatio() internal view returns (uint256) {
-    return _stakedValue().mul(10**decimals()).div(this.totalSupply());
+    return (_stakedValue() * 10**decimals()) / this.totalSupply();
   }
 
   // Returns current staking value in USDC
@@ -394,9 +388,7 @@ contract Peronio is
     (usdcAmount, maiAmount) = _stakedTokens();
 
     // Simulate Swap
-    totalUSDC = usdcAmount.add(
-      _getAmountOut(maiAmount, maiReserves, usdcReserves)
-    );
+    totalUSDC = usdcAmount + _getAmountOut(maiAmount, maiReserves, usdcReserves);
   }
 
   // Return all QuickSwap Liquidity Pool (MAI/USDC) reserves
@@ -421,15 +413,15 @@ contract Peronio is
   {
     uint256 lpAmount = _stakedBalance();
     // Add 18 precision decimals
-    uint256 ratio = lpAmount.mul(10e18).div(IERC20(LP_ADDRESS).totalSupply());
+    uint256 ratio = (lpAmount * 10e18) / IERC20(LP_ADDRESS).totalSupply();
     uint112 usdcReserves;
     uint112 maiReserves;
 
     (usdcReserves, maiReserves) = _getLpReserves();
 
     // Remove 18 precision decimals
-    usdcAmount = ratio.mul(usdcReserves).div(10e18);
-    maiAmount = ratio.mul(maiReserves).div(10e18);
+    usdcAmount = (ratio * usdcReserves) / 10e18;
+    maiAmount = (ratio * maiReserves) / 10e18;
   }
 
   // Returns LP Amount staked in the QiDao Farm
@@ -607,9 +599,9 @@ contract Peronio is
       reserveIn > 0 && reserveOut > 0,
       "UniswapV2Library: INSUFFICIENT_LIQUIDITY"
     );
-    uint256 amountInWithFee = amountIn.mul(997);
-    uint256 numerator = amountInWithFee.mul(reserveOut);
-    uint256 denominator = reserveIn.mul(1000).add(amountInWithFee);
+    uint256 amountInWithFee = amountIn * 997;
+    uint256 numerator = amountInWithFee * reserveOut;
+    uint256 denominator = reserveIn * 1000 + amountInWithFee;
     amountOut = numerator / denominator;
   }
 }
