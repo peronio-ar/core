@@ -27,13 +27,13 @@ library Babylonian {
       z = y;
       uint256 x = y / 2 + 1;
       while (x < z) {
-        z = x;
-        x = (y / x + x) / 2;
+        (z, x) = (x, (y / x + x) / 2);
       }
     } else if (y != 0) {
       z = 1;
+    } else {
+      z = 0;
     }
-    // else z = 0
   }
 }
 
