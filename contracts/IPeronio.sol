@@ -33,18 +33,15 @@ interface IPeronio {
 
     // Events
     event Initialized(address owner, uint256 collateral, uint256 startingRatio);
-    event Minted(
-        address indexed to,
-        uint256 collateralAmount,
-        uint256 tokenAmount
-    );
-    event Withdrawal(
-        address indexed to,
-        uint256 collateralAmount,
-        uint256 tokenAmount
-    );
+
+    event Minted(address indexed to, uint256 collateralAmount, uint256 tokenAmount);
+
+    event Withdrawal(address indexed to, uint256 collateralAmount, uint256 tokenAmount);
+
     event MarkupUpdated(address operator, uint256 markup);
+
     event CompoundRewards(uint256 qi, uint256 usdc, uint256 lp);
+
     event HarvestedMatic(uint256 wmatic, uint256 collateral);
 
     function decimals() external view returns (uint8);
@@ -53,21 +50,13 @@ interface IPeronio {
 
     function setMarkup(uint256 markup_) external;
 
-    function mint(
-        address to,
-        uint256 usdcAmount,
-        uint256 minReceive
-    ) external returns (uint256 peAmount);
+    function mint(address to, uint256 usdcAmount, uint256 minReceive) external returns (uint256 peAmount);
 
-    function withdraw(address to, uint256 peAmount)
-        external
-        returns (uint256 totalUSDC);
+    function withdraw(address to, uint256 peAmount) external returns (uint256 totalUSDC);
 
     function claimRewards() external;
 
-    function compoundRewards()
-        external
-        returns (uint256 usdcAmount, uint256 lpAmount);
+    function compoundRewards() external returns (uint256 usdcAmount, uint256 lpAmount);
 
     function stakedBalance() external view returns (uint256 lpAmount);
 
@@ -81,10 +70,7 @@ interface IPeronio {
 
     function getPendingRewardsAmount() external view returns (uint256 amount);
 
-    function getLpReserves()
-        external
-        view
-        returns (uint112 usdcReserves, uint112 maiReserves);
+    function getLpReserves() external view returns (uint112 usdcReserves, uint112 maiReserves);
 
     // Version 2
     function quoteIn(uint256 usdc) external view returns (uint256 pe);
