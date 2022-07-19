@@ -20,6 +20,8 @@ cp .env.example .env
 
 ## Edit .env with the correct variable data (Don't forget a temp PRIVATE KEY)
 
+The current private key has USDC 1000 and MATIC 10 on on local hardhat.
+
 ```shell
 nano .env
 ```
