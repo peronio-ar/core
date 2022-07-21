@@ -56,21 +56,21 @@ contract Peronio is
     using SafeERC20 for IERC20;
 
     // USDC Token Address
-    address public immutable override USDC_ADDRESS;
+    address public immutable override USDC_ADDRESS;  // solhint-disable-line var-name-mixedcase
     // MAI Token Address
-    address public immutable override MAI_ADDRESS;
+    address public immutable override MAI_ADDRESS;  // solhint-disable-line var-name-mixedcase
     // LP USDC/MAI Address from QuickSwap
-    address public immutable override LP_ADDRESS;
+    address public immutable override LP_ADDRESS;  // solhint-disable-line var-name-mixedcase
     // QI Token Address
-    address public immutable override QI_ADDRESS;
+    address public immutable override QI_ADDRESS;  // solhint-disable-line var-name-mixedcase
 
     // QuickSwap Router
-    address public immutable override QUICKSWAP_ROUTER_ADDRESS;
+    address public immutable override QUICKSWAP_ROUTER_ADDRESS;  // solhint-disable-line var-name-mixedcase
 
     // QiDao Farm
-    address public immutable override QIDAO_FARM_ADDRESS;
+    address public immutable override QIDAO_FARM_ADDRESS;  // solhint-disable-line var-name-mixedcase
     // QiDao Pool ID
-    uint256 public immutable override QIDAO_POOL_ID;
+    uint256 public immutable override QIDAO_POOL_ID;  // solhint-disable-line var-name-mixedcase
 
     // Markup
     uint8 public constant override MARKUP_DECIMALS = 5;
@@ -713,8 +713,8 @@ contract Peronio is
         pure
         returns (uint256 amountOut)
     {
-        require(amountIn > 0, "UniswapV2Library: INSUFFICIENT_INPUT_AMOUNT");
-        require(reserveIn > 0 && reserveOut > 0, "UniswapV2Library: INSUFFICIENT_LIQUIDITY");
+        require(amountIn > 0, "UniswapV2Library: INSUFFICIENT_INPUT_AMOUNT");  // solhint-disable-line reason-string
+        require(reserveIn > 0 && reserveOut > 0, "UniswapV2Library: INSUFFICIENT_LIQUIDITY");  // solhint-disable-line reason-string
         uint256 amountInWithFee = amountIn * 997;
         uint256 numerator = amountInWithFee * reserveOut;
         uint256 denominator = reserveIn * 1000 + amountInWithFee;

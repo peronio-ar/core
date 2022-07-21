@@ -2,22 +2,22 @@
 pragma solidity ^0.8.2;
 
 interface IPeronio {
-    function USDC_ADDRESS() external view returns (address usdcAddress);
+    function USDC_ADDRESS() external view returns (address usdcAddress);  // solhint-disable-line func-name-mixedcase
 
-    function MAI_ADDRESS() external view returns (address maiAddress);
+    function MAI_ADDRESS() external view returns (address maiAddress);  // solhint-disable-line func-name-mixedcase
 
-    function LP_ADDRESS() external view returns (address lpAddress);
+    function LP_ADDRESS() external view returns (address lpAddress);  // solhint-disable-line func-name-mixedcase
 
-    function QI_ADDRESS() external view returns (address qiAddress);
+    function QI_ADDRESS() external view returns (address qiAddress);  // solhint-disable-line func-name-mixedcase
 
-    function QUICKSWAP_ROUTER_ADDRESS() external view returns (address quickSwapRouterAddress);
+    function QUICKSWAP_ROUTER_ADDRESS() external view returns (address quickSwapRouterAddress);  // solhint-disable-line func-name-mixedcase
 
-    function QIDAO_FARM_ADDRESS() external view returns (address qiDaoFarmAddress);
+    function QIDAO_FARM_ADDRESS() external view returns (address qiDaoFarmAddress);  // solhint-disable-line func-name-mixedcase
 
-    function QIDAO_POOL_ID() external view returns (uint256 qiDaoPoolId);
+    function QIDAO_POOL_ID() external view returns (uint256 qiDaoPoolId);  // solhint-disable-line func-name-mixedcase
 
     // Markup
-    function MARKUP_DECIMALS() external view returns (uint8 decimals_);
+    function MARKUP_DECIMALS() external view returns (uint8 decimals_);  // solhint-disable-line func-name-mixedcase
 
     function markup() external view returns (uint256 markup_);
 
@@ -27,9 +27,9 @@ interface IPeronio {
     function initialized() external view returns (bool initialized_);
 
     // Roles
-    function MARKUP_ROLE() external view returns (bytes32 roleId);
+    function MARKUP_ROLE() external view returns (bytes32 roleId);  // solhint-disable-line func-name-mixedcase
 
-    function REWARDS_ROLE() external view returns (bytes32 roleId);
+    function REWARDS_ROLE() external view returns (bytes32 roleId);  // solhint-disable-line func-name-mixedcase
 
     // Events
     event Initialized(address owner, uint256 collateral, uint256 startingRatio);
