@@ -198,7 +198,7 @@ contract Peronio is
 
         // Fee - Swap fee (+0.15% positive bonus)
         uint256 markupFee = (lpAmount * (markup - swapFee)) / 10**MARKUP_DECIMALS; // Calculate fee to substract
-        lpAmount = lpAmount - markupFee; // remove 5% fee
+        lpAmount -= markupFee; // remove 5% fee
 
         // Compute %
         uint256 ratio = (lpAmount * 10e8) / stakedAmount;
