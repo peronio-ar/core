@@ -32,7 +32,7 @@ task("deploy_peronio", "Deploy Peronio")
     }
   );
 
-task("init_peronio", "Initialiaze Peronio")
+task("init_peronio", "Initialize Peronio")
   // .addPositionalParam("address", "The address to check the balance from")
   .setAction(async ({ address }, { network }) => {
     const collateralAmount = "100"; // USDT 100

@@ -11,22 +11,22 @@ module.exports = async () => {
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
 
-  const peronioContructor: IPeronioConstructorParams = getConstructorParams();
+  const peronioConstructor: IPeronioConstructorParams = getConstructorParams();
 
   await deploy("Peronio", {
     contract: "Peronio",
     from: deployer,
     log: true,
     args: [
-      peronioContructor.name,
-      peronioContructor.symbol,
-      peronioContructor.usdcAddress,
-      peronioContructor.maiAddress,
-      peronioContructor.lpAddress,
-      peronioContructor.qiAddress,
-      peronioContructor.quickswapRouterAddress,
-      peronioContructor.qiFarmAddress,
-      peronioContructor.qiPoolId,
+      peronioConstructor.name,
+      peronioConstructor.symbol,
+      peronioConstructor.usdcAddress,
+      peronioConstructor.maiAddress,
+      peronioConstructor.lpAddress,
+      peronioConstructor.qiAddress,
+      peronioConstructor.quickswapRouterAddress,
+      peronioConstructor.qiFarmAddress,
+      peronioConstructor.qiPoolId,
     ],
   });
 };
