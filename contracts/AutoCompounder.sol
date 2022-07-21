@@ -8,7 +8,7 @@ import "@openzeppelin/contracts_latest/access/Ownable.sol";
 contract AutoCompounder is
     Ownable
 {
-    IPeronio peronio;
+    IPeronio internal peronio;
 
     uint256 public lastExecuted;
 
