@@ -59,5 +59,8 @@
     "generate": "hardhat generate",
     "account": "hardhat account",
     "typechain": "hardhat typechain"
+  },
+  "dependencies": {
+    "yarn": "^1.22.19"
   }
 }
