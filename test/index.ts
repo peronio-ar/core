@@ -17,7 +17,7 @@ enum Roles {
   REWARDS = "0x5407862f04286ebe607684514c14b7fffc750b6bf52ba44ea49569174845a5bd",
 }
 
-const peronioContructor: IPeronioConstructorParams = getConstructorParams();
+const peronioConstructor: IPeronioConstructorParams = getConstructorParams();
 const peronioInitializer: IPeronioInitializeParams = {
   usdcAmount: parseUnits("10", 6),
   startingRatio: 250,
@@ -47,45 +47,45 @@ describe("Peronio", function () {
   describe("Constructor variables", () => {
     // Deploy Peronio
     before(async () => {
-      contract = await deployPeronio(peronioContructor);
+      contract = await deployPeronio(peronioConstructor);
       await contract.deployed();
     });
 
     it("should return correct USDC_ADDRESS", async function () {
       expect(await contract.USDC_ADDRESS()).to.equal(
-        peronioContructor.usdcAddress
+        peronioConstructor.usdcAddress
       );
     });
 
     it("should return correct MAI_ADDRESS", async function () {
       expect(await contract.MAI_ADDRESS()).to.equal(
-        peronioContructor.maiAddress
+        peronioConstructor.maiAddress
       );
     });
 
     it("should return correct LP_ADDRESS", async function () {
-      expect(await contract.LP_ADDRESS()).to.equal(peronioContructor.lpAddress);
+      expect(await contract.LP_ADDRESS()).to.equal(peronioConstructor.lpAddress);
     });
 
     it("should return correct QUICKSWAP_ROUTER_ADDRESS", async function () {
       expect(await contract.QUICKSWAP_ROUTER_ADDRESS()).to.equal(
-        peronioContructor.quickswapRouterAddress
+        peronioConstructor.quickswapRouterAddress
       );
     });
 
     it("should return correct QIDAO_FARM_ADDRESS", async function () {
       expect(await contract.QIDAO_FARM_ADDRESS()).to.equal(
-        peronioContructor.qiFarmAddress
+        peronioConstructor.qiFarmAddress
       );
     });
 
     it("should return correct QI_ADDRESS", async function () {
-      expect(await contract.QI_ADDRESS()).to.equal(peronioContructor.qiAddress);
+      expect(await contract.QI_ADDRESS()).to.equal(peronioConstructor.qiAddress);
     });
 
     it("should return correct QIDAO_POOL_ID", async function () {
       expect(await contract.QIDAO_POOL_ID()).to.equal(
-        peronioContructor.qiPoolId
+        peronioConstructor.qiPoolId
       );
     });
 
@@ -101,7 +101,7 @@ describe("Peronio", function () {
   describe("Mint and Withdraw", () => {
     // Deploy Peronio
     before(async () => {
-      contract = await deployPeronio(peronioContructor);
+      contract = await deployPeronio(peronioConstructor);
       await contract.deployed();
     });
 
@@ -210,7 +210,7 @@ describe("Peronio", function () {
   describe("Quotes", () => {
     // Deploy Peronio
     before(async () => {
-      contract = await deployPeronio(peronioContructor);
+      contract = await deployPeronio(peronioConstructor);
       await contract.deployed();
     });
 
@@ -280,7 +280,7 @@ describe("Peronio", function () {
   describe("Initialization", () => {
     // Deploy Peronio
     before(async () => {
-      contract = await deployPeronio(peronioContructor);
+      contract = await deployPeronio(peronioConstructor);
       await contract.deployed();
     });
 
@@ -312,7 +312,7 @@ describe("Peronio", function () {
   describe("Roles", () => {
     // Deploy Peronio
     before(async () => {
-      contract = await deployPeronio(peronioContructor);
+      contract = await deployPeronio(peronioConstructor);
       await contract.deployed();
     });
 
@@ -320,9 +320,7 @@ describe("Peronio", function () {
       expect(
         contract.connect(accounts.tester).setMarkup("5000")
       ).to.be.revertedWith(
-        `AccessControl: account ${accounts.tester.toLowerCase()} is missing role ${
-          Roles.MARKUP
-        }`
+        `AccessControl: account ${accounts.tester.toLowerCase()} is missing role ${Roles.MARKUP}`
       );
     });
 
@@ -330,9 +328,7 @@ describe("Peronio", function () {
       expect(
         contract.connect(accounts.tester).claimRewards()
       ).to.be.revertedWith(
-        `AccessControl: account ${accounts.tester.toLowerCase()} is missing role ${
-          Roles.REWARDS
-        }`
+        `AccessControl: account ${accounts.tester.toLowerCase()} is missing role ${Roles.REWARDS}`
       );
     });
 
@@ -340,9 +336,7 @@ describe("Peronio", function () {
       expect(
         contract.connect(accounts.tester).compoundRewards()
       ).to.be.revertedWith(
-        `AccessControl: account ${accounts.tester.toLowerCase()} is missing role ${
-          Roles.REWARDS
-        }`
+        `AccessControl: account ${accounts.tester.toLowerCase()} is missing role ${Roles.REWARDS}`
       );
     });
   });
@@ -350,7 +344,7 @@ describe("Peronio", function () {
   describe("Auto Compounding  + Rewards", () => {
     // Deploy Peronio and AutoCompounder
     before(async () => {
-      contract = await deployPeronio(peronioContructor);
+      contract = await deployPeronio(peronioConstructor);
       await contract.deployed();
     });
 
@@ -398,19 +392,19 @@ describe("Peronio", function () {
 });
 
 const deployPeronio = async (
-  contructor: IPeronioConstructorParams
+  constructor: IPeronioConstructorParams
 ): Promise<Peronio> => {
   const Peronio = await ethers.getContractFactory("Peronio");
   const contract = await Peronio.deploy(
-    contructor.name,
-    contructor.symbol,
-    contructor.usdcAddress,
-    contructor.maiAddress,
-    contructor.lpAddress,
-    contructor.qiAddress,
-    contructor.quickswapRouterAddress,
-    contructor.qiFarmAddress,
-    contructor.qiPoolId
+    constructor.name,
+    constructor.symbol,
+    constructor.usdcAddress,
+    constructor.maiAddress,
+    constructor.lpAddress,
+    constructor.qiAddress,
+    constructor.quickswapRouterAddress,
+    constructor.qiFarmAddress,
+    constructor.qiPoolId
   );
   return contract;
 };

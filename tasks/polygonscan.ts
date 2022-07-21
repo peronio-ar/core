@@ -5,7 +5,7 @@ import { task } from "hardhat/config";
 import { getConstructorParams } from "../helpers/peronio";
 import { IPeronioConstructorParams } from "../types/utils";
 
-const peronioContructor: IPeronioConstructorParams = getConstructorParams();
+const peronioConstructor: IPeronioConstructorParams = getConstructorParams();
 
 task("polygonscan", "Verify contract on Polyscan").setAction(
   async (_a, { network, deployments, getNamedAccounts, run }) => {
@@ -33,15 +33,15 @@ task("polygonscan", "Verify contract on Polyscan").setAction(
       await run("verify:verify", {
         address: peronioAddress,
         constructorArguments: [
-          peronioContructor.name,
-          peronioContructor.symbol,
-          peronioContructor.usdcAddress,
-          peronioContructor.maiAddress,
-          peronioContructor.lpAddress,
-          peronioContructor.qiAddress,
-          peronioContructor.quickswapRouterAddress,
-          peronioContructor.qiFarmAddress,
-          peronioContructor.qiPoolId,
+          peronioConstructor.name,
+          peronioConstructor.symbol,
+          peronioConstructor.usdcAddress,
+          peronioConstructor.maiAddress,
+          peronioConstructor.lpAddress,
+          peronioConstructor.qiAddress,
+          peronioConstructor.quickswapRouterAddress,
+          peronioConstructor.qiFarmAddress,
+          peronioConstructor.qiPoolId,
         ],
       });
     } catch (e: any) {
