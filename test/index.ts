@@ -271,9 +271,9 @@ describe("Peronio", function () {
     });
 
     it("should set 20000 for markup", async function () {
-      const newMakup = 2000;
-      await contract.setMarkup(newMakup);
-      expect(await contract.markup()).to.equal(newMakup);
+      const newMarkup = 2000;
+      await contract.setMarkup(newMarkup);
+      expect(await contract.markup()).to.equal(newMarkup);
     });
   });
 
