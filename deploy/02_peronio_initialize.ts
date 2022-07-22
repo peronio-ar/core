@@ -1,9 +1,9 @@
 // deploy/02_peronio_initialize.ts
 import hre, { ethers } from "hardhat";
 
-import { getInitializeParams } from "../helpers/peronio";
+import { getInitializeParams } from "../utils/helpers";
 import { Peronio, ERC20 } from "../typechain";
-import { IPeronioInitializeParams } from "../types/utils";
+import { IPeronioInitializeParams } from "../utils/types/iperonio_initialize_params";
 
 module.exports = async () => {
   console.info("Initializing Peronio");

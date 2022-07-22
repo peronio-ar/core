@@ -1,12 +1,13 @@
 import { expect } from "chai";
 import { BigNumber, ContractTransaction } from "ethers";
 import hre, { ethers } from "hardhat";
+
 import { Peronio, ERC20, AutoCompounder } from "../typechain";
-import {
-  IPeronioConstructorParams,
-  IPeronioInitializeParams,
-} from "../types/utils";
-import { getConstructorParams } from "../helpers/peronio";
+
+import { IPeronioConstructorParams } from "../utils/types/iperonio_constructor_params";
+import { IPeronioInitializeParams } from "../utils/types/iperonio_initialize_params";
+
+import { getConstructorParams } from "../utils/helpers";
 
 const { parseUnits, formatUnits } = ethers.utils;
 

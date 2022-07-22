@@ -1,12 +1,10 @@
 import { ethers } from "ethers";
 
-import {
-  IPeronioConstructorParams,
-  IPeronioInitializeParams,
-} from "../types/utils";
+import { IPeronioConstructorParams } from "./types/iperonio_constructor_params";
+import { IPeronioInitializeParams } from "./types/iperonio_initialize_params";
 
-export function getConstructorParams() {
-  const peronioConstructor: IPeronioConstructorParams = {
+export function getConstructorParams(): IPeronioConstructorParams {
+  return {
     name: process.env.TOKEN_NAME ?? "",
     symbol: process.env.TOKEN_SYMBOL ?? "",
     usdcAddress: process.env.USDC_ADDRESS ?? "",
@@ -17,18 +15,11 @@ export function getConstructorParams() {
     qiFarmAddress: process.env.QIDAO_FARM_ADDRESS ?? "",
     qiPoolId: process.env.QIDAO_POOL_ID ?? "",
   };
-
-  return peronioConstructor;
 }
 
-export function getInitializeParams() {
-  const peronioConstructor: IPeronioInitializeParams = {
-    usdcAmount: ethers.utils.parseUnits(
-      process.env.INIT_USDC_AMOUNT ?? "10",
-      6
-    ),
+export function getInitializeParams(): IPeronioInitializeParams {
+  return {
+    usdcAmount: ethers.utils.parseUnits(process.env.INIT_USDC_AMOUNT ?? "10", 6),
     startingRatio: parseInt(process.env.INIT_RATIO ?? "250"),
   };
-
-  return peronioConstructor;
 }
