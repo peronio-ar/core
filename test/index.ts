@@ -13,8 +13,8 @@ const { parseUnits, formatUnits } = ethers.utils;
 // eslint-disable-next-line no-unused-vars
 enum Roles {
   DEFAULT_ADMIN = "0x0000000000000000000000000000000000000000000000000000000000000000",
-  MARKUP = "0x74a064b2dec4aeb0b53e2d06f8e76ce531a17302a866fe51bc86d9a90b4e85e3",
-  REWARDS = "0x5407862f04286ebe607684514c14b7fffc750b6bf52ba44ea49569174845a5bd",
+  MARKUP = "0x74a064b2dec4aeb0b53e2d06f8e76ce531a17302a866fe51bc86d9a90b4e85e3",   // keccak256("MARKUP_ROLE")
+  REWARDS = "0x5407862f04286ebe607684514c14b7fffc750b6bf52ba44ea49569174845a5bd",  // keccak256("REWARDS_ROLE")
 }
 
 const peronioConstructor: IPeronioConstructorParams = getConstructorParams();
