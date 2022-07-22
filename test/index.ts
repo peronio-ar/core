@@ -328,7 +328,7 @@ describe("Peronio", function () {
       await contract.deployed();
     });
 
-    const usdcAmount = parseUnits("1000", 6);
+    const usdcAmount = parseUnits("10", 6);
     let blockNumber: number;
 
     // Initialize Peronio
