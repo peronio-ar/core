@@ -1,5 +1,6 @@
 import { expect } from "chai";
 import { BigNumber, ContractTransaction } from "ethers";
+import { keccak256 } from "ethers/lib/utils";
 import hre, { ethers } from "hardhat";
 
 import { Peronio, ERC20, AutoCompounder } from "../typechain";
@@ -11,12 +12,8 @@ import { getConstructorParams } from "../utils/helpers";
 
 const { parseUnits, formatUnits } = ethers.utils;
 
-// eslint-disable-next-line no-unused-vars
-enum Roles {
-  DEFAULT_ADMIN = "0x0000000000000000000000000000000000000000000000000000000000000000",
-  MARKUP = "0x74a064b2dec4aeb0b53e2d06f8e76ce531a17302a866fe51bc86d9a90b4e85e3",   // keccak256("MARKUP_ROLE")
-  REWARDS = "0x5407862f04286ebe607684514c14b7fffc750b6bf52ba44ea49569174845a5bd",  // keccak256("REWARDS_ROLE")
-}
+const MARKUP_ROLE = keccak256("MARKUP_ROLE");
+const REWARDS_ROLE = keccak256("REWARDS_ROLE");
 
 const peronioConstructor: IPeronioConstructorParams = getConstructorParams();
 const peronioInitializer: IPeronioInitializeParams = {
@@ -91,11 +88,11 @@ describe("Peronio", function () {
     });
 
     it("should return correct keccak256 MARKUP_ROLE", async function () {
-      expect(await contract.MARKUP_ROLE()).to.equal(Roles.MARKUP);
+      expect(await contract.MARKUP_ROLE()).to.equal(MARKUP_ROLE);
     });
 
     it("should return correct keccak256 REWARDS_ROLE", async function () {
-      expect(await contract.REWARDS_ROLE()).to.equal(Roles.REWARDS);
+      expect(await contract.REWARDS_ROLE()).to.equal(REWARDS_ROLE);
     });
   });
 
@@ -301,7 +298,7 @@ describe("Peronio", function () {
       expect(
         contract.connect(accounts.tester).setMarkup("5000")
       ).to.be.revertedWith(
-        `AccessControl: account ${accounts.tester.toLowerCase()} is missing role ${Roles.MARKUP}`
+        `AccessControl: account ${accounts.tester.toLowerCase()} is missing role ${MARKUP_ROLE}`
       );
     });
 
@@ -309,7 +306,7 @@ describe("Peronio", function () {
       expect(
         contract.connect(accounts.tester).claimRewards()
       ).to.be.revertedWith(
-        `AccessControl: account ${accounts.tester.toLowerCase()} is missing role ${Roles.REWARDS}`
+        `AccessControl: account ${accounts.tester.toLowerCase()} is missing role ${REWARDS_ROLE}`
       );
     });
 
@@ -317,7 +314,7 @@ describe("Peronio", function () {
       expect(
         contract.connect(accounts.tester).compoundRewards()
       ).to.be.revertedWith(
-        `AccessControl: account ${accounts.tester.toLowerCase()} is missing role ${Roles.REWARDS}`
+        `AccessControl: account ${accounts.tester.toLowerCase()} is missing role ${REWARDS_ROLE}`
       );
     });
   });
@@ -367,7 +364,7 @@ describe("Peronio", function () {
       await autoCompounder.deployed();
 
       // Grants role
-      await contract.grantRole(Roles.REWARDS, autoCompounder.address);
+      await contract.grantRole(REWARDS_ROLE, autoCompounder.address);
     });
   });
 });

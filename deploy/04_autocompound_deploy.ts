@@ -1,4 +1,5 @@
 // deploy/04_deploy_peronio.ts
+import { keccak256 } from "ethers/lib/utils";
 import hre, { ethers } from "hardhat";
 
 import { Peronio } from "../typechain";
@@ -24,12 +25,8 @@ module.exports = async () => {
     args: [peronioContract.address],
   });
 
-  console.info(
-    `Setting REWARD Role to AutoCompounder (${autocompoundAddress})`
-  );
-  const rewardRole =
-    "0x5407862f04286ebe607684514c14b7fffc750b6bf52ba44ea49569174845a5bd";
-  await peronioContract.grantRole(rewardRole, peronioContract.address);
+  console.info(`Setting REWARD Role to AutoCompounder (${autocompoundAddress})`);
+  await peronioContract.grantRole(keccak256("REWARDS_ROLE"), peronioContract.address);
 };
 
 module.exports.tags = ["AutoCompound"];
