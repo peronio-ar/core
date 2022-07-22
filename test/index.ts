@@ -321,7 +321,7 @@ describe("Peronio", function () {
     });
   });
 
-  describe("Auto Compounding  + Rewards", () => {
+  describe("Auto Compounding + Rewards", () => {
     // Deploy Peronio and AutoCompounder
     before(async () => {
       contract = await deployPeronio(peronioConstructor);
