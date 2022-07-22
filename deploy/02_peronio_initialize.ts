@@ -11,29 +11,15 @@ module.exports = async () => {
 
   const peronioInitialize: IPeronioInitializeParams = getInitializeParams();
 
-  const usdcContract: ERC20 = await ethers.getContractAt(
-    "ERC20",
-    process.env.USDC_ADDRESS ?? ""
-  );
+  const usdcContract: ERC20 = await ethers.getContractAt("ERC20", process.env.USDC_ADDRESS ?? "");
 
-  const peronioContract: Peronio = await ethers.getContractAt(
-    "Peronio",
-    (
-      await get("Peronio")
-    ).address
-  );
+  const peronioContract: Peronio = await ethers.getContractAt("Peronio", (await get("Peronio")).address);
 
   // Approve
-  await usdcContract.approve(
-    peronioContract.address,
-    peronioInitialize.usdcAmount
-  );
+  await usdcContract.approve(peronioContract.address, peronioInitialize.usdcAmount);
 
   // Initialize
-  await peronioContract.initialize(
-    peronioInitialize.usdcAmount,
-    peronioInitialize.startingRatio
-  );
+  await peronioContract.initialize(peronioInitialize.usdcAmount, peronioInitialize.startingRatio);
 };
 
 module.exports.tags = ["Initialize"];

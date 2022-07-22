@@ -10,12 +10,7 @@ module.exports = async () => {
   const { deploy, get } = deployments;
   const { deployer } = await getNamedAccounts();
 
-  const peronioContract: Peronio = await ethers.getContractAt(
-    "Peronio",
-    (
-      await get("Peronio")
-    ).address
-  );
+  const peronioContract: Peronio = await ethers.getContractAt("Peronio", (await get("Peronio")).address);
 
   console.info("Deploying AutoCompound");
   const { address: autocompoundAddress } = await deploy("AutoCompounder", {
