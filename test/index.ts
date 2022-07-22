@@ -12,8 +12,8 @@ import { getConstructorParams } from "../utils/helpers";
 
 const { parseUnits, formatUnits } = ethers.utils;
 
-const MARKUP_ROLE = keccak256("MARKUP_ROLE");
-const REWARDS_ROLE = keccak256("REWARDS_ROLE");
+const MARKUP_ROLE = keccak256(new TextEncoder().encode("MARKUP_ROLE"));
+const REWARDS_ROLE = keccak256(new TextEncoder().encode("REWARDS_ROLE"));
 
 const peronioConstructor: IPeronioConstructorParams = getConstructorParams();
 const peronioInitializer: IPeronioInitializeParams = {

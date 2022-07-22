@@ -21,7 +21,7 @@ module.exports = async () => {
   });
 
   console.info(`Setting REWARD Role to AutoCompounder (${autocompoundAddress})`);
-  await peronioContract.grantRole(keccak256("REWARDS_ROLE"), peronioContract.address);
+  await peronioContract.grantRole(keccak256(new TextEncoder().encode("REWARDS_ROLE")), peronioContract.address);
 };
 
 module.exports.tags = ["AutoCompound"];
