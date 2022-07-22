@@ -5,8 +5,8 @@ import hre, { ethers } from "hardhat";
 
 import { Peronio, ERC20, AutoCompounder } from "../typechain";
 
-import { IPeronioConstructorParams } from "../utils/types/iperonio_constructor_params";
-import { IPeronioInitializeParams } from "../utils/types/iperonio_initialize_params";
+import { IPeronioConstructorParams } from "../utils/types/IPeronioConstructorParams";
+import { IPeronioInitializeParams } from "../utils/types/IPeronioInitializeParams";
 
 import { getConstructorParams } from "../utils/helpers";
 
