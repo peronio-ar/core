@@ -3,7 +3,7 @@
 
 import { task } from "hardhat/config";
 import { getConstructorParams } from "../utils/helpers";
-import { IPeronioConstructorParams } from "../utils/types/iperonio_constructor_params";
+import { IPeronioConstructorParams } from "../utils/types/IPeronioConstructorParams";
 
 const peronioConstructor: IPeronioConstructorParams = getConstructorParams();
 
