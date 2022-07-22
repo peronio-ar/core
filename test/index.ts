@@ -185,26 +185,6 @@ describe("Peronio", function () {
 
       expect(call).to.be.revertedWith("Minimum required not met");
     });
-
-    it("should match stakedValue with withdraw all amount", async function () {
-      const peOldBalance = await contract.balanceOf(accounts.deployer);
-      const usdcOldBalance = await usdcContract.balanceOf(accounts.deployer);
-
-      const amount = peOldBalance;
-
-      const stakedValue = await contract.stakedValue();
-
-      // Approve
-      await contract.approve(contract.address, amount);
-
-      // Withdraw
-      await contract.withdraw(accounts.deployer, amount);
-
-      const usdcBalance = await usdcContract.balanceOf(accounts.deployer);
-      const receivedUsdc = usdcBalance.sub(usdcOldBalance);
-
-      expect(receivedUsdc).to.be.equal(stakedValue);
-    });
   });
 
   describe("Quotes", () => {
