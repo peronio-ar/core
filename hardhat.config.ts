@@ -23,8 +23,9 @@ const MAINNET_API_URL = process.env.MAINNET_API_URL ?? "";
 const MUMBAI_API_URL = process.env.MUMBAI_API_URL ?? "";
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY ?? "";
+const TESTER_PRIVATE_KEY = process.env.TESTER_PRIVATE_KEY ?? "";
 
-const ACCOUNTS = [PRIVATE_KEY];
+const ACCOUNTS = [PRIVATE_KEY, TESTER_PRIVATE_KEY];
 
 const config: HardhatUserConfig = {
   defaultNetwork: "localhost",

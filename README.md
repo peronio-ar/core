@@ -97,6 +97,8 @@ Lastly, copy the environmental variables sample file and edit to taste:
 cp .env.example .env
 ```
 
+It's important that you overwrite the `ETHERSCAN_API_KEY` environment variable with a suitable [Etherscan](https://etherscan.io/) API Key.
+
 If you want the variables declared therein to be immediately available to you, you'll need to `export` them manually.
 
 > **In case you do NOT have `direnv` installed, you'll need to re-`export` the environmental variables in `.env` each time you want them to become available; `direnv` will do this *automagically* for you if installed.**
@@ -246,7 +248,6 @@ No need to generate any newer typings.
 
 
   Peronio
-
     ...
 ```
 

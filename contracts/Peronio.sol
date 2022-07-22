@@ -81,7 +81,7 @@ contract Peronio is
     bool public override initialized;
 
     // Roles
-    bytes32 public constant override  MARKUP_ROLE = keccak256( "MARKUP_ROLE");
+    bytes32 public constant override  MARKUP_ROLE = keccak256("MARKUP_ROLE");
     bytes32 public constant override REWARDS_ROLE = keccak256("REWARDS_ROLE");
 
     constructor(
