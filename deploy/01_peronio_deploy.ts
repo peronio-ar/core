@@ -3,7 +3,6 @@ import hre from "hardhat";
 import { getConstructorParams } from "../utils/helpers";
 import { IPeronioConstructorParams } from "../utils/types/iperonio_constructor_params";
 
-// module.exports = async ({ getNamedAccounts, deployments }) => {
 module.exports = async () => {
   console.info("Deploying Peronio");
   const { getNamedAccounts, deployments } = hre;
