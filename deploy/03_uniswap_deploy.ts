@@ -23,7 +23,7 @@ module.exports = async () => {
     factoryAddress
   );
 
-  console.info("Setting fee receiver to " + process.env.TREASURY_ADDRESS);
+  console.info(`Setting fee receiver to ${process.env.TREASURY_ADDRESS}`);
   await factoryContract.setFeeTo(process.env.TREASURY_ADDRESS ?? "");
 
   console.info("Deploying Router");
