@@ -1,10 +1,11 @@
-node_modules
-.env
+.*
 coverage
 coverage.json
-typechain
 deployments/localhost
+node_modules
+typechain
+yarn-error.log
 
-#Hardhat files
-cache
+# HardHat files
 artifacts
+cache
