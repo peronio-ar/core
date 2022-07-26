@@ -1,3 +1,6 @@
+<!-- markdownlint-disable-next-line MD001 MD041 -->
+![Peronio](assets/header.png)
+
 # Peronio Core Contracts
 
 This repository contains the Core contracts used by Peronio.
