@@ -4,6 +4,7 @@ coverage.json
 deployments/localhost
 node_modules
 typechain
+typechain-types
 yarn-error.log
 
 # HardHat files
