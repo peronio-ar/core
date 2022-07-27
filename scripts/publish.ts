@@ -9,7 +9,7 @@ async function main() {
   await hre.run("polygonscan");
   await hre.run("sourcify");
   console.log(
-    "✅  Every contract has been successfully submitted to PolygonScan."
+    "\u2705  Every contract has been successfully submitted to PolygonScan."
   );
 }
 
