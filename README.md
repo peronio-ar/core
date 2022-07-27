@@ -144,7 +144,7 @@ It is important to have the local fork running for all the examples and tests to
 You can do this by simply:
 
 ```shell
-❯ yarn chain &
+$ yarn chain &
 [1] 55830
 yarn run v1.22.19
 $ hardhat node --network hardhat --no-deploy
