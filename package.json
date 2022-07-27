@@ -44,7 +44,8 @@
     "solidity-coverage": "^0.7.21",
     "ts-node": "^10.9.1",
     "typechain": "^8.1.0",
-    "typescript": "^4.7.4"
+    "typescript": "^4.7.4",
+    "async": "^2.6.4"
   },
   "scripts": {
     "chain": "hardhat node --network hardhat --no-deploy",
