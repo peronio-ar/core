@@ -2,7 +2,7 @@
 import hre, { ethers } from "hardhat";
 
 import { getInitializeParams } from "../utils/helpers";
-import { Peronio, ERC20 } from "../typechain";
+import { Peronio, ERC20 } from "../typechain-types";
 import { IPeronioInitializeParams } from "../utils/types/IPeronioInitializeParams";
 
 module.exports = async () => {

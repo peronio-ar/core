@@ -1,7 +1,7 @@
 // deploy/03_uniswap_deploy.ts
 import hre, { ethers } from "hardhat";
 
-import { UniswapV2Factory } from "../typechain";
+import { UniswapV2Factory } from "../typechain-types";
 
 module.exports = async () => {
   console.info("Deploying Uniswap");

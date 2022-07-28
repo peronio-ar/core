@@ -3,7 +3,7 @@ import { BigNumber, ContractTransaction } from "ethers";
 import { keccak256 } from "ethers/lib/utils";
 import hre, { ethers } from "hardhat";
 
-import { Peronio, ERC20, AutoCompounder } from "../typechain";
+import { Peronio, ERC20, AutoCompounder } from "../typechain-types";
 
 import { IPeronioConstructorParams } from "../utils/types/IPeronioConstructorParams";
 import { IPeronioInitializeParams } from "../utils/types/IPeronioInitializeParams";

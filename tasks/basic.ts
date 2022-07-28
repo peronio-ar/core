@@ -1,5 +1,5 @@
 // import { task } from "hardhat/config";
-// import { ERC20, Peronio } from "../typechain";
+// import { ERC20, Peronio } from "../typechain-types";
 // import { BalanceType } from "../types/utils";
 
 // task("check_balance", "Check current balance")
