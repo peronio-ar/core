@@ -28,46 +28,46 @@ contract Migrator is IMigrator, ReentrancyGuard {
   using SafeERC20 for IERC20;
 
   // USDC Token Address
-  address public immutable override USDC_ADDRESS;
+  address public immutable override usdcAddress;
   // MAI Token Address
-  address public immutable override MAI_ADDRESS;
+  address public immutable override maiAddress;
 
   // LP USDC/MAI Address from QuickSwap
-  address public immutable override LP_ADDRESS;
+  address public immutable override lpAddress;
 
   // QuickSwap Router
-  address public immutable override QUICKSWAP_ROUTER_ADDRESS;
+  address public immutable override quickSwapRouterAddress;
 
   // QiDao Farm
-  address public immutable override QIDAO_FARM_ADDRESS;
+  address public immutable override qiDaoFarmAddress;
   // QI Token Address
-  address public immutable override QI_ADDRESS;
+  address public immutable override qiAddress;
   // QiDao Pool ID
-  uint256 public immutable override QIDAO_POOL_ID;
+  uint256 public immutable override qiDaoPoolId;
 
   constructor(
-    address usdcAddress,
-    address maiAddress,
-    address lpAddress,
-    address qiAddress,
-    address quickswapRouterAddress,
-    address qidaoFarmAddress,
-    uint256 qidaoPoolId
+    address _usdcAddress,
+    address _maiAddress,
+    address _lpAddress,
+    address _qiAddress,
+    address _quickSwapRouterAddress,
+    address _qiDaoFarmAddress,
+    uint256 _qiDaoPoolId
   ) {
     // Stablecoins
-    USDC_ADDRESS = usdcAddress;
-    MAI_ADDRESS = maiAddress;
+    usdcAddress = _usdcAddress;
+    maiAddress = _maiAddress;
 
     // LP USDC/MAI Address
-    LP_ADDRESS = lpAddress;
+    lpAddress = _lpAddress;
 
     // Router
-    QUICKSWAP_ROUTER_ADDRESS = quickswapRouterAddress;
+    quickSwapRouterAddress = _quickSwapRouterAddress;
 
     // QiDao
-    QIDAO_FARM_ADDRESS = qidaoFarmAddress;
-    QIDAO_POOL_ID = qidaoPoolId;
-    QI_ADDRESS = qiAddress;
+    qiDaoFarmAddress = _qiDaoFarmAddress;
+    qiDaoPoolId = _qiDaoPoolId;
+    qiAddress = _qiAddress;
   }
 
   // PENDING
@@ -82,7 +82,7 @@ contract Migrator is IMigrator, ReentrancyGuard {
     // uint256 amountToSwap = _calculateSwapInAmount(usdcReserves, usdc);
     // uint256 usdcAmount = usdc - amountToSwap;
     // uint256 lpAmount = usdcAmount.mul(10e18).div(usdcReserves);
-    // uint256 markupFee = lpAmount.mul(markup - swapFee).div(10**MARKUP_DECIMALS); // Calculate fee to substract
+    // uint256 markupFee = lpAmount.mul(markup - swapFee).div(10**markupDecimals); // Calculate fee to substract
     // lpAmount = lpAmount.sub(markupFee); // remove 5% fee
     // // Compute %
     // uint256 ratio = lpAmount.mul(10e8).div(stakedAmount);
