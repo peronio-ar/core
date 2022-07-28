@@ -37,7 +37,6 @@ library Babylonian {
 }
 
 contract Migrator is IMigrator, ReentrancyGuard {
-  using SafeMath for uint256;
   using SafeERC20 for IERC20;
 
   // USDC Token Address
@@ -128,9 +127,9 @@ contract Migrator is IMigrator, ReentrancyGuard {
       reserveIn > 0 && reserveOut > 0,
       "UniswapV2Library: INSUFFICIENT_LIQUIDITY"
     );
-    uint256 amountInWithFee = amountIn.mul(997);
-    uint256 numerator = amountInWithFee.mul(reserveOut);
-    uint256 denominator = reserveIn.mul(1000).add(amountInWithFee);
+    uint256 amountInWithFee = amountIn * 997;
+    uint256 numerator = amountInWithFee * reserveOut;
+    uint256 denominator = (reserveIn * 1000) + amountInWithFee;
     amountOut = numerator / denominator;
   }
 }
