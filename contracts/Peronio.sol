@@ -17,33 +17,13 @@ import { IFarm } from "./qidao/IFarm.sol";
 import { IUniswapV2Router02 } from "./uniswap/interfaces/IUniswapV2Router02.sol";
 import { IUniswapV2Pair } from "./uniswap/interfaces/IUniswapV2Pair.sol";
 
+// Needed for Babylonian square-root
+import { sqrt256 } from "./Utils.sol";
 
 // Interface
 import { IPeronio } from "./IPeronio.sol";
 
 import { console } from "hardhat/console.sol";
-library Babylonian
-{
-    function sqrt(
-        uint256 y
-    )
-        internal
-        pure
-        returns (uint256 z)
-    {
-        if (y > 3) {
-            z = y;
-            uint256 x = y / 2 + 1;
-            while (x < z) {
-                (z, x) = (x, (y / x + x) / 2);
-            }
-        } else if (y != 0) {
-            z = 1;
-        } else {
-            z = 0;
-        }
-    }
-}
 
 
 contract Peronio is
@@ -699,7 +679,7 @@ contract Peronio is
         returns (uint256 amount)
     {
         return
-            (Babylonian.sqrt(
+            (sqrt256(
                 reserveIn * ((userIn * 3988000) + (reserveIn * 3988009))
             ) - (reserveIn * 1997)) / 1994;
     }
