@@ -92,14 +92,14 @@
 //       ethers.utils.formatUnits(collateralRatio, 6)
 //     );
 
-//     const usdtAmount = ethers.utils
+//     const usdcAmount = ethers.utils
 //       .parseUnits(peAmount, 6)
 //       .mul(collateralRatio)
 //       .div(ethers.BigNumber.from(Math.pow(10, 6)).toString());
 
 //     console.info(
-//       "USDT amount to receive ",
-//       ethers.utils.formatUnits(usdtAmount, 6)
+//       "USDC amount to receive ",
+//       ethers.utils.formatUnits(usdcAmount, 6)
 //     );
 
 //     console.info(`Approving PE ${peAmount}...`);

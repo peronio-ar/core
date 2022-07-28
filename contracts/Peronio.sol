@@ -124,7 +124,7 @@ contract Peronio is
         require(!initialized, "Contract already initialized");
         initialized = true;
 
-        // Get USDT from user
+        // Get USDC from user
         IERC20(USDC_ADDRESS).safeTransferFrom(_msgSender(), address(this), usdcAmount);
 
         // Unlmited ERC20 approval for Router
@@ -171,7 +171,7 @@ contract Peronio is
         // Gets current staked LP Tokens
         uint256 stakedAmount = _stakedBalance();
 
-        // Transfer Collateral Token (USDT) to this contract
+        // Transfer Collateral Token (USDC) to this contract
         IERC20(USDC_ADDRESS).safeTransferFrom(_msgSender(), address(this), usdcAmount); // Changed
 
         // Zaps USDC directly into MAI/USDC Vault
@@ -216,7 +216,7 @@ contract Peronio is
         // Swap MAI into USDC
         usdcTotal = usdcAmount + _swapMAItoUSDC(maiAmount);
 
-        // Transfer back Collateral Token (USDT) the user
+        // Transfer back Collateral Token (USDC) the user
         IERC20(USDC_ADDRESS).safeTransfer(to, usdcTotal);
 
         emit Withdrawal(_msgSender(), usdcTotal, peAmount);
