@@ -49,40 +49,40 @@ describe("Peronio", function () {
       await contract.deployed();
     });
 
-    it("should return correct USDC_ADDRESS", async function () {
-      expect(await contract.USDC_ADDRESS()).to.equal(
+    it("should return correct usdcAddress", async function () {
+      expect(await contract.usdcAddress()).to.equal(
         peronioConstructor.usdcAddress
       );
     });
 
-    it("should return correct MAI_ADDRESS", async function () {
-      expect(await contract.MAI_ADDRESS()).to.equal(
+    it("should return correct maiAddress", async function () {
+      expect(await contract.maiAddress()).to.equal(
         peronioConstructor.maiAddress
       );
     });
 
-    it("should return correct LP_ADDRESS", async function () {
-      expect(await contract.LP_ADDRESS()).to.equal(peronioConstructor.lpAddress);
+    it("should return correct lpAddress", async function () {
+      expect(await contract.lpAddress()).to.equal(peronioConstructor.lpAddress);
     });
 
-    it("should return correct QUICKSWAP_ROUTER_ADDRESS", async function () {
-      expect(await contract.QUICKSWAP_ROUTER_ADDRESS()).to.equal(
+    it("should return correct quickSwapRouterAddress", async function () {
+      expect(await contract.quickSwapRouterAddress()).to.equal(
         peronioConstructor.quickswapRouterAddress
       );
     });
 
-    it("should return correct QIDAO_FARM_ADDRESS", async function () {
-      expect(await contract.QIDAO_FARM_ADDRESS()).to.equal(
+    it("should return correct qiDaoFarmAddress", async function () {
+      expect(await contract.qiDaoFarmAddress()).to.equal(
         peronioConstructor.qiFarmAddress
       );
     });
 
-    it("should return correct QI_ADDRESS", async function () {
-      expect(await contract.QI_ADDRESS()).to.equal(peronioConstructor.qiAddress);
+    it("should return correct qiAddress", async function () {
+      expect(await contract.qiAddress()).to.equal(peronioConstructor.qiAddress);
     });
 
-    it("should return correct QIDAO_POOL_ID", async function () {
-      expect(await contract.QIDAO_POOL_ID()).to.equal(
+    it("should return correct qiDaoPoolId", async function () {
+      expect(await contract.qiDaoPoolId()).to.equal(
         peronioConstructor.qiPoolId
       );
     });
@@ -240,8 +240,8 @@ describe("Peronio", function () {
   });
 
   describe("Markup", () => {
-    it("should return 5 for MARKUP_DECIMALS", async function () {
-      expect(await contract.MARKUP_DECIMALS()).to.equal(5);
+    it("should return 5 for markupDecimals", async function () {
+      expect(await contract.markupDecimals()).to.equal(5);
     });
 
     it("should return 5000 for markup", async function () {

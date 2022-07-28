@@ -2,22 +2,22 @@
 pragma solidity ^0.8.2;
 
 interface IPeronio {
-    function USDC_ADDRESS() external view returns (address usdcAddress);  // solhint-disable-line func-name-mixedcase
+    function usdcAddress() external view returns (address);
 
-    function MAI_ADDRESS() external view returns (address maiAddress);  // solhint-disable-line func-name-mixedcase
+    function maiAddress() external view returns (address);
 
-    function LP_ADDRESS() external view returns (address lpAddress);  // solhint-disable-line func-name-mixedcase
+    function lpAddress() external view returns (address);
 
-    function QI_ADDRESS() external view returns (address qiAddress);  // solhint-disable-line func-name-mixedcase
+    function qiAddress() external view returns (address);
 
-    function QUICKSWAP_ROUTER_ADDRESS() external view returns (address quickSwapRouterAddress);  // solhint-disable-line func-name-mixedcase
+    function quickSwapRouterAddress() external view returns (address);
 
-    function QIDAO_FARM_ADDRESS() external view returns (address qiDaoFarmAddress);  // solhint-disable-line func-name-mixedcase
+    function qiDaoFarmAddress() external view returns (address);
 
-    function QIDAO_POOL_ID() external view returns (uint256 qiDaoPoolId);  // solhint-disable-line func-name-mixedcase
+    function qiDaoPoolId() external view returns (uint256);
 
     // Markup
-    function MARKUP_DECIMALS() external view returns (uint8 decimals_);  // solhint-disable-line func-name-mixedcase
+    function markupDecimals() external view returns (uint8);
 
     function markup() external view returns (uint256 markup_);
 

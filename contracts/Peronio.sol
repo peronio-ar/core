@@ -37,24 +37,24 @@ contract Peronio is
     using SafeERC20 for IERC20;
 
     // USDC Token Address
-    address public immutable override USDC_ADDRESS;  // solhint-disable-line var-name-mixedcase
+    address public immutable override usdcAddress;
     // MAI Token Address
-    address public immutable override MAI_ADDRESS;  // solhint-disable-line var-name-mixedcase
+    address public immutable override maiAddress;
     // LP USDC/MAI Address from QuickSwap
-    address public immutable override LP_ADDRESS;  // solhint-disable-line var-name-mixedcase
+    address public immutable override lpAddress;
     // QI Token Address
-    address public immutable override QI_ADDRESS;  // solhint-disable-line var-name-mixedcase
+    address public immutable override qiAddress;
 
     // QuickSwap Router
-    address public immutable override QUICKSWAP_ROUTER_ADDRESS;  // solhint-disable-line var-name-mixedcase
+    address public immutable override quickSwapRouterAddress;
 
     // QiDao Farm
-    address public immutable override QIDAO_FARM_ADDRESS;  // solhint-disable-line var-name-mixedcase
+    address public immutable override qiDaoFarmAddress;
     // QiDao Pool ID
-    uint256 public immutable override QIDAO_POOL_ID;  // solhint-disable-line var-name-mixedcase
+    uint256 public immutable override qiDaoPoolId;
 
     // Markup
-    uint8 public constant override MARKUP_DECIMALS = 5;
+    uint8 public immutable override markupDecimals;
     uint256 public override markup = 5000; // 5.00%
     uint256 public override swapFee = 150; // 0.15%
 
@@ -68,31 +68,34 @@ contract Peronio is
     constructor(
         string memory name,
         string memory symbol,
-        address usdcAddress,
-        address maiAddress,
-        address lpAddress,
-        address qiAddress,
-        address quickswapRouterAddress,
-        address qidaoFarmAddress,
-        uint256 qidaoPoolId
+        address _usdcAddress,
+        address _maiAddress,
+        address _lpAddress,
+        address _qiAddress,
+        address _quickSwapRouterAddress,
+        address _qiDaoFarmAddress,
+        uint256 _qiDaoPoolId
     )
         ERC20(name, symbol)
         ERC20Permit(name)
     {
         // Stablecoins
-        USDC_ADDRESS = usdcAddress;
-        MAI_ADDRESS = maiAddress;
+        usdcAddress = _usdcAddress;
+        maiAddress = _maiAddress;
 
         // LP USDC/MAI Address
-        LP_ADDRESS = lpAddress;
+        lpAddress = _lpAddress;
 
         // Router
-        QUICKSWAP_ROUTER_ADDRESS = quickswapRouterAddress;
+        quickSwapRouterAddress = _quickSwapRouterAddress;
 
         // QiDao
-        QIDAO_FARM_ADDRESS = qidaoFarmAddress;
-        QIDAO_POOL_ID = qidaoPoolId;
-        QI_ADDRESS = qiAddress;
+        qiDaoFarmAddress = _qiDaoFarmAddress;
+        qiDaoPoolId = _qiDaoPoolId;
+        qiAddress = _qiAddress;
+
+        // Markup
+        markupDecimals = 5;
 
         // Grant roles
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
@@ -125,13 +128,13 @@ contract Peronio is
         initialized = true;
 
         // Get USDC from user
-        IERC20(USDC_ADDRESS).safeTransferFrom(_msgSender(), address(this), usdcAmount);
+        IERC20(usdcAddress).safeTransferFrom(_msgSender(), address(this), usdcAmount);
 
         // Unlmited ERC20 approval for Router
-        IERC20( MAI_ADDRESS).approve(QUICKSWAP_ROUTER_ADDRESS, type(uint256).max);
-        IERC20(USDC_ADDRESS).approve(QUICKSWAP_ROUTER_ADDRESS, type(uint256).max);
-        IERC20(  LP_ADDRESS).approve(QUICKSWAP_ROUTER_ADDRESS, type(uint256).max);
-        IERC20(  QI_ADDRESS).approve(QUICKSWAP_ROUTER_ADDRESS, type(uint256).max);
+        IERC20(maiAddress).approve(quickSwapRouterAddress, type(uint256).max);
+        IERC20(usdcAddress).approve(quickSwapRouterAddress, type(uint256).max);
+        IERC20(lpAddress).approve(quickSwapRouterAddress, type(uint256).max);
+        IERC20(qiAddress).approve(quickSwapRouterAddress, type(uint256).max);
 
         // Zaps into MAI/USDC LP
         _zapIn(usdcAmount);
@@ -172,13 +175,13 @@ contract Peronio is
         uint256 stakedAmount = _stakedBalance();
 
         // Transfer Collateral Token (USDC) to this contract
-        IERC20(USDC_ADDRESS).safeTransferFrom(_msgSender(), address(this), usdcAmount); // Changed
+        IERC20(usdcAddress).safeTransferFrom(_msgSender(), address(this), usdcAmount); // Changed
 
         // Zaps USDC directly into MAI/USDC Vault
         uint256 lpAmount = _zapIn(usdcAmount);
 
         // Fee - Swap fee (+0.15% positive bonus)
-        uint256 markupFee = (lpAmount * (markup - swapFee)) / 10**MARKUP_DECIMALS; // Calculate fee to substract
+        uint256 markupFee = (lpAmount * (markup - swapFee)) / 10**markupDecimals; // Calculate fee to substract
         lpAmount -= markupFee; // remove 5% fee
 
         // Compute %
@@ -211,13 +214,13 @@ contract Peronio is
 
         (usdcAmount, ) = _zapOut(lpAmount);
 
-        uint256 maiAmount = IERC20(MAI_ADDRESS).balanceOf(address(this));
+        uint256 maiAmount = IERC20(maiAddress).balanceOf(address(this));
 
         // Swap MAI into USDC
         usdcTotal = usdcAmount + _swapMAItoUSDC(maiAmount);
 
         // Transfer back Collateral Token (USDC) the user
-        IERC20(USDC_ADDRESS).safeTransfer(to, usdcTotal);
+        IERC20(usdcAddress).safeTransfer(to, usdcTotal);
 
         emit Withdrawal(_msgSender(), usdcTotal, peAmount);
     }
@@ -240,7 +243,7 @@ contract Peronio is
         _unstakeLP(lpAmount);
 
         // Transfer LP to user
-        IERC20(LP_ADDRESS).safeTransfer(to, lpAmount);
+        IERC20(lpAddress).safeTransfer(to, lpAmount);
     }
 
     // Claim QI rewards from Farm
@@ -249,7 +252,7 @@ contract Peronio is
         override
         onlyRole(REWARDS_ROLE)
     {
-        IFarm(QIDAO_FARM_ADDRESS).deposit(QIDAO_POOL_ID, 0);
+        IFarm(qiDaoFarmAddress).deposit(qiDaoPoolId, 0);
     }
 
     // Reinvest the QI into the Farm
@@ -259,12 +262,12 @@ contract Peronio is
         onlyRole(REWARDS_ROLE)
         returns (uint256 usdcAmount, uint256 lpAmount)
     {
-        uint256 amount = IERC20(QI_ADDRESS).balanceOf(address(this));
+        uint256 amount = IERC20(qiAddress).balanceOf(address(this));
         address[] memory path = new address[](2);
-        path[0] = QI_ADDRESS;
-        path[1] = USDC_ADDRESS;
+        path[0] = qiAddress;
+        path[1] = usdcAddress;
 
-        IUniswapV2Router02(QUICKSWAP_ROUTER_ADDRESS).swapExactTokensForTokens(
+        IUniswapV2Router02(quickSwapRouterAddress).swapExactTokensForTokens(
             amount,
             1,
             path,
@@ -272,7 +275,7 @@ contract Peronio is
             block.timestamp + 3600
         );
         // Sweep all remaining USDC in the contract
-        usdcAmount = IERC20(USDC_ADDRESS).balanceOf(address(this));
+        usdcAmount = IERC20(usdcAddress).balanceOf(address(this));
         lpAmount = _zapIn(usdcAmount);
 
         emit CompoundRewards(amount, usdcAmount, lpAmount);
@@ -325,7 +328,7 @@ contract Peronio is
         returns (uint256 price)
     {
         uint256 basePrice = _collateralRatio();
-        uint256 fee = (basePrice * markup) / 10**MARKUP_DECIMALS;
+        uint256 fee = (basePrice * markup) / 10**markupDecimals;
         return basePrice + fee;
     }
 
@@ -381,16 +384,16 @@ contract Peronio is
 
         console.log("usdcAmount", usdcAmount);
 
-        console.log("totalSupply before", IERC20(LP_ADDRESS).totalSupply());
+        console.log("totalSupply before", IERC20(lpAddress).totalSupply());
 
-        uint256 lpAmount = (usdcAmount * IERC20(LP_ADDRESS).totalSupply()) / (usdcReserves + amountToSwap);
-        uint256 lpAmount2 = (maiAmount * IERC20(LP_ADDRESS).totalSupply()) / (maiReserves - maiAmount);
+        uint256 lpAmount = (usdcAmount * IERC20(lpAddress).totalSupply()) / (usdcReserves + amountToSwap);
+        uint256 lpAmount2 = (maiAmount * IERC20(lpAddress).totalSupply()) / (maiReserves - maiAmount);
 
         console.log("lpAmount", lpAmount);
 
         console.log("lpAmount2", lpAmount2);
 
-        uint256 markupFee = (lpAmount * (markup - swapFee)) / 10**MARKUP_DECIMALS; // Calculate fee to substract
+        uint256 markupFee = (lpAmount * (markup - swapFee)) / 10**markupDecimals; // Calculate fee to substract
         lpAmount = lpAmount - markupFee; // remove 5% fee
 
         // Compute %
@@ -452,8 +455,8 @@ contract Peronio is
     {
         uint112 reserve0;
         uint112 reserve1;
-        (reserve0, reserve1, ) = IUniswapV2Pair(LP_ADDRESS).getReserves();
-        (usdcReserves, maiReserves) = USDC_ADDRESS < MAI_ADDRESS
+        (reserve0, reserve1, ) = IUniswapV2Pair(lpAddress).getReserves();
+        (usdcReserves, maiReserves) = usdcAddress < maiAddress
             ? (reserve0, reserve1)
             : (reserve1, reserve0);
     }
@@ -466,7 +469,7 @@ contract Peronio is
     {
         uint256 lpAmount = _stakedBalance();
         // Add 18 precision decimals
-        uint256 ratio = (lpAmount * 10e18) / IERC20(LP_ADDRESS).totalSupply();
+        uint256 ratio = (lpAmount * 10e18) / IERC20(lpAddress).totalSupply();
         uint112 usdcReserves;
         uint112 maiReserves;
 
@@ -483,7 +486,7 @@ contract Peronio is
         view
         returns (uint256 lpAmount)
     {
-        return IFarm(QIDAO_FARM_ADDRESS).deposited(QIDAO_POOL_ID, address(this));
+        return IFarm(qiDaoFarmAddress).deposited(qiDaoPoolId, address(this));
     }
 
     // Zaps USDC into MAI/USDC Pool and mint into QiDao Farm
@@ -499,11 +502,11 @@ contract Peronio is
 
         (usdcAmount, maiAmount) = _splitUSDC(amount);
 
-        console.log("totalSupply before", IERC20(LP_ADDRESS).totalSupply());
+        console.log("totalSupply before", IERC20(lpAddress).totalSupply());
 
         lpAmount = _addLiquidity(usdcAmount, maiAmount);
 
-        console.log("totalSupply after", IERC20(LP_ADDRESS).totalSupply());
+        console.log("totalSupply after", IERC20(lpAddress).totalSupply());
 
         console.log("lpAmount", lpAmount);
 
@@ -532,9 +535,9 @@ contract Peronio is
         internal
         returns (uint256 lpAmount)
     {
-        (, , lpAmount) = IUniswapV2Router02(QUICKSWAP_ROUTER_ADDRESS).addLiquidity(
-            USDC_ADDRESS,
-            MAI_ADDRESS,
+        (, , lpAmount) = IUniswapV2Router02(quickSwapRouterAddress).addLiquidity(
+            usdcAddress,
+            maiAddress,
             usdcAmount,
             maiAmount,
             1,
@@ -551,10 +554,10 @@ contract Peronio is
         internal
         returns (uint256 usdcAmount, uint256 maiAmount)
     {
-        (usdcAmount, maiAmount) = IUniswapV2Router02(QUICKSWAP_ROUTER_ADDRESS)
+        (usdcAmount, maiAmount) = IUniswapV2Router02(quickSwapRouterAddress)
             .removeLiquidity(
-                USDC_ADDRESS,
-                MAI_ADDRESS,
+                usdcAddress,
+                maiAddress,
                 lpAmount,
                 1,
                 1,
@@ -571,10 +574,10 @@ contract Peronio is
         returns (uint256 usdcAmount)
     {
         address[] memory path = new address[](2);
-        path[0] = MAI_ADDRESS;
-        path[1] = USDC_ADDRESS;
+        path[0] = maiAddress;
+        path[1] = usdcAddress;
 
-        uint256[] memory amounts = IUniswapV2Router02(QUICKSWAP_ROUTER_ADDRESS)
+        uint256[] memory amounts = IUniswapV2Router02(quickSwapRouterAddress)
             .swapExactTokensForTokens(
                 amount,
                 1,
@@ -600,10 +603,10 @@ contract Peronio is
         require(amountToSwap > 0, "Nothing to swap");
 
         address[] memory path = new address[](2);
-        path[0] = USDC_ADDRESS;
-        path[1] = MAI_ADDRESS;
+        path[0] = usdcAddress;
+        path[1] = maiAddress;
 
-        uint256[] memory amounts = IUniswapV2Router02(QUICKSWAP_ROUTER_ADDRESS)
+        uint256[] memory amounts = IUniswapV2Router02(quickSwapRouterAddress)
             .swapExactTokensForTokens(
                 amountToSwap,
                 1,
@@ -624,10 +627,10 @@ contract Peronio is
         internal
     {
         // Approve LP Tokens for QiDao Farm
-        IERC20(LP_ADDRESS).approve(QIDAO_FARM_ADDRESS, lpAmount);
+        IERC20(lpAddress).approve(qiDaoFarmAddress, lpAmount);
 
         // Deposit LP Tokens into Farm
-        IFarm(QIDAO_FARM_ADDRESS).deposit(QIDAO_POOL_ID, lpAmount);
+        IFarm(qiDaoFarmAddress).deposit(qiDaoPoolId, lpAmount);
     }
 
     // Unstake LP tokens (MAI/USDC) into QiDAO Farm
@@ -637,7 +640,7 @@ contract Peronio is
         internal
     {
         // Deposit LP Tokens into Farm
-        IFarm(QIDAO_FARM_ADDRESS).withdraw(QIDAO_POOL_ID, lpAmount);
+        IFarm(qiDaoFarmAddress).withdraw(qiDaoPoolId, lpAmount);
     }
 
     // Returns LP Balance
@@ -647,7 +650,7 @@ contract Peronio is
         returns (uint256 lpAmount)
     {
         // Get current LP Balance
-        lpAmount = IERC20(LP_ADDRESS).balanceOf(address(this));
+        lpAmount = IERC20(lpAddress).balanceOf(address(this));
     }
 
     // Returns pending rewards (QI) amount from Mai Farm
@@ -657,7 +660,7 @@ contract Peronio is
         returns (uint256 amount)
     {
         // Get rewards on Farm
-        amount = IFarm(QIDAO_FARM_ADDRESS).pending(QIDAO_POOL_ID, address(this));
+        amount = IFarm(qiDaoFarmAddress).pending(qiDaoPoolId, address(this));
     }
 
     // Returns QI Balance in the contract
@@ -667,7 +670,7 @@ contract Peronio is
         returns (uint256 amount)
     {
         // Get QI Dao balanced minted
-        amount = IERC20(QI_ADDRESS).balanceOf(address(this));
+        amount = IERC20(qiAddress).balanceOf(address(this));
     }
 
     function _calculateSwapInAmount(
