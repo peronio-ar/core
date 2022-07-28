@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 
-import "./IPeronio.sol";
-import "@openzeppelin/contracts_latest/access/Ownable.sol";
+import { IPeronio } from "./IPeronio.sol";
+import { Ownable } from "@openzeppelin/contracts_latest/access/Ownable.sol";
 
 
 contract AutoCompounder is

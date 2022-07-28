@@ -2,47 +2,28 @@
 pragma solidity ^0.8.2;
 
 // OpenZepellin imports
-import "@openzeppelin/contracts_latest/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts_latest/access/AccessControl.sol";
-import "@openzeppelin/contracts_latest/token/ERC20/extensions/draft-ERC20Permit.sol";
-import "@openzeppelin/contracts_latest/token/ERC20/extensions/ERC20Burnable.sol";
-import "@openzeppelin/contracts_latest/security/ReentrancyGuard.sol";
+import { ERC20 } from "@openzeppelin/contracts_latest/token/ERC20/ERC20.sol";
+import { IERC20 } from "@openzeppelin/contracts_latest/token/ERC20/IERC20.sol";
+import { SafeERC20 } from "@openzeppelin/contracts_latest/token/ERC20/utils/SafeERC20.sol";
+import { AccessControl } from "@openzeppelin/contracts_latest/access/AccessControl.sol";
+import { ERC20Permit } from "@openzeppelin/contracts_latest/token/ERC20/extensions/draft-ERC20Permit.sol";
+import { ERC20Burnable } from "@openzeppelin/contracts_latest/token/ERC20/extensions/ERC20Burnable.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts_latest/security/ReentrancyGuard.sol";
 
 // QiDao
-import "./qidao/IFarm.sol";
+import { IFarm } from "./qidao/IFarm.sol";
 
 // UniSwap
-import "./uniswap/interfaces/IUniswapV2Router02.sol";
-import "./uniswap/interfaces/IUniswapV2Pair.sol";
+import { IUniswapV2Router02 } from "./uniswap/interfaces/IUniswapV2Router02.sol";
+import { IUniswapV2Pair } from "./uniswap/interfaces/IUniswapV2Pair.sol";
+
+// Needed for Babylonian square-root
+import { sqrt256 } from "./Utils.sol";
 
 // Interface
-import "./IPeronio.sol";
+import { IPeronio } from "./IPeronio.sol";
 
-import "hardhat/console.sol";
-
-
-library Babylonian
-{
-    function sqrt(
-        uint256 y
-    )
-        internal
-        pure
-        returns (uint256 z)
-    {
-        if (y > 3) {
-            z = y;
-            uint256 x = y / 2 + 1;
-            while (x < z) {
-                (z, x) = (x, (y / x + x) / 2);
-            }
-        } else if (y != 0) {
-            z = 1;
-        } else {
-            z = 0;
-        }
-    }
-}
+import { console } from "hardhat/console.sol";
 
 
 contract Peronio is
@@ -698,7 +679,7 @@ contract Peronio is
         returns (uint256 amount)
     {
         return
-            (Babylonian.sqrt(
+            (sqrt256(
                 reserveIn * ((userIn * 3988000) + (reserveIn * 3988009))
             ) - (reserveIn * 1997)) / 1994;
     }

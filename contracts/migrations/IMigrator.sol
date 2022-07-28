@@ -20,8 +20,5 @@ interface IMigrator {
   // Methods
   function quoteV1(uint256 pe) external view returns (uint256 usdc, uint256 p);
 
-  function migrateV1(uint256 pe)
-    external
-    view
-    returns (uint256 usdc, uint256 p);
+  function migrateV1(uint256 pe) external view returns (uint256 usdc, uint256 p);
 }
