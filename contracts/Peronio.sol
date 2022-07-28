@@ -2,25 +2,26 @@
 pragma solidity ^0.8.2;
 
 // OpenZepellin imports
-import "@openzeppelin/contracts_latest/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts_latest/access/AccessControl.sol";
-import "@openzeppelin/contracts_latest/token/ERC20/extensions/draft-ERC20Permit.sol";
-import "@openzeppelin/contracts_latest/token/ERC20/extensions/ERC20Burnable.sol";
-import "@openzeppelin/contracts_latest/security/ReentrancyGuard.sol";
+import { ERC20 } from "@openzeppelin/contracts_latest/token/ERC20/ERC20.sol";
+import { IERC20 } from "@openzeppelin/contracts_latest/token/ERC20/IERC20.sol";
+import { SafeERC20 } from "@openzeppelin/contracts_latest/token/ERC20/utils/SafeERC20.sol";
+import { AccessControl } from "@openzeppelin/contracts_latest/access/AccessControl.sol";
+import { ERC20Permit } from "@openzeppelin/contracts_latest/token/ERC20/extensions/draft-ERC20Permit.sol";
+import { ERC20Burnable } from "@openzeppelin/contracts_latest/token/ERC20/extensions/ERC20Burnable.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts_latest/security/ReentrancyGuard.sol";
 
 // QiDao
-import "./qidao/IFarm.sol";
+import { IFarm } from "./qidao/IFarm.sol";
 
 // UniSwap
-import "./uniswap/interfaces/IUniswapV2Router02.sol";
-import "./uniswap/interfaces/IUniswapV2Pair.sol";
+import { IUniswapV2Router02 } from "./uniswap/interfaces/IUniswapV2Router02.sol";
+import { IUniswapV2Pair } from "./uniswap/interfaces/IUniswapV2Pair.sol";
+
 
 // Interface
-import "./IPeronio.sol";
+import { IPeronio } from "./IPeronio.sol";
 
-import "hardhat/console.sol";
-
-
+import { console } from "hardhat/console.sol";
 library Babylonian
 {
     function sqrt(
