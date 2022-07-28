@@ -2,7 +2,7 @@
 import { keccak256 } from "ethers/lib/utils";
 import hre, { ethers } from "hardhat";
 
-import { Peronio } from "../typechain";
+import { Peronio } from "../typechain-types";
 
 module.exports = async () => {
   console.info("Deploying Uniswap");
