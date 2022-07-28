@@ -28,74 +28,74 @@ const TESTER_PRIVATE_KEY = process.env.TESTER_PRIVATE_KEY ?? "";
 const ACCOUNTS = [PRIVATE_KEY, TESTER_PRIVATE_KEY];
 
 const config: HardhatUserConfig = {
-  defaultNetwork: "localhost",
-  solidity: {
-    compilers: [
-      {
-        version: "0.8.4",
-        settings: {
-          optimizer: {
-            enabled: true,
-            runs: 200,
-          },
+    defaultNetwork: "localhost",
+    solidity: {
+        compilers: [
+            {
+                version: "0.8.4",
+                settings: {
+                    optimizer: {
+                        enabled: true,
+                        runs: 200,
+                    },
+                },
+            },
+            {
+                version: "0.6.12",
+                settings: {
+                    optimizer: {
+                        enabled: true,
+                        runs: 200,
+                    },
+                },
+            },
+        ],
+    },
+    networks: {
+        hardhat: {
+            chainId: 137,
+            forking: {
+                url: MAINNET_API_URL,
+                blockNumber: 30908100,
+            },
+            mining: {
+                auto: true,
+                // interval: 1000,
+            },
         },
-      },
-      {
-        version: "0.6.12",
-        settings: {
-          optimizer: {
-            enabled: true,
-            runs: 200,
-          },
+        localhost: {
+            chainId: 137,
+            url: "http://localhost:8545",
+            accounts: ACCOUNTS,
         },
-      },
-    ],
-  },
-  networks: {
-    hardhat: {
-      chainId: 137,
-      forking: {
-        url: MAINNET_API_URL,
-        blockNumber: 30908100,
-      },
-      mining: {
-        auto: true,
-        // interval: 1000,
-      },
+        matic: {
+            chainId: 137,
+            url: MAINNET_API_URL,
+            gasPrice: gasPrice * 10 ** 9,
+            accounts: ACCOUNTS,
+        },
+        mumbai: {
+            chainId: 80001,
+            url: MUMBAI_API_URL,
+            gasPrice: gasPrice * 10 ** 9,
+            accounts: ACCOUNTS,
+        },
     },
-    localhost: {
-      chainId: 137,
-      url: "http://localhost:8545",
-      accounts: ACCOUNTS,
+    gasReporter: {
+        enabled: process.env.REPORT_GAS !== undefined,
+        currency: "USD",
     },
-    matic: {
-      chainId: 137,
-      url: MAINNET_API_URL,
-      gasPrice: gasPrice * 10 ** 9,
-      accounts: ACCOUNTS,
+    etherscan: {
+        apiKey: ETHERSCAN_API_KEY,
     },
-    mumbai: {
-      chainId: 80001,
-      url: MUMBAI_API_URL,
-      gasPrice: gasPrice * 10 ** 9,
-      accounts: ACCOUNTS,
+    namedAccounts: {
+        deployer: {
+            default: 0, // here this will by default take the first account as deployer
+        },
+        tester: {
+            default: 1,
+        },
     },
-  },
-  gasReporter: {
-    enabled: process.env.REPORT_GAS !== undefined,
-    currency: "USD",
-  },
-  etherscan: {
-    apiKey: ETHERSCAN_API_KEY,
-  },
-  namedAccounts: {
-    deployer: {
-      default: 0, // here this will by default take the first account as deployer
-    },
-    tester: {
-      default: 1,
-    },
-  },
 };
 
 export default config;
