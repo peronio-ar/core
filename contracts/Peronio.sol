@@ -63,7 +63,7 @@ contract Peronio is
     bool public override initialized;
 
     // Roles
-    bytes32 public constant override  MARKUP_ROLE = keccak256("MARKUP_ROLE");
+    bytes32 public constant override MARKUP_ROLE = keccak256("MARKUP_ROLE");
     bytes32 public constant override REWARDS_ROLE = keccak256("REWARDS_ROLE");
 
     constructor(
@@ -112,7 +112,7 @@ contract Peronio is
         override(ERC20, IPeronio)
         returns (uint8 decimals_)
     {
-        return 6;
+        decimals_ = 6;
     }
 
     // Sets initial minting. Can be runned just once
@@ -289,7 +289,7 @@ contract Peronio is
         override
         returns (uint256 lpAmount)
     {
-        return _stakedBalance();
+        lpAmount = _stakedBalance();
     }
 
     // Returns current staking value in USDC
@@ -299,7 +299,7 @@ contract Peronio is
         override
         returns (uint256 usdcAmount)
     {
-        return _stakedValue();
+        usdcAmount = _stakedValue();
     }
 
     // Returns current USDC and MAI token balances in the FARM
@@ -308,7 +308,7 @@ contract Peronio is
         view
         returns (uint256 usdcAmount, uint256 maiAmount)
     {
-        return _stakedTokens();
+        (usdcAmount, maiAmount) = _stakedTokens();
     }
 
     // Gets current ratio: Total Supply / Collateral USDC Balance in vault
@@ -318,7 +318,7 @@ contract Peronio is
         override
         returns (uint256 price)
     {
-        return (this.totalSupply() * 10**decimals()) / _stakedValue();
+        price = (this.totalSupply() * 10**decimals()) / _stakedValue();
     }
 
     // Gets current ratio: collateralRatio + markup
@@ -330,7 +330,7 @@ contract Peronio is
     {
         uint256 basePrice = _collateralRatio();
         uint256 fee = (basePrice * markup) / 10**markupDecimals;
-        return basePrice + fee;
+        price = basePrice + fee;
     }
 
     // Gets current ratio: Collateral USDC Balance / Total Supply
@@ -340,7 +340,7 @@ contract Peronio is
         override
         returns (uint256 ratio)
     {
-        return _collateralRatio();
+        ratio = _collateralRatio();
     }
 
     // Fetch pending rewards (QI) from Mai Farm
@@ -360,7 +360,7 @@ contract Peronio is
         override
         returns (uint112 usdcReserves, uint112 maiReserves)
     {
-        return _getLpReserves();
+        (usdcReserves, maiReserves) = _getLpReserves();
     }
 
     // NEEDS TESTING
@@ -428,7 +428,7 @@ contract Peronio is
         view
         returns (uint256 ratio)
     {
-        return (_stakedValue() * 10**decimals()) / this.totalSupply();
+        ratio = (_stakedValue() * 10**decimals()) / totalSupply();
     }
 
     // Returns current staking value in USDC
@@ -487,7 +487,7 @@ contract Peronio is
         view
         returns (uint256 lpAmount)
     {
-        return IFarm(qiDaoFarmAddress).deposited(qiDaoPoolId, address(this));
+        lpAmount = IFarm(qiDaoFarmAddress).deposited(qiDaoPoolId, address(this));
     }
 
     // Zaps USDC into MAI/USDC Pool and mint into QiDao Farm
