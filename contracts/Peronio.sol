@@ -337,17 +337,7 @@ contract Peronio is
         returns (uint256 usdcAmount, uint256 lpAmount)
     {
         uint256 amount = IERC20(qiAddress).balanceOf(address(this));
-        address[] memory path = new address[](2);
-        path[0] = qiAddress;
-        path[1] = usdcAddress;
-
-        IUniswapV2Router02(quickSwapRouterAddress).swapExactTokensForTokens(
-            amount,
-            1,
-            path,
-            address(this),
-            block.timestamp + 3600
-        );
+        _swapTokens(qiAddress, usdcAddress, amount);
         // Sweep all remaining USDC in the contract
         usdcAmount = IERC20(usdcAddress).balanceOf(address(this));
         lpAmount = _zapIn(usdcAmount);
@@ -508,18 +498,13 @@ contract Peronio is
         internal
         returns (uint256 usdcAmount)
     {
-        uint256 halfUsdcAmount;
-        uint256 maiAmount;
-
         // Get LP tokens out of the Farm
         _unstakeLP(lpAmount);
 
-        (halfUsdcAmount, ) = _removeLiquidity(lpAmount);
-
-        maiAmount = IERC20(maiAddress).balanceOf(address(this));
+        (usdcAmount, ) = _removeLiquidity(lpAmount);
 
         // Swap MAI into USDC
-        usdcAmount = halfUsdcAmount + _swapMAItoUSDC(maiAmount);
+        usdcAmount += _swapTokens(maiAddress, usdcAddress, IERC20(maiAddress).balanceOf(address(this)));
     }
 
     // Adds liquidity into the Quickswap pool MAI/USDC
@@ -561,28 +546,6 @@ contract Peronio is
             );
     }
 
-    // Swaps MAI token into USDC on QuickSwap pool
-    function _swapMAItoUSDC(
-        uint256 amount
-    )
-        internal
-        returns (uint256 usdcAmount)
-    {
-        address[] memory path = new address[](2);
-        path[0] = maiAddress;
-        path[1] = usdcAddress;
-
-        uint256[] memory amounts = IUniswapV2Router02(quickSwapRouterAddress)
-            .swapExactTokensForTokens(
-                amount,
-                1,
-                path,
-                address(this),
-                block.timestamp + 3600
-            );
-        usdcAmount = amounts[1];
-    }
-
     // Splits USDC into USDC/MAI for Quickswap LP
     function _splitUSDC(
         uint256 amount
@@ -595,19 +558,7 @@ contract Peronio is
 
         require(amountToSwap > 0, "Nothing to swap");
 
-        address[] memory path = new address[](2);
-        path[0] = usdcAddress;
-        path[1] = maiAddress;
-
-        uint256[] memory amounts = IUniswapV2Router02(quickSwapRouterAddress)
-            .swapExactTokensForTokens(
-                amountToSwap,
-                1,
-                path,
-                address(this),
-                block.timestamp + 3600
-            );
-        maiAmount = amounts[1];
+        maiAmount = _swapTokens(usdcAddress, maiAddress, amountToSwap);
         usdcAmount = amount - amountToSwap;
     }
 
@@ -647,6 +598,30 @@ contract Peronio is
                 reserveIn * ((userIn * 3988000) + (reserveIn * 3988009))
             ) - (reserveIn * 1997)) / 1994;
     }
+
+    function _swapTokens(
+        address fromAddress,
+        address toAddress,
+        uint256 amount
+    )
+        internal
+        returns (uint256 swappedAmount)
+    {
+        address[] memory path = new address[](2);
+        path[0] = fromAddress;
+        path[1] = toAddress;
+
+        uint256[] memory amounts = IUniswapV2Router02(quickSwapRouterAddress)
+            .swapExactTokensForTokens(
+                amount,
+                1,
+                path,
+                address(this),
+                block.timestamp + 3600
+            );
+        swappedAmount = amounts[1];
+    }
+
 
     //**  UNISWAP Library Functions Below **/
     function _getAmountOut(
