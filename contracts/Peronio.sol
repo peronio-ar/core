@@ -279,14 +279,8 @@ contract Peronio is
         uint256 ratio = (peAmount * 10e8) / totalSupply();
         uint256 lpAmount = (ratio * _stakedBalance()) / 10e8;
 
-        uint256 usdcAmount;
-
-        (usdcAmount, ) = _zapOut(lpAmount);
-
-        uint256 maiAmount = IERC20(maiAddress).balanceOf(address(this));
-
         // Swap MAI into USDC
-        usdcTotal = usdcAmount + _swapMAItoUSDC(maiAmount);
+        usdcTotal = _zapOut(lpAmount);
 
         // Transfer back Collateral Token (USDC) the user
         IERC20(usdcAddress).safeTransfer(to, usdcTotal);
@@ -488,24 +482,6 @@ contract Peronio is
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     // Zaps USDC into MAI/USDC Pool and mint into QiDao Farm
     function _zapIn(
         uint256 amount
@@ -530,12 +506,20 @@ contract Peronio is
         uint256 lpAmount
     )
         internal
-        returns (uint256 usdcAmount, uint256 maiAmount)
+        returns (uint256 usdcAmount)
     {
+        uint256 halfUsdcAmount;
+        uint256 maiAmount;
+
         // Get LP tokens out of the Farm
         _unstakeLP(lpAmount);
 
-        (usdcAmount, maiAmount) = _removeLiquidity(lpAmount);
+        (halfUsdcAmount, ) = _removeLiquidity(lpAmount);
+
+        maiAmount = IERC20(maiAddress).balanceOf(address(this));
+
+        // Swap MAI into USDC
+        usdcAmount = halfUsdcAmount + _swapMAItoUSDC(maiAmount);
     }
 
     // Adds liquidity into the Quickswap pool MAI/USDC
