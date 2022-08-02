@@ -24,9 +24,6 @@ import { sqrt256 } from "./Utils.sol";
 import { IPeronio } from "./IPeronio.sol";
 
 
-import { console } from "hardhat/console.sol";
-
-
 contract Peronio is
     IPeronio,
     ERC20,
@@ -36,6 +33,10 @@ contract Peronio is
     ReentrancyGuard
 {
     using SafeERC20 for IERC20;
+
+    // Roles
+    bytes32 public constant override MARKUP_ROLE = keccak256("MARKUP_ROLE");
+    bytes32 public constant override REWARDS_ROLE = keccak256("REWARDS_ROLE");
 
     // USDC Token Address
     address public immutable override usdcAddress;
@@ -61,10 +62,6 @@ contract Peronio is
 
     // Initialization can only be run once
     bool public override initialized;
-
-    // Roles
-    bytes32 public constant override MARKUP_ROLE = keccak256("MARKUP_ROLE");
-    bytes32 public constant override REWARDS_ROLE = keccak256("REWARDS_ROLE");
 
     constructor(
         string memory name,
@@ -115,6 +112,19 @@ contract Peronio is
         decimals_ = 6;
     }
 
+    // Sets markup for minting function
+    function setMarkup(
+        uint256 newMmarkup
+    )
+        external
+        override
+        onlyRole(MARKUP_ROLE)
+        returns (uint256 prevMarkup)
+    {
+        (prevMarkup, markup) = (markup, newMmarkup);
+        emit MarkupUpdated(_msgSender(), newMmarkup);
+    }
+
     // Sets initial minting. Can be runned just once
     function initialize(
         uint256 usdcAmount,
@@ -147,16 +157,76 @@ contract Peronio is
         emit Initialized(_msgSender(), usdcAmount, startingRatio);
     }
 
-    // Sets markup for minting function
-    function setMarkup(
-        uint256 markup_
-    )
+    // Returns LP Amount staked in the QiDao Farm
+    function stakedBalance()
         external
+        view
         override
-        onlyRole(MARKUP_ROLE)
+        returns (uint256 lpAmount)
     {
-        markup = markup_;
-        emit MarkupUpdated(_msgSender(), markup_);
+        lpAmount = _stakedBalance();
+    }
+
+    // Returns current staking value in USDC
+    function stakedValue()
+        external
+        view
+        override
+        returns (uint256 usdcAmount)
+    {
+        usdcAmount = _stakedValue();
+    }
+
+    // Returns current USDC and MAI token balances in the FARM
+    function stakedTokens()
+        external
+        view
+        override
+        returns (uint256 usdcAmount, uint256 maiAmount)
+    {
+        (usdcAmount, maiAmount) = _stakedTokens();
+    }
+
+    // Gets current ratio: Total Supply / Collateral USDC Balance in vault
+    function usdcPrice()
+        external
+        view
+        override
+        returns (uint256 price)
+    {
+        price = (this.totalSupply() * 10**decimals()) / _stakedValue();
+    }
+
+    // Gets current ratio: collateralRatio + markup
+    function buyingPrice()
+        external
+        view
+        override
+        returns (uint256 price)
+    {
+        uint256 basePrice = _collateralRatio();
+        uint256 fee = (basePrice * markup) / 10**markupDecimals;
+        price = basePrice + fee;
+    }
+
+    // Gets current ratio: Collateral USDC Balance / Total Supply
+    function collateralRatio()
+        external
+        view
+        override
+        returns (uint256 ratio)
+    {
+        ratio = _collateralRatio();
+    }
+
+    // Return all QuickSwap Liquidity Pool (MAI/USDC) reserves
+    function getLpReserves()
+        external
+        view
+        override
+        returns (uint112 usdcReserves, uint112 maiReserves)
+    {
+        (usdcReserves, maiReserves) = _getLpReserves();
     }
 
     // Mints new tokens providing proportional collateral (USDC)
@@ -170,8 +240,6 @@ contract Peronio is
         nonReentrant
         returns (uint256 peAmount)
     {
-        console.log("-- mint:");
-
         // Gets current staked LP Tokens
         uint256 stakedAmount = _stakedBalance();
 
@@ -232,6 +300,7 @@ contract Peronio is
         uint256 peAmount
     )
         external
+        override
         nonReentrant
     {
         // Burn tokens
@@ -245,6 +314,16 @@ contract Peronio is
 
         // Transfer LP to user
         IERC20(lpAddress).safeTransfer(to, lpAmount);
+    }
+
+    // Fetch pending rewards (QI) from Mai Farm
+    function getPendingRewardsAmount()
+        external
+        view
+        override
+        returns (uint256 amount)
+    {
+        amount = _getPendingRewardsAmount();
     }
 
     // Claim QI rewards from Farm
@@ -282,87 +361,6 @@ contract Peronio is
         emit CompoundRewards(amount, usdcAmount, lpAmount);
     }
 
-    // Returns LP Amount staked in the Farm
-    function stakedBalance()
-        external
-        view
-        override
-        returns (uint256 lpAmount)
-    {
-        lpAmount = _stakedBalance();
-    }
-
-    // Returns current staking value in USDC
-    function stakedValue()
-        external
-        view
-        override
-        returns (uint256 usdcAmount)
-    {
-        usdcAmount = _stakedValue();
-    }
-
-    // Returns current USDC and MAI token balances in the FARM
-    function stakedTokens()
-        external
-        view
-        returns (uint256 usdcAmount, uint256 maiAmount)
-    {
-        (usdcAmount, maiAmount) = _stakedTokens();
-    }
-
-    // Gets current ratio: Total Supply / Collateral USDC Balance in vault
-    function usdcPrice()
-        external
-        view
-        override
-        returns (uint256 price)
-    {
-        price = (this.totalSupply() * 10**decimals()) / _stakedValue();
-    }
-
-    // Gets current ratio: collateralRatio + markup
-    function buyingPrice()
-        external
-        view
-        override
-        returns (uint256 price)
-    {
-        uint256 basePrice = _collateralRatio();
-        uint256 fee = (basePrice * markup) / 10**markupDecimals;
-        price = basePrice + fee;
-    }
-
-    // Gets current ratio: Collateral USDC Balance / Total Supply
-    function collateralRatio()
-        external
-        view
-        override
-        returns (uint256 ratio)
-    {
-        ratio = _collateralRatio();
-    }
-
-    // Fetch pending rewards (QI) from Mai Farm
-    function getPendingRewardsAmount()
-        external
-        view
-        override
-        returns (uint256 amount)
-    {
-        amount = _getPendingRewardsAmount();
-    }
-
-    // Return all QuickSwap Liquidity Pool (MAI/USDC) reserves
-    function getLpReserves()
-        external
-        view
-        override
-        returns (uint112 usdcReserves, uint112 maiReserves)
-    {
-        (usdcReserves, maiReserves) = _getLpReserves();
-    }
-
     // NEEDS TESTING
     function quoteIn(
         uint256 usdc
@@ -372,27 +370,14 @@ contract Peronio is
         override
         returns (uint256 pe)
     {
-        console.log("-- quoteIn:");
         uint256 stakedAmount = _stakedBalance();
-        (uint112 usdcReserves, uint112 maiReserves) = _getLpReserves(); // $$$$ remove maiReserves
+        (uint112 usdcReserves, ) = _getLpReserves(); // $$$$ remove maiReserves
 
         uint256 amountToSwap = _calculateSwapInAmount(usdcReserves, usdc);
-        console.log("amountToSwap", amountToSwap);
-
-        uint256 maiAmount = _getAmountOut(amountToSwap, usdcReserves, maiReserves);
 
         uint256 usdcAmount = usdc - amountToSwap;
 
-        console.log("usdcAmount", usdcAmount);
-
-        console.log("totalSupply before", IERC20(lpAddress).totalSupply());
-
         uint256 lpAmount = (usdcAmount * IERC20(lpAddress).totalSupply()) / (usdcReserves + amountToSwap);
-        uint256 lpAmount2 = (maiAmount * IERC20(lpAddress).totalSupply()) / (maiReserves - maiAmount);
-
-        console.log("lpAmount", lpAmount);
-
-        console.log("lpAmount2", lpAmount2);
 
         uint256 markupFee = (lpAmount * (markup - swapFee)) / 10**markupDecimals; // Calculate fee to substract
         lpAmount = lpAmount - markupFee; // remove 5% fee
@@ -422,13 +407,15 @@ contract Peronio is
         usdc = usdcAmount + _getAmountOut(maiAmount, maiReserves, usdcReserves);
     }
 
-    // Collateral USDC Balance / Total Supply
-    function _collateralRatio()
+
+
+    // Returns LP Amount staked in the QiDao Farm
+    function _stakedBalance()
         internal
         view
-        returns (uint256 ratio)
+        returns (uint256 lpAmount)
     {
-        ratio = (_stakedValue() * 10**decimals()) / totalSupply();
+        lpAmount = IFarm(qiDaoFarmAddress).deposited(qiDaoPoolId, address(this));
     }
 
     // Returns current staking value in USDC
@@ -446,20 +433,6 @@ contract Peronio is
 
         // Simulate Swap
         totalUSDC = usdcAmount + _getAmountOut(maiAmount, maiReserves, usdcReserves);
-    }
-
-    // Return all QuickSwap Liquidity Pool (MAI/USDC) reserves
-    function _getLpReserves()
-        internal
-        view
-        returns (uint112 usdcReserves, uint112 maiReserves)
-    {
-        uint112 reserve0;
-        uint112 reserve1;
-        (reserve0, reserve1, ) = IUniswapV2Pair(lpAddress).getReserves();
-        (usdcReserves, maiReserves) = usdcAddress < maiAddress
-            ? (reserve0, reserve1)
-            : (reserve1, reserve0);
     }
 
     // Returns current USDC and MAI token balances in the FARM
@@ -481,14 +454,57 @@ contract Peronio is
         maiAmount = (ratio * maiReserves) / 10e18;
     }
 
-    // Returns LP Amount staked in the QiDao Farm
-    function _stakedBalance()
+    // Collateral USDC Balance / Total Supply
+    function _collateralRatio()
         internal
         view
-        returns (uint256 lpAmount)
+        returns (uint256 ratio)
     {
-        lpAmount = IFarm(qiDaoFarmAddress).deposited(qiDaoPoolId, address(this));
+        ratio = (_stakedValue() * 10**decimals()) / totalSupply();
     }
+
+    // Return all QuickSwap Liquidity Pool (MAI/USDC) reserves
+    function _getLpReserves()
+        internal
+        view
+        returns (uint112 usdcReserves, uint112 maiReserves)
+    {
+        uint112 reserve0;
+        uint112 reserve1;
+        (reserve0, reserve1, ) = IUniswapV2Pair(lpAddress).getReserves();
+        (usdcReserves, maiReserves) = usdcAddress < maiAddress
+            ? (reserve0, reserve1)
+            : (reserve1, reserve0);
+    }
+
+    // Returns pending rewards (QI) amount from Mai Farm
+    function _getPendingRewardsAmount()
+        internal
+        view
+        returns (uint256 amount)
+    {
+        // Get rewards on Farm
+        amount = IFarm(qiDaoFarmAddress).pending(qiDaoPoolId, address(this));
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     // Zaps USDC into MAI/USDC Pool and mint into QiDao Farm
     function _zapIn(
@@ -503,13 +519,7 @@ contract Peronio is
 
         (usdcAmount, maiAmount) = _splitUSDC(amount);
 
-        console.log("totalSupply before", IERC20(lpAddress).totalSupply());
-
         lpAmount = _addLiquidity(usdcAmount, maiAmount);
-
-        console.log("totalSupply after", IERC20(lpAddress).totalSupply());
-
-        console.log("lpAmount", lpAmount);
 
         // Stake LP Tokens
         _stakeLP(lpAmount);
@@ -599,8 +609,6 @@ contract Peronio is
         (uint112 usdcReserves, ) = _getLpReserves();
         uint256 amountToSwap = _calculateSwapInAmount(usdcReserves, amount);
 
-        console.log("amountToSwap", amountToSwap);
-
         require(amountToSwap > 0, "Nothing to swap");
 
         address[] memory path = new address[](2);
@@ -617,8 +625,6 @@ contract Peronio is
             );
         maiAmount = amounts[1];
         usdcAmount = amount - amountToSwap;
-
-        console.log("usdcAmount", usdcAmount);
     }
 
     // Stake LP tokens (MAI/USDC) into QiDAO Farm
@@ -642,36 +648,6 @@ contract Peronio is
     {
         // Deposit LP Tokens into Farm
         IFarm(qiDaoFarmAddress).withdraw(qiDaoPoolId, lpAmount);
-    }
-
-    // Returns LP Balance
-    function _getLPBalanceAmount()
-        internal
-        view
-        returns (uint256 lpAmount)
-    {
-        // Get current LP Balance
-        lpAmount = IERC20(lpAddress).balanceOf(address(this));
-    }
-
-    // Returns pending rewards (QI) amount from Mai Farm
-    function _getPendingRewardsAmount()
-        internal
-        view
-        returns (uint256 amount)
-    {
-        // Get rewards on Farm
-        amount = IFarm(qiDaoFarmAddress).pending(qiDaoPoolId, address(this));
-    }
-
-    // Returns QI Balance in the contract
-    function _getRewardsAmount()
-        internal
-        view
-        returns (uint256 amount)
-    {
-        // Get QI Dao balanced minted
-        amount = IERC20(qiAddress).balanceOf(address(this));
     }
 
     function _calculateSwapInAmount(
