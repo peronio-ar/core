@@ -36,10 +36,7 @@ describe("Peronio", function () {
 
     // Load USDC Contract
     before(async () => {
-        usdcContract = await ethers.getContractAt(
-            "ERC20",
-            process.env.USDC_ADDRESS ?? ""
-        );
+        usdcContract = await ethers.getContractAt("ERC20", process.env.USDC_ADDRESS ?? "");
     });
 
     describe("Constructor variables", () => {
@@ -50,49 +47,75 @@ describe("Peronio", function () {
         });
 
         it("should return correct usdcAddress", async function () {
-            expect(await contract.usdcAddress()).to.equal(
+            expect(
+                await contract.usdcAddress()
+            ).to.equal(
                 peronioConstructor.usdcAddress
             );
         });
 
         it("should return correct maiAddress", async function () {
-            expect(await contract.maiAddress()).to.equal(
+            expect(
+                await contract.maiAddress()
+            ).to.equal(
                 peronioConstructor.maiAddress
             );
         });
 
         it("should return correct lpAddress", async function () {
-            expect(await contract.lpAddress()).to.equal(peronioConstructor.lpAddress);
+            expect(
+                await contract.lpAddress()
+            ).to.equal(
+                peronioConstructor.lpAddress
+            );
         });
 
         it("should return correct quickSwapRouterAddress", async function () {
-            expect(await contract.quickSwapRouterAddress()).to.equal(
+            expect(
+                await contract.quickSwapRouterAddress()
+            ).to.equal(
                 peronioConstructor.quickswapRouterAddress
             );
         });
 
         it("should return correct qiDaoFarmAddress", async function () {
-            expect(await contract.qiDaoFarmAddress()).to.equal(
+            expect(
+                await contract.qiDaoFarmAddress()
+            ).to.equal(
                 peronioConstructor.qiFarmAddress
             );
         });
 
         it("should return correct qiAddress", async function () {
-            expect(await contract.qiAddress()).to.equal(peronioConstructor.qiAddress);
+            expect(
+                await contract.qiAddress()
+            ).to.equal(
+                peronioConstructor.qiAddress
+            );
         });
 
         it("should return correct qiDaoPoolId", async function () {
-            expect(await contract.qiDaoPoolId()).to.equal(
+            expect(
+                await contract.qiDaoPoolId()
+            ).to.equal(
                 peronioConstructor.qiPoolId
             );
         });
 
         it("should return correct keccak256 MARKUP_ROLE", async function () {
-            expect(await contract.MARKUP_ROLE()).to.equal(MARKUP_ROLE);
+            expect(
+                await contract.MARKUP_ROLE()
+            ).to.equal(
+                MARKUP_ROLE
+            );
         });
 
         it("should return correct keccak256 REWARDS_ROLE", async function () {
-            expect(await contract.REWARDS_ROLE()).to.equal(REWARDS_ROLE);
+            expect(
+                await contract.REWARDS_ROLE()
+            ).to.equal(
+                REWARDS_ROLE
+            );
         });
     });
 
@@ -133,10 +156,18 @@ describe("Peronio", function () {
             const mintedUsdc = usdcOldBalance.sub(usdcBalance);
 
             // Should transfer usdc exactly as provided
-            expect(mintedUsdc).to.be.equal(amount);
+            expect(
+                mintedUsdc
+            ).to.equal(
+                amount
+            );
 
             // Should be quoted amount
-            expect(receivedPe).to.be.equal(quotedPe);
+            expect(
+                receivedPe
+            ).to.equal(
+                quotedPe
+            );
         });
 
         it("should withdraw PE 250", async function () {
@@ -161,14 +192,17 @@ describe("Peronio", function () {
             const subtractedPe = peOldBalance.sub(peBalance);
             const receivedUsdc = usdcBalance.sub(usdcOldBalance);
 
-            expect(subtractedPe).to.be.equal(amount);
-            expect(receivedUsdc).to.be.closeTo(
-                parseUnits("1", 6),
-                parseUnits("0.1", 6)
+            expect(
+                subtractedPe
+            ).to.equal(
+                amount
             );
-
             // Should be quoted amount
-            expect(receivedUsdc).to.be.equal(quotedUSDC);
+            expect(
+                receivedUsdc
+            ).to.equal(
+                quotedUSDC
+            );
         });
 
         it("should revert on not enough received PE", async function () {
@@ -181,7 +215,11 @@ describe("Peronio", function () {
             const minReceive = parseUnits("250", 6);
             const call = contract.mint(accounts.deployer, amount, minReceive);
 
-            expect(call).to.be.revertedWith("Minimum required not met");
+            expect(
+                call
+            ).to.be.revertedWith(
+                "Minimum required not met"
+            );
         });
     });
 
@@ -196,25 +234,29 @@ describe("Peronio", function () {
         // Initialize Peronio
         before(async () => {
             // Initialize
-            await initializePeronio(usdcContract, contract, {
-                startingRatio: 250,
-                usdcAmount,
-            });
+            await initializePeronio(usdcContract, contract, { startingRatio: 250, usdcAmount });
         });
 
         it("should return stakedBalance more than 0", async function () {
             const stakedBalance = await contract.stakedBalance();
-            expect(stakedBalance).to.be.gt(BigNumber.from(0));
+            expect(
+                stakedBalance
+            ).to.be.gt(
+                BigNumber.from(0)
+            );
         });
 
         it("should return stakedTokens close to USDC 50 and MAI 50", async function () {
             const { usdcAmount, maiAmount } = await contract.stakedTokens();
-            expect(usdcAmount).to.be.closeTo(
+            expect(
+                usdcAmount
+            ).to.be.closeTo(
                 parseUnits("50", 6),
                 parseUnits("0.5", 6)
             );
-
-            expect(maiAmount).to.be.closeTo(
+            expect(
+                maiAmount
+            ).to.be.closeTo(
                 parseUnits("50", 18),
                 parseUnits("0.5", 18)
             );
@@ -222,7 +264,9 @@ describe("Peronio", function () {
 
         it("should return stakedValue similar to 100 with 1.5% margin", async function () {
             const stakedValue = await contract.stakedValue();
-            expect(stakedValue).to.be.closeTo(
+            expect(
+                stakedValue
+            ).to.be.closeTo(
                 parseUnits("100", 6),
                 parseUnits("1.5", 6)
             );
@@ -230,28 +274,48 @@ describe("Peronio", function () {
 
         it("should return a buyingPrice near PE/USDC 0.004 (+5%)", async function () {
             const buyingPrice = await contract.buyingPrice();
-            expect(buyingPrice).to.equal(parseUnits("0.0042", 6));
+            expect(
+                buyingPrice
+            ).to.equal(
+                parseUnits("0.0042", 6)
+            );
         });
 
         it("should return a collateralRatio near PE/USDC 0.004", async function () {
             const collateralRatio = await contract.collateralRatio();
-            expect(collateralRatio).to.equal(parseUnits("0.004", 6));
+            expect(
+                collateralRatio
+            ).to.equal(
+                parseUnits("0.004", 6)
+            );
         });
     });
 
     describe("Markup", () => {
         it("should return 5 for markupDecimals", async function () {
-            expect(await contract.markupDecimals()).to.equal(5);
+            expect(
+                await contract.markupDecimals()
+            ).to.equal(
+                5
+            );
         });
 
         it("should return 5000 for markup", async function () {
-            expect(await contract.markup()).to.equal(5000);
+            expect(
+                await contract.markup()
+            ).to.equal(
+                5000
+            );
         });
 
         it("should set 20000 for markup", async function () {
             const newMarkup = 2000;
             await contract.setMarkup(newMarkup);
-            expect(await contract.markup()).to.equal(newMarkup);
+            expect(
+                await contract.markup()
+            ).to.equal(
+                newMarkup
+            );
         });
     });
 
@@ -264,7 +328,11 @@ describe("Peronio", function () {
 
         it("should return initialized=false when not initialized", async function () {
             const isInitialized = await contract.initialized();
-            expect(isInitialized).to.equal(false);
+            expect(
+                isInitialized
+            ).to.equal(
+                false
+            );
         });
 
         it("should initialize", async function () {
@@ -273,7 +341,11 @@ describe("Peronio", function () {
 
         it("should return initialized true when initialized", async function () {
             const isInitialized = await contract.initialized();
-            expect(isInitialized).to.equal(true);
+            expect(
+                isInitialized
+            ).to.equal(
+                true
+            );
         });
 
         it("should revert when trying to initialize twice", async function () {
@@ -281,7 +353,9 @@ describe("Peronio", function () {
             const initUsdcAmount = peronioInitializer.usdcAmount;
             const initRatio = peronioInitializer.startingRatio;
 
-            expect(contract.initialize(initUsdcAmount, initRatio)).to.be.revertedWith(
+            expect(
+                contract.initialize(initUsdcAmount, initRatio)
+            ).to.be.revertedWith(
                 "Contract already initialized"
             );
         });
@@ -327,18 +401,11 @@ describe("Peronio", function () {
         });
 
         const usdcAmount = parseUnits("10", 6);
-        let blockNumber: number;
 
         // Initialize Peronio
         before(async () => {
             // Initialize
-            blockNumber =
-                (
-                    await initializePeronio(usdcContract, contract, {
-                        startingRatio: 250,
-                        usdcAmount,
-                    })
-                ).blockNumber ?? 0;
+            await initializePeronio(usdcContract, contract, { startingRatio: 250, usdcAmount })
         });
 
         it("should compound rewards", async function () {
@@ -351,7 +418,11 @@ describe("Peronio", function () {
             // Stop Mining
             await ethers.provider.send("evm_setAutomine", [false]);
 
-            expect(await contract.getPendingRewardsAmount()).gt(BigNumber.from("0"));
+            expect(
+                await contract.getPendingRewardsAmount()
+            ).to.be.gt(
+                BigNumber.from("0")
+            );
 
             await contract.claimRewards();
             await contract.compoundRewards();
@@ -373,7 +444,7 @@ const deployPeronio = async (
     constructor: IPeronioConstructorParams
 ): Promise<Peronio> => {
     const Peronio = await ethers.getContractFactory("Peronio");
-    const contract = await Peronio.deploy(
+    return await Peronio.deploy(
         constructor.name,
         constructor.symbol,
         constructor.usdcAddress,
@@ -384,7 +455,6 @@ const deployPeronio = async (
         constructor.qiFarmAddress,
         constructor.qiPoolId
     );
-    return contract;
 };
 
 const initializePeronio = async (
@@ -400,9 +470,5 @@ const initializePeronio = async (
 };
 
 const sleep = async (ms: number) => {
-    return new Promise((resolve) =>
-        setTimeout(() => {
-            resolve(null);
-        }, ms)
-    );
+    return new Promise((resolve) => setTimeout(() => { resolve(null); }, ms));
 };

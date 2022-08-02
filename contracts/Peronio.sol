@@ -2,26 +2,27 @@
 pragma solidity ^0.8.2;
 
 // OpenZepellin imports
+import { AccessControl } from "@openzeppelin/contracts_latest/access/AccessControl.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts_latest/security/ReentrancyGuard.sol";
 import { ERC20 } from "@openzeppelin/contracts_latest/token/ERC20/ERC20.sol";
 import { IERC20 } from "@openzeppelin/contracts_latest/token/ERC20/IERC20.sol";
-import { SafeERC20 } from "@openzeppelin/contracts_latest/token/ERC20/utils/SafeERC20.sol";
-import { AccessControl } from "@openzeppelin/contracts_latest/access/AccessControl.sol";
 import { ERC20Permit } from "@openzeppelin/contracts_latest/token/ERC20/extensions/draft-ERC20Permit.sol";
 import { ERC20Burnable } from "@openzeppelin/contracts_latest/token/ERC20/extensions/ERC20Burnable.sol";
-import { ReentrancyGuard } from "@openzeppelin/contracts_latest/security/ReentrancyGuard.sol";
+import { SafeERC20 } from "@openzeppelin/contracts_latest/token/ERC20/utils/SafeERC20.sol";
 
 // QiDao
 import { IFarm } from "./qidao/IFarm.sol";
 
 // UniSwap
-import { IUniswapV2Router02 } from "./uniswap/interfaces/IUniswapV2Router02.sol";
 import { IUniswapV2Pair } from "./uniswap/interfaces/IUniswapV2Pair.sol";
+import { IUniswapV2Router02 } from "./uniswap/interfaces/IUniswapV2Router02.sol";
 
 // Needed for Babylonian square-root
 import { sqrt256 } from "./Utils.sol";
 
 // Interface
 import { IPeronio } from "./IPeronio.sol";
+
 
 import { console } from "hardhat/console.sol";
 
@@ -99,8 +100,8 @@ contract Peronio is
 
         // Grant roles
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
-        _setupRole(       MARKUP_ROLE, _msgSender());
-        _setupRole(      REWARDS_ROLE, _msgSender());
+        _setupRole(MARKUP_ROLE, _msgSender());
+        _setupRole(REWARDS_ROLE, _msgSender());
     }
 
     // Fixed 6 Decimals
