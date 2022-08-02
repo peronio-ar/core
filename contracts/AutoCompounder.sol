@@ -25,7 +25,6 @@ contract AutoCompounder is
         require(12 * 60 * 60 < block.timestamp - lastExecuted, "autoCompound: Time not elapsed");
         lastExecuted = block.timestamp;
 
-        peronio.claimRewards();
         peronio.compoundRewards();
     }
 }

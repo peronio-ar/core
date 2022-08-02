@@ -376,14 +376,6 @@ describe("Peronio", function () {
             );
         });
 
-        it("should revert when claimRewards as not REWARDS_ROLE", async function () {
-            expect(
-                contract.connect(accounts.tester).claimRewards()
-            ).to.be.revertedWith(
-                `AccessControl: account ${accounts.tester.toLowerCase()} is missing role ${REWARDS_ROLE}`
-            );
-        });
-
         it("should revert when compoundRewards as not REWARDS_ROLE", async function () {
             expect(
                 contract.connect(accounts.tester).compoundRewards()
@@ -424,7 +416,6 @@ describe("Peronio", function () {
                 BigNumber.from("0")
             );
 
-            await contract.claimRewards();
             await contract.compoundRewards();
         });
 

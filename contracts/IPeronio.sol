@@ -80,8 +80,6 @@ interface IPeronio {
     // Rewards
     function getPendingRewardsAmount() external view returns (uint256 amount);
 
-    function claimRewards() external;
-
     function compoundRewards() external returns (uint256 usdcAmount, uint256 lpAmount);
 
     // Quotes

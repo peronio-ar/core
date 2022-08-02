@@ -320,15 +320,6 @@ contract Peronio is
         amount = _getPendingRewardsAmount();
     }
 
-    // Claim QI rewards from Farm
-    function claimRewards()
-        external
-        override
-        onlyRole(REWARDS_ROLE)
-    {
-        IFarm(qiDaoFarmAddress).deposit(qiDaoPoolId, 0);
-    }
-
     // Reinvest the QI into the Farm
     function compoundRewards()
         external
@@ -336,6 +327,7 @@ contract Peronio is
         onlyRole(REWARDS_ROLE)
         returns (uint256 usdcAmount, uint256 lpAmount)
     {
+        IFarm(qiDaoFarmAddress).deposit(qiDaoPoolId, 0);
         uint256 amount = IERC20(qiAddress).balanceOf(address(this));
         _swapTokens(qiAddress, usdcAddress, amount);
         // Sweep all remaining USDC in the contract
