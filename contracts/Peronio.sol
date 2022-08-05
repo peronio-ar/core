@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 
-// OpenZepellin imports
+// OpenZeppelin imports
 import { AccessControl } from "@openzeppelin/contracts_latest/access/AccessControl.sol";
 import { ReentrancyGuard } from "@openzeppelin/contracts_latest/security/ReentrancyGuard.sol";
 import { ERC20 } from "@openzeppelin/contracts_latest/token/ERC20/ERC20.sol";
@@ -18,7 +18,7 @@ import { IUniswapV2Pair } from "./uniswap/interfaces/IUniswapV2Pair.sol";
 import { IUniswapV2Router02 } from "./uniswap/interfaces/IUniswapV2Router02.sol";
 
 // Needed for Babylonian square-root
-import { sqrt256 } from "./Utils.sol";
+import { sqrt256, mulDiv } from "./Utils.sol";
 
 // Interface
 import { IPeronio } from "./IPeronio.sol";
@@ -47,22 +47,41 @@ contract Peronio is
     // QI Token Address
     address public immutable override qiAddress;
 
-    // QuickSwap Router
+    // QuickSwap Router Address
     address public immutable override quickSwapRouterAddress;
 
-    // QiDao Farm
+    // QiDao Farm Address
     address public immutable override qiDaoFarmAddress;
     // QiDao Pool ID
     uint256 public immutable override qiDaoPoolId;
 
     // Markup
-    uint8 public immutable override markupDecimals;
+    uint8 public immutable override markupDecimals = 5;  // 5 decimals for "markup" and "swapFee"
     uint256 public override markup = 5000; // 5.00%
     uint256 public override swapFee = 150; // 0.15%
 
     // Initialization can only be run once
     bool public override initialized;
 
+    // Constant number of significant decimals
+    uint8 private constant _decimals = 6;
+
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------
+    // --- Public Interface -----------------------------------------------------------------------------------------------------------------------------------
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    /**
+     * Construct a new Peronio contract
+     *
+     * @param name  The name of the token being created ("Peronio")
+     * @param symbol  Symbol to use for the token being created ("PE")
+     * @param _usdcAddress  Address used for the USDC tokens in vault
+     * @param _maiAddress  Address used for the MAI tokens in vault
+     * @param _qiAddress  Address used for the QI tokens in vault
+     * @param _quickSwapRouterAddress  Address of the QuickSwap Router to talk to
+     * @param _qiDaoFarmAddress  Address of the QiDao Farm to use
+     * @param _qiDaoPoolId  Pool ID within the QiDao Farm
+     */
     constructor(
         string memory name,
         string memory symbol,
@@ -77,23 +96,20 @@ contract Peronio is
         ERC20(name, symbol)
         ERC20Permit(name)
     {
-        // Stablecoins
+        // Stablecoin Addresses
         usdcAddress = _usdcAddress;
         maiAddress = _maiAddress;
 
         // LP USDC/MAI Address
         lpAddress = _lpAddress;
 
-        // Router
+        // Router Address
         quickSwapRouterAddress = _quickSwapRouterAddress;
 
-        // QiDao
+        // QiDao Data
         qiDaoFarmAddress = _qiDaoFarmAddress;
         qiDaoPoolId = _qiDaoPoolId;
         qiAddress = _qiAddress;
-
-        // Markup
-        markupDecimals = 5;
 
         // Grant roles
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
@@ -101,7 +117,13 @@ contract Peronio is
         _setupRole(REWARDS_ROLE, _msgSender());
     }
 
-    // Fixed 6 Decimals
+    // --- Decimals -------------------------------------------------------------------------------------------------------------------------------------------
+
+    /**
+     * Return the number of decimals the PE token will work with
+     *
+     * @return decimals_  This will always be 6
+     */
     function decimals()
         public
         view
@@ -109,23 +131,40 @@ contract Peronio is
         override(ERC20, IPeronio)
         returns (uint8 decimals_)
     {
-        decimals_ = 6;
+        decimals_ = _decimals;
     }
 
-    // Sets markup for minting function
+    // --- Markup change --------------------------------------------------------------------------------------------------------------------------------------
+
+    /**
+     * Set the markup fee to the given value (take into account that this will use `markupDecimals` decimals implicitly)
+     *
+     * @param newMarkup  New markup fee value
+     * @return prevMarkup  Previous markup fee value
+     * @custom:emit  MarkupUpdated
+     */
     function setMarkup(
-        uint256 newMmarkup
+        uint256 newMarkup
     )
         external
         override
         onlyRole(MARKUP_ROLE)
         returns (uint256 prevMarkup)
     {
-        (prevMarkup, markup) = (markup, newMmarkup);
-        emit MarkupUpdated(_msgSender(), newMmarkup);
+        (prevMarkup, markup) = (markup, newMarkup);
+
+        emit MarkupUpdated(_msgSender(), newMarkup);
     }
 
-    // Sets initial minting. Can be runned just once
+    // --- Initialization -------------------------------------------------------------------------------------------------------------------------------------
+
+    /**
+     * Initialize the PE token by providing collateral USDC tokens - initial conversion rate will be set at the given starting ratio
+     *
+     * @param usdcAmount  Number of collateral USDC tokens
+     * @param startingRatio  Initial minting ratio in PE tokens per USDC tokens minted
+     * @custom:emit  Initialized
+     */
     function initialize(
         uint256 usdcAmount,
         uint256 startingRatio
@@ -134,30 +173,51 @@ contract Peronio is
         override
         onlyRole(DEFAULT_ADMIN_ROLE)
     {
-        // Lock contract to prevent to be initialized twice
+        // Prevent double initialization
         require(!initialized, "Contract already initialized");
         initialized = true;
 
-        // Get USDC from user
+        // Transfer initial USDC amount from user to current contract
         IERC20(usdcAddress).safeTransferFrom(_msgSender(), address(this), usdcAmount);
 
-        // Unlmited ERC20 approval for Router
+        // Unlimited ERC20 approval for Router
         IERC20(maiAddress).approve(quickSwapRouterAddress, type(uint256).max);
         IERC20(usdcAddress).approve(quickSwapRouterAddress, type(uint256).max);
         IERC20(lpAddress).approve(quickSwapRouterAddress, type(uint256).max);
         IERC20(qiAddress).approve(quickSwapRouterAddress, type(uint256).max);
 
-        // Zaps into MAI/USDC LP
+        // Commit the complete initial USDC amount
         _zapIn(usdcAmount);
         usdcAmount = _stakedValue();
 
-        // Mints exactly startingRatio for each USDC deposit
+        // Mints exactly startingRatio for each collateral USDC token
         _mint(_msgSender(), startingRatio * usdcAmount);
 
         emit Initialized(_msgSender(), usdcAmount, startingRatio);
     }
 
-    // Returns LP Amount staked in the QiDao Farm
+    // --- State views ----------------------------------------------------------------------------------------------------------------------------------------
+
+    /**
+     * Return the USDC and MAI token reserves present in QuickSwap
+     *
+     * @return usdcReserves  Number of USDC tokens in reserve
+     * @return maiReserves  Number of MAI tokens in reserve
+     */
+    function getLpReserves()
+        external
+        view
+        override
+        returns (uint256 usdcReserves, uint256 maiReserves)
+    {
+        (usdcReserves, maiReserves) = _getLpReserves();
+    }
+
+    /**
+     * Return the number of LP USDC/MAI tokens on stake at QiDao's Farm
+     *
+     * @return lpAmount  Number of LP USDC/MAI token on stake
+     */
     function stakedBalance()
         external
         view
@@ -167,17 +227,12 @@ contract Peronio is
         lpAmount = _stakedBalance();
     }
 
-    // Returns current staking value in USDC
-    function stakedValue()
-        external
-        view
-        override
-        returns (uint256 usdcAmount)
-    {
-        usdcAmount = _stakedValue();
-    }
-
-    // Returns current USDC and MAI token balances in the FARM
+    /**
+     * Return the number of USDC and MAI tokens on stake at QiDao's Farm
+     *
+     * @return usdcAmount  Number of USDC tokens on stake
+     * @return maiAmount  Number of MAI tokens on stake
+     */
     function stakedTokens()
         external
         view
@@ -187,29 +242,53 @@ contract Peronio is
         (usdcAmount, maiAmount) = _stakedTokens();
     }
 
-    // Gets current ratio: Total Supply / Collateral USDC Balance in vault
+    /**
+     * Return the equivalent number of USDC tokens on stake at QiDao's Farm
+     *
+     * @return usdcAmount  Total equivalent number of USDC token on stake
+     */
+    function stakedValue()
+        external
+        view
+        override
+        returns (uint256 usdcAmount)
+    {
+        usdcAmount = _stakedValue();
+    }
+
+    /**
+     * Return the _collateralized_ price in USDT tokens per PE token
+     *
+     * @return price  Collateralized price in USDT tokens per PE token
+     */
     function usdcPrice()
         external
         view
         override
         returns (uint256 price)
     {
-        price = (this.totalSupply() * 10**decimals()) / _stakedValue();
+        price = mulDiv(totalSupply(), 10**_decimals, _stakedValue());
     }
 
-    // Gets current ratio: collateralRatio + markup
+    /**
+     * Return the effective _minting_ price in USDC tokens per PE token
+     *
+     * @return price  Minting price in USDT tokens per PE token
+     */
     function buyingPrice()
         external
         view
         override
         returns (uint256 price)
     {
-        uint256 basePrice = _collateralRatio();
-        uint256 fee = (basePrice * markup) / 10**markupDecimals;
-        price = basePrice + fee;
+        price = mulDiv(_collateralRatio(), 10**markupDecimals + markup, 10**markupDecimals);
     }
 
-    // Gets current ratio: Collateral USDC Balance / Total Supply
+    /**
+     * Return the ratio of total number of USDC tokens per PE token
+     *
+     * @return ratio  Ratio of USDC tokens per PE token, with `_decimal` decimals
+     */
     function collateralRatio()
         external
         view
@@ -219,17 +298,17 @@ contract Peronio is
         ratio = _collateralRatio();
     }
 
-    // Return all QuickSwap Liquidity Pool (MAI/USDC) reserves
-    function getLpReserves()
-        external
-        view
-        override
-        returns (uint112 usdcReserves, uint112 maiReserves)
-    {
-        (usdcReserves, maiReserves) = _getLpReserves();
-    }
+    // --- State changers -------------------------------------------------------------------------------------------------------------------------------------
 
-    // Mints new tokens providing proportional collateral (USDC)
+    /**
+     * Mint PE tokens using the provided USDC tokens as collateral
+     *
+     * @param to  The address to transfer the minted PE tokens to
+     * @param usdcAmount  Number of USDC tokens to use as collateral
+     * @param minReceive  The minimum number of PE tokens to mint
+     * @return peAmount  The number of PE tokens actually minted
+     * @custom:emit  Minted
+     */
     function mint(
         address to,
         uint256 usdcAmount,
@@ -240,29 +319,31 @@ contract Peronio is
         nonReentrant
         returns (uint256 peAmount)
     {
-        // Gets current staked LP Tokens
-        uint256 stakedAmount = _stakedBalance();
+        // Transfer USDC tokens as collateral to this contract
+        IERC20(usdcAddress).safeTransferFrom(_msgSender(), address(this), usdcAmount);
 
-        // Transfer Collateral Token (USDC) to this contract
-        IERC20(usdcAddress).safeTransferFrom(_msgSender(), address(this), usdcAmount); // Changed
+        // Commit USDC tokens, and discount fees totalling the markup fee
+        // (ie. the swapFee is included in the total markup, thus, we don't double charge for both the markup itself and the swap fee)
+        uint256 lpAmount = mulDiv(_zapIn(usdcAmount), 10**markupDecimals - (markup - swapFee), 10**markupDecimals);
 
-        // Zaps USDC directly into MAI/USDC Vault
-        uint256 lpAmount = _zapIn(usdcAmount);
+        // Calculate the number of PE tokens as the proportion of liquidity provided
+        peAmount = mulDiv(lpAmount, totalSupply(), _stakedBalance());
+        require(minReceive <= peAmount, "Minimum required not met");
 
-        // Fee - Swap fee (+0.15% positive bonus)
-        uint256 markupFee = (lpAmount * (markup - swapFee)) / 10**markupDecimals; // Calculate fee to substract
-        lpAmount -= markupFee; // remove 5% fee
-
-        // Compute %
-        uint256 ratio = (lpAmount * 10e8) / stakedAmount;
-        peAmount = (ratio * totalSupply()) / 10e8;
-
-        require(peAmount > minReceive, "Minimum required not met");
+        // Actually mint the PE tokens
         _mint(to, peAmount);
+
         emit Minted(_msgSender(), usdcAmount, peAmount);
     }
 
-    // Receives Main token burns it and returns Collateral Token proportionally
+    /**
+     * Extract the given number of PE tokens as USDC tokens
+     *
+     * @param to  Address to deposit extracted USDC tokens into
+     * @param peAmount  Number of PE tokens to withdraw
+     * @return usdcTotal  Number of USDC tokens extracted
+     * @custom:emit  Withdrawal
+     */
     function withdraw(
         address to,
         uint256 peAmount
@@ -272,23 +353,30 @@ contract Peronio is
         nonReentrant
         returns (uint256 usdcTotal)
     {
-        // Burn tokens
+        // Burn the given number of PE tokens
         _burn(_msgSender(), peAmount);
 
-        // Transfer collateral back to user wallet to current contract
-        uint256 ratio = (peAmount * 10e8) / totalSupply();
-        uint256 lpAmount = (ratio * _stakedBalance()) / 10e8;
+        // Calculate equivalent number of LP USDC/MAI tokens for the given burnt PE tokens
+        uint256 lpAmount = mulDiv(peAmount, _stakedBalance(), totalSupply());
 
-        // Swap MAI into USDC
+        // Extract the given number of LP USDC/MAI tokens as USDC tokens
         usdcTotal = _zapOut(lpAmount);
 
-        // Transfer back Collateral Token (USDC) the user
+        // Transfer USDC tokens the the given address
         IERC20(usdcAddress).safeTransfer(to, usdcTotal);
 
         emit Withdrawal(_msgSender(), usdcTotal, peAmount);
     }
 
-    // Receives Main token burns it and returns LP tokens
+    // TODO: why do we need this?
+    /**
+     * Extract the given number of PE tokens as LP USDC/MAI tokens
+     *
+     * @param to  Address to deposit extracted LP USDC/MAI tokens into
+     * @param peAmount  Number of PE tokens to withdraw liquidity for
+     * @return lpAmount  Number of LP USDC/MAI tokens extracted
+     * @custom:emit LiquidityWithdrawal
+     */
     function withdrawLiquidity(
         address to,
         uint256 peAmount
@@ -296,48 +384,70 @@ contract Peronio is
         external
         override
         nonReentrant
+        returns (uint256 lpAmount)
     {
-        // Burn tokens
+        // Burn the given number of PE tokens
         _burn(_msgSender(), peAmount);
 
-        uint256 ratio = (peAmount * 10e8) / totalSupply();
-        uint256 lpAmount = (ratio * _stakedBalance()) / 10e8;
+        // Calculate equivalent number of LP USDC/MAI tokens for the given burnt PE tokens
+        lpAmount = mulDiv(peAmount, _stakedBalance(), totalSupply());
 
-        // Get LP tokens out of the Farm
+        // Get LP USDC/MAI tokens out of QiDao's Farm
         _unstakeLP(lpAmount);
 
-        // Transfer LP to user
+        // Transfer LP USDC/MAI tokens to the given address
         IERC20(lpAddress).safeTransfer(to, lpAmount);
+
+        emit LiquidityWithdrawal(_msgSender(), lpAmount, peAmount);
     }
 
-    // Fetch pending rewards (QI) from Mai Farm
+    // --- Rewards --------------------------------------------------------------------------------------------------------------------------------------------
+
+    /**
+     * Return the rewards accrued by staking LP USDC/MAI tokens in QiDao's Farm (in QI tokens)
+     *
+     * @return qiAmount  Number of QI tokens accrued
+     */
     function getPendingRewardsAmount()
         external
         view
         override
-        returns (uint256 amount)
+        returns (uint256 qiAmount)
     {
-        amount = _getPendingRewardsAmount();
+        qiAmount = _getPendingRewardsAmount();
     }
 
-    // Reinvest the QI into the Farm
+    /**
+     * Claim QiDao's QI token rewards, and re-invest them in the QuickSwap liquidity pool and QiDao's Farm
+     *
+     * @return usdcAmount  The number of USDC tokens being re-invested
+     * @return lpAmount  The number of LP USDC/MAI tokens being put on stake
+     * @custom:emit CompoundRewards
+     */
     function compoundRewards()
         external
         override
         onlyRole(REWARDS_ROLE)
         returns (uint256 usdcAmount, uint256 lpAmount)
     {
+        // Claim rewards from QiDao's Farm
         IFarm(qiDaoFarmAddress).deposit(qiDaoPoolId, 0);
+
+        // Retrieve the number of QI tokens rewarded and swap them to USDC tokens
         uint256 amount = IERC20(qiAddress).balanceOf(address(this));
-        _swapTokens(qiAddress, usdcAddress, amount);
-        // Sweep all remaining USDC in the contract
+        _swapQItoUSDC(amount);
+
+        // Commit all USDC tokens so converted to the QuickSwap liquidity pool
         usdcAmount = IERC20(usdcAddress).balanceOf(address(this));
         lpAmount = _zapIn(usdcAmount);
 
         emit CompoundRewards(amount, usdcAmount, lpAmount);
     }
 
+    // --- Quotes ---------------------------------------------------------------------------------------------------------------------------------------------
+
     // NEEDS TESTING
+    // TODO
     function quoteIn(
         uint256 usdc
     )
@@ -347,23 +457,23 @@ contract Peronio is
         returns (uint256 pe)
     {
         uint256 stakedAmount = _stakedBalance();
-        (uint112 usdcReserves, ) = _getLpReserves(); // $$$$ remove maiReserves
+        (uint256 usdcReserves, ) = _getLpReserves(); // $$$$ remove maiReserves
 
         uint256 amountToSwap = _calculateSwapInAmount(usdcReserves, usdc);
 
         uint256 usdcAmount = usdc - amountToSwap;
 
-        uint256 lpAmount = (usdcAmount * IERC20(lpAddress).totalSupply()) / (usdcReserves + amountToSwap);
+        uint256 lpAmount = mulDiv(usdcAmount, IERC20(lpAddress).totalSupply(), usdcReserves + amountToSwap);
 
-        uint256 markupFee = (lpAmount * (markup - swapFee)) / 10**markupDecimals; // Calculate fee to substract
+        uint256 markupFee = mulDiv(lpAmount, markup - swapFee, 10**markupDecimals); // Calculate fee to subtract
         lpAmount = lpAmount - markupFee; // remove 5% fee
 
         // Compute %
-        uint256 ratio = (lpAmount * 10e8) / stakedAmount;
-        pe = (ratio * totalSupply()) / 10e8;
+        pe = mulDiv(lpAmount, totalSupply(), stakedAmount);
     }
 
     // NEEDS TESTING
+    // TODO
     function quoteOut(
         uint256 pe
     )
@@ -372,20 +482,41 @@ contract Peronio is
         override
         returns (uint256 usdc)
     {
-        (uint112 usdcReserves, uint112 maiReserves) = _getLpReserves();
-
-        uint256 ratio = (pe * 10e8) / totalSupply();
-
+        (uint256 usdcReserves, uint256 maiReserves) = _getLpReserves();
         (uint256 stakedUsdc, uint256 stakedMai) = _stakedTokens();
-        uint256 usdcAmount = (stakedUsdc * ratio) / 10e8;
-        uint256 maiAmount = (stakedMai * ratio) / 10e8;
+
+        uint256 usdcAmount = mulDiv(stakedUsdc, pe, totalSupply());
+        uint256 maiAmount = mulDiv(stakedMai, pe, totalSupply());
 
         usdc = usdcAmount + _getAmountOut(maiAmount, maiReserves, usdcReserves);
     }
 
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------
+    // --- Private Interface ----------------------------------------------------------------------------------------------------------------------------------
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------
 
+    /**
+     * Return the USDC and MAI token reserves present in QuickSwap
+     *
+     * @return usdcReserves  Number of USDC tokens in reserve
+     * @return maiReserves  Number of MAI tokens in reserve
+     */
+    function _getLpReserves()
+        internal
+        view
+        returns (uint256 usdcReserves, uint256 maiReserves)
+    {
+        (uint112 reserve0, uint112 reserve1, ) = IUniswapV2Pair(lpAddress).getReserves();
+        (usdcReserves, maiReserves) = usdcAddress < maiAddress
+            ? (uint256(reserve0), uint256(reserve1))
+            : (uint256(reserve1), uint256(reserve0));
+    }
 
-    // Returns LP Amount staked in the QiDao Farm
+    /**
+     * Return the number of LP USDC/MAI tokens on stake at QiDao's Farm
+     *
+     * @return lpAmount  Number of LP USDC/MAI token on stake
+     */
     function _stakedBalance()
         internal
         view
@@ -394,112 +525,152 @@ contract Peronio is
         lpAmount = IFarm(qiDaoFarmAddress).deposited(qiDaoPoolId, address(this));
     }
 
-    // Returns current staking value in USDC
-    function _stakedValue()
-        internal
-        view
-        returns (uint256 totalUSDC)
-    {
-        uint256 usdcReserves;
-        uint256 maiReserves;
-        uint256 usdcAmount;
-        uint256 maiAmount;
-        (usdcReserves, maiReserves) = _getLpReserves();
-        (usdcAmount, maiAmount) = _stakedTokens();
-
-        // Simulate Swap
-        totalUSDC = usdcAmount + _getAmountOut(maiAmount, maiReserves, usdcReserves);
-    }
-
-    // Returns current USDC and MAI token balances in the FARM
+    /**
+     * Return the number of USDC and MAI tokens on stake at QiDao's Farm
+     *
+     * @return usdcAmount  Number of USDC tokens on stake
+     * @return maiAmount  Number of MAI tokens on stake
+     */
     function _stakedTokens()
         internal
         view
         returns (uint256 usdcAmount, uint256 maiAmount)
     {
         uint256 lpAmount = _stakedBalance();
-        // Add 18 precision decimals
-        uint256 ratio = (lpAmount * 10e18) / IERC20(lpAddress).totalSupply();
-        uint112 usdcReserves;
-        uint112 maiReserves;
+        uint256 lpTotalSupply = IERC20(lpAddress).totalSupply();
 
-        (usdcReserves, maiReserves) = _getLpReserves();
+        (uint256 usdcReserves, uint256 maiReserves) = _getLpReserves();
 
-        // Remove 18 precision decimals
-        usdcAmount = (ratio * usdcReserves) / 10e18;
-        maiAmount = (ratio * maiReserves) / 10e18;
+        usdcAmount = mulDiv(lpAmount, usdcReserves, lpTotalSupply);
+        maiAmount = mulDiv(lpAmount, maiReserves, lpTotalSupply);
     }
 
-    // Collateral USDC Balance / Total Supply
+    /**
+     * Return the equivalent number of USDC tokens on stake at QiDao's Farm
+     *
+     * This method will return the equivalent number of USDC tokens for the number of USDC and MAI tokens on stake.
+     *
+     * @return totalUSDC  Total equivalent number of USDC token on stake
+     */
+    function _stakedValue()
+        internal
+        view
+        returns (uint256 totalUSDC)
+    {
+        (uint256 usdcReserves, uint256 maiReserves) = _getLpReserves();
+        (uint256 usdcAmount, uint256 maiAmount) = _stakedTokens();
+
+        // Simulate Swap
+        totalUSDC = usdcAmount + _getAmountOut(maiAmount, maiReserves, usdcReserves);
+    }
+
+    /**
+     * Return the ratio of total number of USDC tokens per PE token
+     *
+     * @return ratio  Ratio of USDC tokens per PE token, with `_decimal` decimals
+     */
     function _collateralRatio()
         internal
         view
         returns (uint256 ratio)
     {
-        ratio = (_stakedValue() * 10**decimals()) / totalSupply();
+        ratio = mulDiv(_stakedValue(), 10**_decimals, totalSupply());
     }
 
-    // Return all QuickSwap Liquidity Pool (MAI/USDC) reserves
-    function _getLpReserves()
-        internal
-        view
-        returns (uint112 usdcReserves, uint112 maiReserves)
-    {
-        uint112 reserve0;
-        uint112 reserve1;
-        (reserve0, reserve1, ) = IUniswapV2Pair(lpAddress).getReserves();
-        (usdcReserves, maiReserves) = usdcAddress < maiAddress
-            ? (reserve0, reserve1)
-            : (reserve1, reserve0);
-    }
-
-    // Returns pending rewards (QI) amount from Mai Farm
-    function _getPendingRewardsAmount()
-        internal
-        view
-        returns (uint256 amount)
-    {
-        // Get rewards on Farm
-        amount = IFarm(qiDaoFarmAddress).pending(qiDaoPoolId, address(this));
-    }
-
-
-    // Zaps USDC into MAI/USDC Pool and mint into QiDao Farm
+    /**
+     * Commit the given number of USDC tokens
+     *
+     * This method will:
+     *   1. split the given USDC amount into USDC/MAI amounts so as to provide balanced liquidity,
+     *   2. add the given amounts of USDC and MAI tokens to the liquidity pool, and obtain LP USDC/MAI tokens in return, and
+     *   3. stake the given LP USDC/MAI tokens in QiDao's Farm so as to accrue rewards therein.
+     *
+     * @param usdcAmount  Number of USDC tokens to commit
+     * @return lpAmount  Number of LP USDC/MAI tokens committed
+     */
     function _zapIn(
-        uint256 amount
+        uint256 usdcAmount
     )
         internal
         returns (uint256 lpAmount)
     {
-        // Provide USDC Liquidity (MAI/USDC) and get LP Tokens in return
-        uint256 usdcAmount;
         uint256 maiAmount;
 
-        (usdcAmount, maiAmount) = _splitUSDC(amount);
-
+        (usdcAmount, maiAmount) = _splitUSDC(usdcAmount);
         lpAmount = _addLiquidity(usdcAmount, maiAmount);
-
-        // Stake LP Tokens
         _stakeLP(lpAmount);
     }
 
-    // Zaps out USDC from MAI/USDC Pool
+    /**
+     * Extract the given number of LP USDC/MAI tokens
+     *
+     * This method will:
+     *   1. unstake the given number of LP USDC/MAI tokens from QuiDao's Farm,
+     *   2. remove the liquidity provided by the given number of LP USDC/MAI tokens from the liquidity pool, and
+     *   3. convert the MAI tokens back into USDC tokens.
+     *
+     * @param lpAmount  Number of LP USDC/MAI tokens to extract
+     * @return usdcAmount  Number of extracted USDC tokens
+     */
     function _zapOut(
         uint256 lpAmount
     )
         internal
         returns (uint256 usdcAmount)
     {
-        // Get LP tokens out of the Farm
+        uint256 maiAmount;
+
         _unstakeLP(lpAmount);
-
-        (usdcAmount, ) = _removeLiquidity(lpAmount);
-
-        // Swap MAI into USDC
-        usdcAmount += _swapTokens(maiAddress, usdcAddress, IERC20(maiAddress).balanceOf(address(this)));
+        (usdcAmount, maiAmount) = _removeLiquidity(lpAmount);
+        usdcAmount = _unsplitUSDC(usdcAmount, maiAmount);
     }
 
-    // Adds liquidity into the Quickswap pool MAI/USDC
+    /**
+     * Given a USDC token amount, split a portion of it into MAI tokens so as to provide balanced liquidity
+     *
+     * @param amount  Number of USDC tokens to split
+     * @return usdcAmount  Number of resulting USDC tokens
+     * @return maiAmount  Number of resulting MAI tokens
+     */
+    function _splitUSDC(
+        uint256 amount
+    )
+        internal
+        returns (uint256 usdcAmount, uint256 maiAmount)
+    {
+        (uint256 usdcReserves, ) = _getLpReserves();
+        uint256 amountToSwap = _calculateSwapInAmount(usdcReserves, amount);
+
+        require(0 < amountToSwap, "Nothing to swap");
+
+        maiAmount = _swapUSDCtoMAI(amountToSwap);
+        usdcAmount = amount - amountToSwap;
+    }
+
+    /**
+     * Given a USDC token amount and a MAI token amount, swap MAIs into USDCs and consolidate
+     *
+     * @param amount  Number of USDC tokens to consolidate with
+     * @param maiAmount  Number of MAI tokens to consolidate in
+     * @return usdcAmount  Consolidated USDC amount
+     */
+    function _unsplitUSDC(
+        uint256 amount,
+        uint256 maiAmount
+    )
+        internal
+        returns (uint256 usdcAmount)
+    {
+        usdcAmount = amount + _swapMAItoUSDC(maiAmount);
+    }
+
+    /**
+     * Add liquidity to the QuickSwap Liquidity Pool, as much as indicated by the given pair od USDC/MAI amounts
+     *
+     * @param usdcAmount  Number of USDC tokens to add
+     * @param maiAmount  Number of MAI tokens to add
+     * @return lpAmount  Number of LP USDC/MAI tokens obtained
+     */
     function _addLiquidity(
         uint256 usdcAmount,
         uint256 maiAmount
@@ -508,89 +679,130 @@ contract Peronio is
         returns (uint256 lpAmount)
     {
         (, , lpAmount) = IUniswapV2Router02(quickSwapRouterAddress).addLiquidity(
-            usdcAddress,
-            maiAddress,
-            usdcAmount,
-            maiAmount,
-            1,
-            1,
+            usdcAddress, maiAddress,
+            usdcAmount, maiAmount,
+            1, 1,
             address(this),
             block.timestamp + 3600
         );
     }
 
-    // Removes liquidity from Quickswap pool MAI/USDC
+    /**
+     * Remove liquidity from the QuickSwap Liquidity Pool, as much as indicated by the given amount of LP tokens
+     *
+     * @param lpAmount  Number of LP USDC/MAI tokens to withdraw
+     * @return usdcAmount  Number of USDC tokens withdrawn
+     * @return maiAmount  Number of MAI tokens withdrawn
+     */
     function _removeLiquidity(
         uint256 lpAmount
     )
         internal
         returns (uint256 usdcAmount, uint256 maiAmount)
     {
-        (usdcAmount, maiAmount) = IUniswapV2Router02(quickSwapRouterAddress)
-            .removeLiquidity(
-                usdcAddress,
-                maiAddress,
-                lpAmount,
-                1,
-                1,
-                address(this),
-                block.timestamp + 3600
-            );
+        (usdcAmount, maiAmount) = IUniswapV2Router02(quickSwapRouterAddress).removeLiquidity(
+            usdcAddress, maiAddress,
+            lpAmount,
+            1, 1,
+            address(this),
+            block.timestamp + 3600
+        );
     }
 
-    // Splits USDC into USDC/MAI for Quickswap LP
-    function _splitUSDC(
-        uint256 amount
-    )
-        internal
-        returns (uint256 usdcAmount, uint256 maiAmount)
-    {
-        (uint112 usdcReserves, ) = _getLpReserves();
-        uint256 amountToSwap = _calculateSwapInAmount(usdcReserves, amount);
-
-        require(amountToSwap > 0, "Nothing to swap");
-
-        maiAmount = _swapTokens(usdcAddress, maiAddress, amountToSwap);
-        usdcAmount = amount - amountToSwap;
-    }
-
-    // Stake LP tokens (MAI/USDC) into QiDAO Farm
+    /**
+     * Deposit the given number of LP tokens into QiDao's Farm
+     *
+     * @param lpAmount  Number of LP USDC/MAI tokens to deposit into QiDao's Farm
+     */
     function _stakeLP(
         uint256 lpAmount
     )
         internal
     {
-        // Approve LP Tokens for QiDao Farm
         IERC20(lpAddress).approve(qiDaoFarmAddress, lpAmount);
-
-        // Deposit LP Tokens into Farm
         IFarm(qiDaoFarmAddress).deposit(qiDaoPoolId, lpAmount);
     }
 
-    // Unstake LP tokens (MAI/USDC) into QiDAO Farm
+    /**
+     * Remove the given number of LP tokens from QiDao's Farm
+     *
+     * @param lpAmount  Number of LP USDC/MAI tokens to remove from QiDao's Farm
+     */
     function _unstakeLP(
         uint256 lpAmount
     )
         internal
     {
-        // Deposit LP Tokens into Farm
         IFarm(qiDaoFarmAddress).withdraw(qiDaoPoolId, lpAmount);
     }
 
-    function _calculateSwapInAmount(
-        uint256 reserveIn,
-        uint256 userIn
-    )
+    /**
+     * Return the rewards accrued by staking LP USDC/MAI tokens in QiDao's Farm (in QI tokens)
+     *
+     * @return qiAmount  Number of QI tokens accrued
+     */
+    function _getPendingRewardsAmount()
         internal
-        pure
-        returns (uint256 amount)
+        view
+        returns (uint256 qiAmount)
     {
-        return
-            (sqrt256(
-                reserveIn * ((userIn * 3988000) + (reserveIn * 3988009))
-            ) - (reserveIn * 1997)) / 1994;
+        // Get rewards on Farm
+        qiAmount = IFarm(qiDaoFarmAddress).pending(qiDaoPoolId, address(this));
     }
 
+    /**
+     * Swap the given number of MAI tokens to USDC
+     *
+     * @param maiAmount  Number of MAI tokens to swap
+     * @return usdcAmount  Number of USDC tokens obtained
+     */
+    function _swapMAItoUSDC(
+        uint256 maiAmount
+    )
+        internal
+        returns (uint256 usdcAmount)
+    {
+        usdcAmount = _swapTokens(maiAddress, usdcAddress, maiAmount);
+    }
+
+    /**
+     * Swap the given number of USDC tokens to MAI
+     *
+     * @param usdcAmount  Number of USDC tokens to swap
+     * @return maiAmount  Number of MAI tokens obtained
+     */
+    function _swapUSDCtoMAI(
+        uint256 usdcAmount
+    )
+        internal
+        returns (uint256 maiAmount)
+    {
+        maiAmount = _swapTokens(usdcAddress, maiAddress, usdcAmount);
+    }
+
+    /**
+     * Swap the given number of QI tokens to USDC
+     *
+     * @param qiAmount  Number of QI tokens to swap
+     * @return usdcAmount  Number of USDC tokens obtained
+     */
+    function _swapQItoUSDC(
+        uint256 qiAmount
+    )
+        internal
+        returns (uint256 usdcAmount)
+    {
+        usdcAmount = _swapTokens(qiAddress, usdcAddress, qiAmount);
+    }
+
+    /**
+     * Swap the given amount of tokens from the given "from" address to the given "to" address via QuickSwap, and return the amount of "to" tokens swapped
+     *
+     * @param fromAddress  Address to get swap tokens from
+     * @param toAddress  Address to get swap tokens to
+     * @param amount  Amount of tokens to swap (from)
+     * @return swappedAmount  Amount of tokens deposited in addressTo
+     */
     function _swapTokens(
         address fromAddress,
         address toAddress,
@@ -600,20 +812,25 @@ contract Peronio is
         returns (uint256 swappedAmount)
     {
         address[] memory path = new address[](2);
-        path[0] = fromAddress;
-        path[1] = toAddress;
+        (path[0], path[1]) = (fromAddress, toAddress);
 
-        uint256[] memory amounts = IUniswapV2Router02(quickSwapRouterAddress)
-            .swapExactTokensForTokens(
-                amount,
-                1,
-                path,
-                address(this),
-                block.timestamp + 3600
-            );
-        swappedAmount = amounts[1];
+        swappedAmount = IUniswapV2Router02(quickSwapRouterAddress).swapExactTokensForTokens(amount, 1, path, address(this), block.timestamp + 3600)[1];
     }
 
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------
+    // --- UniSwap Simulation ---------------------------------------------------------------------------------------------------------------------------------
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    function _calculateSwapInAmount(
+        uint256 reserveIn,
+        uint256 userIn
+    )
+        internal
+        pure
+        returns (uint256 amount)
+    {
+        amount = (sqrt256(reserveIn * ((userIn * 3988000) + (reserveIn * 3988009))) - (reserveIn * 1997)) / 1994;
+    }
 
     //**  UNISWAP Library Functions Below **/
     function _getAmountOut(
