@@ -8,49 +8,81 @@ import { Peronio, ERC20, AutoCompounder } from "../typechain-types";
 import { IPeronioConstructorParams } from "../utils/types/IPeronioConstructorParams";
 import { IPeronioInitializeParams } from "../utils/types/IPeronioInitializeParams";
 
-import { getConstructorParams } from "../utils/helpers";
+import { getConstructorParams, getInitializeParams } from "../utils/helpers";
 
 const { parseUnits, formatUnits } = ethers.utils;
 
 const MARKUP_ROLE = keccak256(new TextEncoder().encode("MARKUP_ROLE"));
 const REWARDS_ROLE = keccak256(new TextEncoder().encode("REWARDS_ROLE"));
 
-const peronioConstructor: IPeronioConstructorParams = getConstructorParams();
-const peronioInitializer: IPeronioInitializeParams = {
-    usdcAmount: parseUnits("10", 6),
-    startingRatio: 250,
+
+// --- Helpers ------------------------------------------------------------------------------------------------------------------------------------------------
+
+const peronioConstructorParams: IPeronioConstructorParams = getConstructorParams();
+
+const deployPeronio = async (
+    constructor: IPeronioConstructorParams
+): Promise<Peronio> => {
+    const Peronio = await ethers.getContractFactory("Peronio");
+    let contract: Peronio = await Peronio.deploy(
+        constructor.name,
+        constructor.symbol,
+        constructor.usdcAddress,
+        constructor.maiAddress,
+        constructor.lpAddress,
+        constructor.qiAddress,
+        constructor.quickswapRouterAddress,
+        constructor.qiFarmAddress,
+        constructor.qiPoolId
+    );
+    await contract.deployed();
+    return contract;
 };
 
-// START TESTS
+
+const peronioInitializeParams: IPeronioInitializeParams = getInitializeParams();
+
+const initializePeronio = async (
+    usdcContract: ERC20,
+    peContract: Peronio,
+    params: IPeronioInitializeParams
+): Promise<ContractTransaction> => {
+    // Approve
+    await usdcContract.approve(peContract.address, params.usdcAmount);
+
+    // Initialize
+    return peContract.initialize(params.usdcAmount, params.startingRatio);
+};
+
+
+const sleep = async (ms: number) => {
+    return new Promise((resolve) => setTimeout(() => { resolve(null); }, ms));
+};
+
+
+// --- Tests --------------------------------------------------------------------------------------------------------------------------------------------------
 
 describe("Peronio", function () {
-    let contract: Peronio;
-    let autoCompounder: AutoCompounder;
     let usdcContract: ERC20;
     let accounts: { [name: string]: string };
 
-    // Setup
     before(async () => {
         accounts = await hre.getNamedAccounts();
-    });
-
-    // Load USDC Contract
-    before(async () => {
         usdcContract = await ethers.getContractAt("ERC20", process.env.USDC_ADDRESS ?? "");
     });
 
     describe("Constructor variables", () => {
-        // Deploy Peronio
+        let contract: Peronio;
+
         before(async () => {
-            contract = await deployPeronio(peronioConstructor);
-            await contract.deployed();
+            contract = await deployPeronio(peronioConstructorParams);
         });
 
         it("should return correct usdcAddress", async function () {
             expect(
                 await contract.usdcAddress()
             ).to.equal(
-                peronioConstructor.usdcAddress
+                peronioConstructorParams.usdcAddress
             );
         });
 
@@ -58,7 +90,7 @@ describe("Peronio", function () {
             expect(
                 await contract.maiAddress()
             ).to.equal(
-                peronioConstructor.maiAddress
+                peronioConstructorParams.maiAddress
             );
         });
 
@@ -66,7 +98,7 @@ describe("Peronio", function () {
             expect(
                 await contract.lpAddress()
             ).to.equal(
-                peronioConstructor.lpAddress
+                peronioConstructorParams.lpAddress
             );
         });
 
@@ -74,7 +106,7 @@ describe("Peronio", function () {
             expect(
                 await contract.quickSwapRouterAddress()
             ).to.equal(
-                peronioConstructor.quickswapRouterAddress
+                peronioConstructorParams.quickswapRouterAddress
             );
         });
 
@@ -82,7 +114,7 @@ describe("Peronio", function () {
             expect(
                 await contract.qiDaoFarmAddress()
             ).to.equal(
-                peronioConstructor.qiFarmAddress
+                peronioConstructorParams.qiFarmAddress
             );
         });
 
@@ -90,7 +122,7 @@ describe("Peronio", function () {
             expect(
                 await contract.qiAddress()
             ).to.equal(
-                peronioConstructor.qiAddress
+                peronioConstructorParams.qiAddress
             );
         });
 
@@ -98,7 +130,7 @@ describe("Peronio", function () {
             expect(
                 await contract.qiDaoPoolId()
             ).to.equal(
-                peronioConstructor.qiPoolId
+                peronioConstructorParams.qiPoolId
             );
         });
 
@@ -120,16 +152,11 @@ describe("Peronio", function () {
     });
 
     describe("Mint and Withdraw", () => {
-        // Deploy Peronio
-        before(async () => {
-            contract = await deployPeronio(peronioConstructor);
-            await contract.deployed();
-        });
+        let contract: Peronio;
 
-        // Initialize Peronio
         before(async () => {
-            // Initialize
-            await initializePeronio(usdcContract, contract, peronioInitializer);
+            contract = await deployPeronio(peronioConstructorParams);
+            await initializePeronio(usdcContract, contract, peronioInitializeParams);
         });
 
         it("should mint USDC 1", async function () {
@@ -224,17 +251,11 @@ describe("Peronio", function () {
     });
 
     describe("Quotes", () => {
-        // Deploy Peronio
-        before(async () => {
-            contract = await deployPeronio(peronioConstructor);
-            await contract.deployed();
-        });
+        let contract: Peronio;
 
-        const usdcAmount = parseUnits("100", 6);
-        // Initialize Peronio
         before(async () => {
-            // Initialize
-            await initializePeronio(usdcContract, contract, { startingRatio: 250, usdcAmount });
+            contract = await deployPeronio(peronioConstructorParams);
+            await initializePeronio(usdcContract, contract, peronioInitializeParams);
         });
 
         it("should return stakedBalance more than 0", async function () {
@@ -292,6 +313,13 @@ describe("Peronio", function () {
     });
 
     describe("Markup", () => {
+        let contract: Peronio;
+
+        before(async () => {
+            contract = await deployPeronio(peronioConstructorParams);
+            await initializePeronio(usdcContract, contract, peronioInitializeParams);
+        });
+
         it("should return 5 for feeDecimals", async function () {
             expect(
                 await contract.feeDecimals()
@@ -320,10 +348,10 @@ describe("Peronio", function () {
     });
 
     describe("Initialization", () => {
-        // Deploy Peronio
+        let contract: Peronio;
+
         before(async () => {
-            contract = await deployPeronio(peronioConstructor);
-            await contract.deployed();
+            contract = await deployPeronio(peronioConstructorParams);
         });
 
         it("should return initialized=false when not initialized", async function () {
@@ -336,7 +364,7 @@ describe("Peronio", function () {
         });
 
         it("should initialize", async function () {
-            await initializePeronio(usdcContract, contract, peronioInitializer);
+            await initializePeronio(usdcContract, contract, peronioInitializeParams);
         });
 
         it("should return initialized true when initialized", async function () {
@@ -350,8 +378,8 @@ describe("Peronio", function () {
 
         it("should revert when trying to initialize twice", async function () {
             // Initialize
-            const initUsdcAmount = peronioInitializer.usdcAmount;
-            const initRatio = peronioInitializer.startingRatio;
+            const initUsdcAmount = peronioInitializeParams.usdcAmount;
+            const initRatio = peronioInitializeParams.startingRatio;
 
             expect(
                 contract.initialize(initUsdcAmount, initRatio)
@@ -362,10 +390,10 @@ describe("Peronio", function () {
     });
 
     describe("Roles", () => {
-        // Deploy Peronio
+        let contract: Peronio;
+
         before(async () => {
-            contract = await deployPeronio(peronioConstructor);
-            await contract.deployed();
+            contract = await deployPeronio(peronioConstructorParams);
         });
 
         it("should revert when setMarkupFee as not MARKUP_ROLE", async function () {
@@ -386,18 +414,11 @@ describe("Peronio", function () {
     });
 
     describe("Auto Compounding + Rewards", () => {
-        // Deploy Peronio and AutoCompounder
-        before(async () => {
-            contract = await deployPeronio(peronioConstructor);
-            await contract.deployed();
-        });
+        let contract: Peronio;
 
-        const usdcAmount = parseUnits("10", 6);
-
-        // Initialize Peronio
         before(async () => {
-            // Initialize
-            await initializePeronio(usdcContract, contract, { startingRatio: 250, usdcAmount })
+            contract = await deployPeronio(peronioConstructorParams);
+            await initializePeronio(usdcContract, contract, peronioInitializeParams)
         });
 
         it("should compound rewards", async function () {
@@ -422,7 +443,7 @@ describe("Peronio", function () {
         it("should compound from AutoCompounder", async function () {
             // Deploys auto-compounder
             const AutoCompounder = await ethers.getContractFactory("AutoCompounder");
-            autoCompounder = await AutoCompounder.deploy(contract.address);
+            let autoCompounder: AutoCompounder = await AutoCompounder.deploy(contract.address);
             await autoCompounder.deployed();
 
             // Grants role
@@ -430,36 +451,3 @@ describe("Peronio", function () {
         });
     });
 });
-
-const deployPeronio = async (
-    constructor: IPeronioConstructorParams
-): Promise<Peronio> => {
-    const Peronio = await ethers.getContractFactory("Peronio");
-    return await Peronio.deploy(
-        constructor.name,
-        constructor.symbol,
-        constructor.usdcAddress,
-        constructor.maiAddress,
-        constructor.lpAddress,
-        constructor.qiAddress,
-        constructor.quickswapRouterAddress,
-        constructor.qiFarmAddress,
-        constructor.qiPoolId
-    );
-};
-
-const initializePeronio = async (
-    usdcContract: ERC20,
-    peContract: Peronio,
-    params: IPeronioInitializeParams
-): Promise<ContractTransaction> => {
-    // Approve
-    await usdcContract.approve(peContract.address, params.usdcAmount);
-
-    // Initialize
-    return peContract.initialize(params.usdcAmount, params.startingRatio);
-};
-
-const sleep = async (ms: number) => {
-    return new Promise((resolve) => setTimeout(() => { resolve(null); }, ms));
-};
