@@ -55,9 +55,9 @@ contract Peronio is
     // QiDao Pool ID
     uint256 public immutable override qiDaoPoolId;
 
-    // Markup
-    uint8 public immutable override markupDecimals = 5;  // 5 decimals for "markup" and "swapFee"
-    uint256 public override markup = 5000; // 5.00%
+    // Fees
+    uint8 public immutable override feeDecimals = 5;  // 5 decimals for "markupFee" and "swapFee"
+    uint256 public override markupFee = 5000; // 5.00%
     uint256 public override swapFee = 150; // 0.15%
 
     // Initialization can only be run once
@@ -134,26 +134,26 @@ contract Peronio is
         decimals_ = _decimals;
     }
 
-    // --- Markup change --------------------------------------------------------------------------------------------------------------------------------------
+    // --- Markup fee change ----------------------------------------------------------------------------------------------------------------------------------
 
     /**
-     * Set the markup fee to the given value (take into account that this will use `markupDecimals` decimals implicitly)
+     * Set the markup fee to the given value (take into account that this will use `feeDecimals` decimals implicitly)
      *
-     * @param newMarkup  New markup fee value
-     * @return prevMarkup  Previous markup fee value
-     * @custom:emit  MarkupUpdated
+     * @param newMarkupFee  New markup fee value
+     * @return prevMarkupFee  Previous markup fee value
+     * @custom:emit  MarkupFeeUpdated
      */
-    function setMarkup(
-        uint256 newMarkup
+    function setMarkupFee(
+        uint256 newMarkupFee
     )
         external
         override
         onlyRole(MARKUP_ROLE)
-        returns (uint256 prevMarkup)
+        returns (uint256 prevMarkupFee)
     {
-        (prevMarkup, markup) = (markup, newMarkup);
+        (prevMarkupFee, markupFee) = (markupFee, newMarkupFee);
 
-        emit MarkupUpdated(_msgSender(), newMarkup);
+        emit MarkupFeeUpdated(_msgSender(), newMarkupFee);
     }
 
     // --- Initialization -------------------------------------------------------------------------------------------------------------------------------------
@@ -281,7 +281,7 @@ contract Peronio is
         override
         returns (uint256 price)
     {
-        price = mulDiv(_collateralRatio(), 10**markupDecimals + markup, 10**markupDecimals);
+        price = mulDiv(_collateralRatio(), 10**feeDecimals + markupFee, 10**feeDecimals);
     }
 
     /**
@@ -323,8 +323,8 @@ contract Peronio is
         IERC20(usdcAddress).safeTransferFrom(_msgSender(), address(this), usdcAmount);
 
         // Commit USDC tokens, and discount fees totalling the markup fee
-        // (ie. the swapFee is included in the total markup, thus, we don't double charge for both the markup itself and the swap fee)
-        uint256 lpAmount = mulDiv(_zapIn(usdcAmount), 10**markupDecimals - (markup - swapFee), 10**markupDecimals);
+        // (ie. the swapFee is included in the total markup fee, thus, we don't double charge for both the markup fee itself and the swap fee)
+        uint256 lpAmount = mulDiv(_zapIn(usdcAmount), 10**feeDecimals - (markupFee - swapFee), 10**feeDecimals);
 
         // Calculate the number of PE tokens as the proportion of liquidity provided
         peAmount = mulDiv(lpAmount, totalSupply(), _stakedBalance());
@@ -465,8 +465,8 @@ contract Peronio is
 
         uint256 lpAmount = mulDiv(usdcAmount, IERC20(lpAddress).totalSupply(), usdcReserves + amountToSwap);
 
-        uint256 markupFee = mulDiv(lpAmount, markup - swapFee, 10**markupDecimals); // Calculate fee to subtract
-        lpAmount = lpAmount - markupFee; // remove 5% fee
+        uint256 markup = mulDiv(lpAmount, markupFee - swapFee, 10**feeDecimals); // Calculate fee to subtract
+        lpAmount = lpAmount - markup; // remove 5% fee
 
         // Compute %
         pe = mulDiv(lpAmount, totalSupply(), stakedAmount);

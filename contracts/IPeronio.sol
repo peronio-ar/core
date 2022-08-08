@@ -45,9 +45,9 @@ interface IPeronio {
      * Emitted upon the markup fee being updated
      *
      * @param operator  Address of the one updating the markup fee
-     * @param markup  New markup fee
+     * @param markupFee  New markup fee
      */
-    event MarkupUpdated(address operator, uint256 markup);
+    event MarkupFeeUpdated(address operator, uint256 markupFee);
 
     /**
      * Emitted upon compounding rewards from QiDao's Farm back into the vault
@@ -132,17 +132,17 @@ interface IPeronio {
      *
      * @return  Always 5
      */
-    function markupDecimals() external view returns (uint8);
+    function feeDecimals() external view returns (uint8);
 
     /**
-     * Return the markup fee the use, using `markupDecimals()` decimals implicitly
+     * Return the markup fee the use, using `feeDecimals()` decimals implicitly
      *
      * @return  The markup fee to use
      */
-    function markup() external view returns (uint256);
+    function markupFee() external view returns (uint256);
 
     /**
-     * Return the swap fee the use, using `markupDecimals()` decimals implicitly
+     * Return the swap fee the use, using `feeDecimals()` decimals implicitly
      *
      * @return  The swap fee to use
      */
@@ -166,16 +166,16 @@ interface IPeronio {
      */
     function decimals() external view returns (uint8 decimals_);
 
-    // --- Markup change --------------------------------------------------------------------------------------------------------------------------------------
+    // --- Markup fee change ----------------------------------------------------------------------------------------------------------------------------------
 
     /**
-     * Set the markup fee to the given value (take into account that this will use `markupDecimals` decimals implicitly)
+     * Set the markup fee to the given value (take into account that this will use `feeDecimals` decimals implicitly)
      *
-     * @param newMarkup  New markup fee value
-     * @return prevMarkup  Previous markup fee value
-     * @custom:emit  MarkupUpdated
+     * @param newMarkupFee  New markup fee value
+     * @return prevMarkupFee  Previous markup fee value
+     * @custom:emit  MarkupFeeUpdated
      */
-    function setMarkup(uint256 newMarkup) external returns (uint256 prevMarkup);
+    function setMarkupFee(uint256 newMarkupFee) external returns (uint256 prevMarkupFee);
 
     // --- Initialization -------------------------------------------------------------------------------------------------------------------------------------
 

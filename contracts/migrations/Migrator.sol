@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 
-// OpenZepellin imports
+// OpenZeppelin imports
 import { AccessControl } from "@openzeppelin/contracts_latest/access/AccessControl.sol";
 import { ReentrancyGuard } from "@openzeppelin/contracts_latest/security/ReentrancyGuard.sol";
 import { ERC20 } from "@openzeppelin/contracts_latest/token/ERC20/ERC20.sol";
@@ -57,7 +57,7 @@ contract Migrator is IMigrator, ReentrancyGuard {
         address _qiDaoFarmAddress,
         uint256 _qiDaoPoolId
     ) {
-        // Stablecoins
+        // Stable coins
         usdcAddress = _usdcAddress;
         maiAddress = _maiAddress;
 
@@ -85,7 +85,7 @@ contract Migrator is IMigrator, ReentrancyGuard {
         // uint256 amountToSwap = _calculateSwapInAmount(usdcReserves, usdc);
         // uint256 usdcAmount = usdc - amountToSwap;
         // uint256 lpAmount = usdcAmount.mul(10e18).div(usdcReserves);
-        // uint256 markupFee = lpAmount.mul(markup - swapFee).div(10**markupDecimals); // Calculate fee to substract
+        // uint256 markupFee = lpAmount.mul(markupFee - swapFee).div(10**feeDecimals); // Calculate fee to subtract
         // lpAmount = lpAmount.sub(markupFee); // remove 5% fee
         // // Compute %
         // uint256 ratio = lpAmount.mul(10e8).div(stakedAmount);

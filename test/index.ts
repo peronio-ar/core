@@ -292,29 +292,29 @@ describe("Peronio", function () {
     });
 
     describe("Markup", () => {
-        it("should return 5 for markupDecimals", async function () {
+        it("should return 5 for feeDecimals", async function () {
             expect(
-                await contract.markupDecimals()
+                await contract.feeDecimals()
             ).to.equal(
                 5
             );
         });
 
-        it("should return 5000 for markup", async function () {
+        it("should return 5000 for markup fee", async function () {
             expect(
-                await contract.markup()
+                await contract.markupFee()
             ).to.equal(
                 5000
             );
         });
 
-        it("should set 20000 for markup", async function () {
-            const newMarkup = 2000;
-            await contract.setMarkup(newMarkup);
+        it("should set 20000 for markup fee", async function () {
+            const newMarkupFee = 2000;
+            await contract.setMarkupFee(newMarkupFee);
             expect(
-                await contract.markup()
+                await contract.markupFee()
             ).to.equal(
-                newMarkup
+                newMarkupFee
             );
         });
     });
@@ -368,9 +368,9 @@ describe("Peronio", function () {
             await contract.deployed();
         });
 
-        it("should revert when setMarkup as not MARKUP_ROLE", async function () {
+        it("should revert when setMarkupFee as not MARKUP_ROLE", async function () {
             expect(
-                contract.connect(accounts.tester).setMarkup("5000")
+                contract.connect(accounts.tester).setMarkupFee("5000")
             ).to.be.revertedWith(
                 `AccessControl: account ${accounts.tester.toLowerCase()} is missing role ${MARKUP_ROLE}`
             );
