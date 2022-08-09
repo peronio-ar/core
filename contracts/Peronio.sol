@@ -322,12 +322,16 @@ contract Peronio is
         // Transfer USDC tokens as collateral to this contract
         IERC20(usdcAddress).safeTransferFrom(_msgSender(), address(this), usdcAmount);
 
+        // Remember the previously staked balance
+        uint256 stakedAmount = _stakedBalance();
+
         // Commit USDC tokens, and discount fees totalling the markup fee
         // (ie. the swapFee is included in the total markup fee, thus, we don't double charge for both the markup fee itself and the swap fee)
         uint256 lpAmount = mulDiv(_zapIn(usdcAmount), 10**feeDecimals - (markupFee - swapFee), 10**feeDecimals);
 
         // Calculate the number of PE tokens as the proportion of liquidity provided
-        peAmount = mulDiv(lpAmount, totalSupply(), _stakedBalance());
+        peAmount = mulDiv(lpAmount, totalSupply(), stakedAmount);
+
         require(minReceive <= peAmount, "Minimum required not met");
 
         // Actually mint the PE tokens
