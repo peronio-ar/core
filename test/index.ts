@@ -5,6 +5,9 @@ import hre, { ethers } from "hardhat";
 
 import { Peronio, ERC20, AutoCompounder } from "../typechain-types";
 
+import { Peronio__factory } from "../typechain-types/factories/contracts/Peronio__factory";
+import { AutoCompounder__factory } from "../typechain-types/factories/contracts/AutoCompounder__factory";
+
 import { IPeronioConstructorParams } from "../utils/types/IPeronioConstructorParams";
 import { IPeronioInitializeParams } from "../utils/types/IPeronioInitializeParams";
 
@@ -12,8 +15,8 @@ import { getConstructorParams, getInitializeParams } from "../utils/helpers";
 
 const { parseUnits, formatUnits } = ethers.utils;
 
-const MARKUP_ROLE = keccak256(new TextEncoder().encode("MARKUP_ROLE"));
-const REWARDS_ROLE = keccak256(new TextEncoder().encode("REWARDS_ROLE"));
+const MARKUP_ROLE: string = keccak256(new TextEncoder().encode("MARKUP_ROLE"));
+const REWARDS_ROLE: string = keccak256(new TextEncoder().encode("REWARDS_ROLE"));
 
 
 // --- Helpers ------------------------------------------------------------------------------------------------------------------------------------------------
@@ -23,7 +26,7 @@ const peronioConstructorParams: IPeronioConstructorParams = getConstructorParams
 const deployPeronio = async (
     constructor: IPeronioConstructorParams
 ): Promise<Peronio> => {
-    const Peronio = await ethers.getContractFactory("Peronio");
+    const Peronio: Peronio__factory = await ethers.getContractFactory("Peronio");
     let contract: Peronio = await Peronio.deploy(
         constructor.name,
         constructor.symbol,
@@ -63,8 +66,8 @@ const sleep = async (ms: number) => {
 // --- Tests --------------------------------------------------------------------------------------------------------------------------------------------------
 
 describe("Peronio", function () {
-    let usdcContract: ERC20;
     let accounts: { [name: string]: string };
+    let usdcContract: ERC20;
 
     before(async () => {
         accounts = await hre.getNamedAccounts();
@@ -160,13 +163,13 @@ describe("Peronio", function () {
         });
 
         it("should mint USDC 1", async function () {
-            const peOldBalance = await contract.balanceOf(accounts.deployer);
-            const usdcOldBalance = await usdcContract.balanceOf(accounts.deployer);
+            const peOldBalance: BigNumber = await contract.balanceOf(accounts.deployer);
+            const usdcOldBalance: BigNumber = await usdcContract.balanceOf(accounts.deployer);
 
-            const amount = parseUnits("1", 6);
+            const amount: BigNumber = parseUnits("1", 6);
 
             // Quote PE amount
-            const quotedPe = await contract.quoteIn(amount);
+            const quotedPe: BigNumber = await contract.quoteIn(amount);
 
             console.info("Quoted:", formatUnits(quotedPe, 6));
 
@@ -174,13 +177,13 @@ describe("Peronio", function () {
             await usdcContract.approve(contract.address, amount);
 
             // Mint
-            const minReceive = parseUnits("235", 6);
+            const minReceive: BigNumber = parseUnits("235", 6);
             await contract.mint(accounts.deployer, amount, minReceive);
 
-            const peBalance = await contract.balanceOf(accounts.deployer);
-            const usdcBalance = await usdcContract.balanceOf(accounts.deployer);
-            const receivedPe = peBalance.sub(peOldBalance);
-            const mintedUsdc = usdcOldBalance.sub(usdcBalance);
+            const peBalance: BigNumber = await contract.balanceOf(accounts.deployer);
+            const usdcBalance: BigNumber = await usdcContract.balanceOf(accounts.deployer);
+            const receivedPe: BigNumber = peBalance.sub(peOldBalance);
+            const mintedUsdc: BigNumber = usdcOldBalance.sub(usdcBalance);
 
             // Should transfer usdc exactly as provided
             expect(
@@ -198,13 +201,13 @@ describe("Peronio", function () {
         });
 
         it("should withdraw PE 250", async function () {
-            const peOldBalance = await contract.balanceOf(accounts.deployer);
-            const usdcOldBalance = await usdcContract.balanceOf(accounts.deployer);
+            const peOldBalance: BigNumber = await contract.balanceOf(accounts.deployer);
+            const usdcOldBalance: BigNumber = await usdcContract.balanceOf(accounts.deployer);
 
-            const amount = parseUnits("250", 6);
+            const amount: BigNumber = parseUnits("250", 6);
 
             // Quote PE amount
-            const quotedUSDC = await contract.quoteOut(amount);
+            const quotedUSDC: BigNumber = await contract.quoteOut(amount);
 
             console.info("Quoted:", formatUnits(quotedUSDC, 6));
 
@@ -214,10 +217,10 @@ describe("Peronio", function () {
             // Withdraw
             await contract.withdraw(accounts.deployer, amount);
 
-            const peBalance = await contract.balanceOf(accounts.deployer);
-            const usdcBalance = await usdcContract.balanceOf(accounts.deployer);
-            const subtractedPe = peOldBalance.sub(peBalance);
-            const receivedUsdc = usdcBalance.sub(usdcOldBalance);
+            const peBalance: BigNumber = await contract.balanceOf(accounts.deployer);
+            const usdcBalance: BigNumber = await usdcContract.balanceOf(accounts.deployer);
+            const subtractedPe: BigNumber = peOldBalance.sub(peBalance);
+            const receivedUsdc: BigNumber = usdcBalance.sub(usdcOldBalance);
 
             expect(
                 subtractedPe
@@ -233,14 +236,14 @@ describe("Peronio", function () {
         });
 
         it("should revert on not enough received PE", async function () {
-            const amount = parseUnits("1", 6);
+            const amount: BigNumber = parseUnits("1", 6);
 
             // Approve
             await usdcContract.approve(contract.address, amount);
 
             // Mint
-            const minReceive = parseUnits("250", 6);
-            const call = contract.mint(accounts.deployer, amount, minReceive);
+            const minReceive: BigNumber = parseUnits("250", 6);
+            const call: Promise<ContractTransaction> = contract.mint(accounts.deployer, amount, minReceive);
 
             expect(
                 call
@@ -259,7 +262,7 @@ describe("Peronio", function () {
         });
 
         it("should return stakedBalance more than 0", async function () {
-            const stakedBalance = await contract.stakedBalance();
+            const stakedBalance: BigNumber = await contract.stakedBalance();
             expect(
                 stakedBalance
             ).to.be.gt(
@@ -268,7 +271,7 @@ describe("Peronio", function () {
         });
 
         it("should return stakedTokens close to USDC 50 and MAI 50", async function () {
-            const { usdcAmount, maiAmount } = await contract.stakedTokens();
+            const { usdcAmount, maiAmount }: { usdcAmount: BigNumber; maiAmount: BigNumber } = await contract.stakedTokens();
             expect(
                 usdcAmount
             ).to.be.closeTo(
@@ -284,7 +287,7 @@ describe("Peronio", function () {
         });
 
         it("should return stakedValue similar to 100 with 1.5% margin", async function () {
-            const stakedValue = await contract.stakedValue();
+            const stakedValue: BigNumber = await contract.stakedValue();
             expect(
                 stakedValue
             ).to.be.closeTo(
@@ -294,7 +297,7 @@ describe("Peronio", function () {
         });
 
         it("should return a buyingPrice near PE/USDC 0.004 (+5%)", async function () {
-            const buyingPrice = await contract.buyingPrice();
+            const buyingPrice: BigNumber = await contract.buyingPrice();
             expect(
                 buyingPrice
             ).to.equal(
@@ -303,7 +306,7 @@ describe("Peronio", function () {
         });
 
         it("should return a collateralRatio near PE/USDC 0.004", async function () {
-            const collateralRatio = await contract.collateralRatio();
+            const collateralRatio: BigNumber = await contract.collateralRatio();
             expect(
                 collateralRatio
             ).to.equal(
@@ -337,7 +340,7 @@ describe("Peronio", function () {
         });
 
         it("should set 20000 for markup fee", async function () {
-            const newMarkupFee = 2000;
+            const newMarkupFee: BigNumber = BigNumber.from(2000);
             await contract.setMarkupFee(newMarkupFee);
             expect(
                 await contract.markupFee()
@@ -355,7 +358,7 @@ describe("Peronio", function () {
         });
 
         it("should return initialized=false when not initialized", async function () {
-            const isInitialized = await contract.initialized();
+            const isInitialized: Boolean = await contract.initialized();
             expect(
                 isInitialized
             ).to.equal(
@@ -368,7 +371,7 @@ describe("Peronio", function () {
         });
 
         it("should return initialized true when initialized", async function () {
-            const isInitialized = await contract.initialized();
+            const isInitialized: Boolean = await contract.initialized();
             expect(
                 isInitialized
             ).to.equal(
@@ -378,8 +381,8 @@ describe("Peronio", function () {
 
         it("should revert when trying to initialize twice", async function () {
             // Initialize
-            const initUsdcAmount = peronioInitializeParams.usdcAmount;
-            const initRatio = peronioInitializeParams.startingRatio;
+            const initUsdcAmount: BigNumber = peronioInitializeParams.usdcAmount;
+            const initRatio: BigNumber = peronioInitializeParams.startingRatio;
 
             expect(
                 contract.initialize(initUsdcAmount, initRatio)
@@ -434,7 +437,7 @@ describe("Peronio", function () {
             expect(
                 await contract.getPendingRewardsAmount()
             ).to.be.gt(
-                BigNumber.from("0")
+                0
             );
 
             await contract.compoundRewards();
@@ -442,7 +445,7 @@ describe("Peronio", function () {
 
         it("should compound from AutoCompounder", async function () {
             // Deploys auto-compounder
-            const AutoCompounder = await ethers.getContractFactory("AutoCompounder");
+            const AutoCompounder: AutoCompounder__factory = await ethers.getContractFactory("AutoCompounder");
             let autoCompounder: AutoCompounder = await AutoCompounder.deploy(contract.address);
             await autoCompounder.deployed();
 

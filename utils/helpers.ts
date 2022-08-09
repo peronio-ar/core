@@ -1,4 +1,4 @@
-import { ethers } from "ethers";
+import { BigNumber, ethers } from "ethers";
 
 import { IPeronioConstructorParams } from "./types/IPeronioConstructorParams";
 import { IPeronioInitializeParams } from "./types/IPeronioInitializeParams";
@@ -20,6 +20,6 @@ export function getConstructorParams(): IPeronioConstructorParams {
 export function getInitializeParams(): IPeronioInitializeParams {
     return {
         usdcAmount: ethers.utils.parseUnits(process.env.INIT_USDC_AMOUNT ?? "10", 6),
-        startingRatio: parseInt(process.env.INIT_RATIO ?? "250"),
+        startingRatio: BigNumber.from(parseInt(process.env.INIT_RATIO ?? "250")),
     };
 }
