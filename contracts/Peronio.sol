@@ -257,9 +257,9 @@ contract Peronio is
     }
 
     /**
-     * Return the _collateralized_ price in USDT tokens per PE token
+     * Return the _collateralized_ price in USDC tokens per PE token
      *
-     * @return price  Collateralized price in USDT tokens per PE token
+     * @return price  Collateralized price in USDC tokens per PE token
      */
     function usdcPrice()
         external
@@ -273,7 +273,7 @@ contract Peronio is
     /**
      * Return the effective _minting_ price in USDC tokens per PE token
      *
-     * @return price  Minting price in USDT tokens per PE token
+     * @return price  Minting price in USDC tokens per PE token
      */
     function buyingPrice()
         external
@@ -541,8 +541,8 @@ contract Peronio is
 
         (uint256 usdcReserves, uint256 maiReserves) = _getLpReserves();
 
-        usdcAmount = mulDiv(lpAmount, usdcReserves, lpTotalSupply);
-        maiAmount = mulDiv(lpAmount, maiReserves, lpTotalSupply);
+        usdcAmount = mulDiv(usdcReserves, lpAmount, lpTotalSupply);
+        maiAmount = mulDiv(maiReserves, lpAmount, lpTotalSupply);
     }
 
     /**
@@ -574,7 +574,7 @@ contract Peronio is
         view
         returns (uint256 ratio)
     {
-        ratio = mulDiv(_stakedValue(), 10**_decimals, totalSupply());
+        ratio = mulDiv(10**_decimals, _stakedValue(), totalSupply());
     }
 
     /**

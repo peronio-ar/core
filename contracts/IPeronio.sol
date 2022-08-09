@@ -164,7 +164,7 @@ interface IPeronio {
      *
      * @return decimals_  This will always be 6
      */
-    function decimals() external view returns (uint8 decimals_);
+    function decimals() external view returns (uint8);
 
     // --- Markup fee change ----------------------------------------------------------------------------------------------------------------------------------
 
@@ -221,16 +221,16 @@ interface IPeronio {
     function stakedValue() external view returns (uint256 usdcAmount);
 
     /**
-     * Return the _collateralized_ price in USDT tokens per PE token
+     * Return the _collateralized_ price in USDC tokens per PE token
      *
-     * @return price  Collateralized price in USDT tokens per PE token
+     * @return price  Collateralized price in USDC tokens per PE token
      */
     function usdcPrice() external view returns (uint256 price);
 
     /**
      * Return the effective _minting_ price in USDC tokens per PE token
      *
-     * @return price  Minting price in USDT tokens per PE token
+     * @return price  Minting price in USDC tokens per PE token
      */
     function buyingPrice() external view returns (uint256 price);
 

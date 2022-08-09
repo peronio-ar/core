@@ -81,6 +81,22 @@ describe("Peronio", function () {
             contract = await deployPeronio(peronioConstructorParams);
         });
 
+        it("should return correct keccak256 MARKUP_ROLE", async function () {
+            expect(
+                await contract.MARKUP_ROLE()
+            ).to.equal(
+                MARKUP_ROLE
+            );
+        });
+
+        it("should return correct keccak256 REWARDS_ROLE", async function () {
+            expect(
+                await contract.REWARDS_ROLE()
+            ).to.equal(
+                REWARDS_ROLE
+            );
+        });
+
         it("should return correct usdcAddress", async function () {
             expect(
                 await contract.usdcAddress()
@@ -105,6 +121,14 @@ describe("Peronio", function () {
             );
         });
 
+        it("should return correct qiAddress", async function () {
+            expect(
+                await contract.qiAddress()
+            ).to.equal(
+                peronioConstructorParams.qiAddress
+            );
+        });
+
         it("should return correct quickSwapRouterAddress", async function () {
             expect(
                 await contract.quickSwapRouterAddress()
@@ -121,35 +145,11 @@ describe("Peronio", function () {
             );
         });
 
-        it("should return correct qiAddress", async function () {
-            expect(
-                await contract.qiAddress()
-            ).to.equal(
-                peronioConstructorParams.qiAddress
-            );
-        });
-
         it("should return correct qiDaoPoolId", async function () {
             expect(
                 await contract.qiDaoPoolId()
             ).to.equal(
                 peronioConstructorParams.qiPoolId
-            );
-        });
-
-        it("should return correct keccak256 MARKUP_ROLE", async function () {
-            expect(
-                await contract.MARKUP_ROLE()
-            ).to.equal(
-                MARKUP_ROLE
-            );
-        });
-
-        it("should return correct keccak256 REWARDS_ROLE", async function () {
-            expect(
-                await contract.REWARDS_ROLE()
-            ).to.equal(
-                REWARDS_ROLE
             );
         });
     });
