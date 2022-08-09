@@ -17,7 +17,7 @@ import { IFarm } from "./qidao/IFarm.sol";
 import { IUniswapV2Pair } from "./uniswap/interfaces/IUniswapV2Pair.sol";
 import { IUniswapV2Router02 } from "./uniswap/interfaces/IUniswapV2Router02.sol";
 
-// Needed for Babylonian square-root
+// Needed for Babylonian square-root & combined-multiplication-and-division
 import { sqrt256, mulDiv } from "./Utils.sol";
 
 // Interface

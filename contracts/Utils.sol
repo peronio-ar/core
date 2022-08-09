@@ -60,7 +60,7 @@ function mulDiv(
 
     // Handle non-overflow cases, 256 by 256 division
     if (prod1 == 0) {
-        require(denominator > 0);
+        require(0 < denominator);
         assembly {
             result := div(prod0, denominator)
         }
