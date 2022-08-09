@@ -13,8 +13,6 @@ import { IPeronioInitializeParams } from "../utils/types/IPeronioInitializeParam
 
 import { getConstructorParams, getInitializeParams } from "../utils/helpers";
 
-const { parseUnits, formatUnits } = ethers.utils;
-
 const MARKUP_ROLE: string = keccak256(new TextEncoder().encode("MARKUP_ROLE"));
 const REWARDS_ROLE: string = keccak256(new TextEncoder().encode("REWARDS_ROLE"));
 
@@ -163,53 +161,44 @@ describe("Peronio", function () {
         });
 
         it("should mint USDC 1", async function () {
-            const peOldBalance: BigNumber = await contract.balanceOf(accounts.deployer);
-            const usdcOldBalance: BigNumber = await usdcContract.balanceOf(accounts.deployer);
+            const peBalanceOld: BigNumber = await contract.balanceOf(accounts.deployer);
+            const usdcBalanceOld: BigNumber = await usdcContract.balanceOf(accounts.deployer);
 
-            const amount: BigNumber = parseUnits("1", 6);
-
-            // Quote PE amount
-            const quotedPe: BigNumber = await contract.quoteIn(amount);
-
-            console.info("Quoted:", formatUnits(quotedPe, 6));
+            // Amount of USDCs to mint, expected PE amount, and minimum PEs to receive
+            const amount: BigNumber = BigNumber.from(1_000000);
+            const expectedPe: BigNumber = BigNumber.from(237_160343);
+            const minReceive: BigNumber = BigNumber.from(235_000000);
 
             // Approve
             await usdcContract.approve(contract.address, amount);
 
             // Mint
-            const minReceive: BigNumber = parseUnits("235", 6);
             await contract.mint(accounts.deployer, amount, minReceive);
 
             const peBalance: BigNumber = await contract.balanceOf(accounts.deployer);
             const usdcBalance: BigNumber = await usdcContract.balanceOf(accounts.deployer);
-            const receivedPe: BigNumber = peBalance.sub(peOldBalance);
-            const mintedUsdc: BigNumber = usdcOldBalance.sub(usdcBalance);
+            const receivedPe: BigNumber = peBalance.sub(peBalanceOld);
+            const mintedUsdc: BigNumber = usdcBalanceOld.sub(usdcBalance);
 
-            // Should transfer usdc exactly as provided
             expect(
                 mintedUsdc
             ).to.equal(
                 amount
             );
-
-            // Should be quoted amount
             expect(
                 receivedPe
             ).to.equal(
-                quotedPe
+                expectedPe
             );
         });
 
         it("should withdraw PE 250", async function () {
-            const peOldBalance: BigNumber = await contract.balanceOf(accounts.deployer);
-            const usdcOldBalance: BigNumber = await usdcContract.balanceOf(accounts.deployer);
+            const peBalanceOld: BigNumber = await contract.balanceOf(accounts.deployer);
+            const usdcBalanceOld: BigNumber = await usdcContract.balanceOf(accounts.deployer);
 
-            const amount: BigNumber = parseUnits("250", 6);
-
-            // Quote PE amount
-            const quotedUSDC: BigNumber = await contract.quoteOut(amount);
-
-            console.info("Quoted:", formatUnits(quotedUSDC, 6));
+            // Amount of PEs to withdraw, and expected USDC amount
+            const amount: BigNumber = BigNumber.from(250_000000);
+            const quotedUSDC: BigNumber = BigNumber.from(1010524);
 
             // Approve
             await contract.approve(contract.address, amount);
@@ -219,15 +208,14 @@ describe("Peronio", function () {
 
             const peBalance: BigNumber = await contract.balanceOf(accounts.deployer);
             const usdcBalance: BigNumber = await usdcContract.balanceOf(accounts.deployer);
-            const subtractedPe: BigNumber = peOldBalance.sub(peBalance);
-            const receivedUsdc: BigNumber = usdcBalance.sub(usdcOldBalance);
+            const withdrawnPe: BigNumber = peBalanceOld.sub(peBalance);
+            const receivedUsdc: BigNumber = usdcBalance.sub(usdcBalanceOld);
 
             expect(
-                subtractedPe
+                withdrawnPe
             ).to.equal(
                 amount
             );
-            // Should be quoted amount
             expect(
                 receivedUsdc
             ).to.equal(
@@ -236,19 +224,37 @@ describe("Peronio", function () {
         });
 
         it("should revert on not enough received PE", async function () {
-            const amount: BigNumber = parseUnits("1", 6);
+            const amount: BigNumber = BigNumber.from(1_000000);
 
             // Approve
             await usdcContract.approve(contract.address, amount);
 
             // Mint
-            const minReceive: BigNumber = parseUnits("250", 6);
+            const minReceive: BigNumber = BigNumber.from(250_000000);
             const call: Promise<ContractTransaction> = contract.mint(accounts.deployer, amount, minReceive);
 
             expect(
                 call
             ).to.be.revertedWith(
                 "Minimum required not met"
+            );
+        });
+
+        it("should quote IN correctly", async function () {
+            // TODO
+            expect(
+                true
+            ).to.equal(
+                false
+            );
+        });
+
+        it("should quote OUT correctly", async function () {
+            // TODO
+            expect(
+                true
+            ).to.equal(
+                false
             );
         });
     });
@@ -275,14 +281,14 @@ describe("Peronio", function () {
             expect(
                 usdcAmount
             ).to.be.closeTo(
-                parseUnits("50", 6),
-                parseUnits("0.5", 6)
+                BigNumber.from(50_000000),
+                BigNumber.from(500000)
             );
             expect(
-                maiAmount
+                maiAmount.div(1_000000_000000)
             ).to.be.closeTo(
-                parseUnits("50", 18),
-                parseUnits("0.5", 18)
+                BigNumber.from(50_000000),
+                BigNumber.from(500000)
             );
         });
 
@@ -291,8 +297,8 @@ describe("Peronio", function () {
             expect(
                 stakedValue
             ).to.be.closeTo(
-                parseUnits("100", 6),
-                parseUnits("1.5", 6)
+                BigNumber.from(100_000000),
+                BigNumber.from(1_500000)
             );
         });
 
@@ -301,7 +307,7 @@ describe("Peronio", function () {
             expect(
                 buyingPrice
             ).to.equal(
-                parseUnits("0.0042", 6)
+                BigNumber.from(4200)
             );
         });
 
@@ -310,7 +316,7 @@ describe("Peronio", function () {
             expect(
                 collateralRatio
             ).to.equal(
-                parseUnits("0.004", 6)
+                BigNumber.from(4000)
             );
         });
     });
