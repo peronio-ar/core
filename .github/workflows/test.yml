@@ -28,9 +28,4 @@ jobs:
           cmd: typechain
       - uses: borales/actions-yarn@v3.0.0
         with:
-          cmd: chain 2> /dev/null &
-      - name: Wait 5 seconds
-        run: sleep 5s
-      - uses: borales/actions-yarn@v3.0.0
-        with:
           cmd: test
