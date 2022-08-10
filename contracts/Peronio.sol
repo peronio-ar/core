@@ -325,18 +325,8 @@ contract Peronio is
         // Remember the previously staked balance
         uint256 stakedAmount = _stakedBalance();
 
-        // Retrieve the deposit fee from QiDao's Farm (this is always expressed with 4 decimals, as "basic points")
-        // Convert these "basic points" to `feeDecimals` precision
-        (, , , , uint16 depositFeeBP) = IFarm(qiDaoFarmAddress).poolInfo(qiDaoPoolId);
-        uint256 depositFee = uint256(depositFeeBP) * 10**(feeDecimals - 4);
-
-        // Calculate total fee to apply
-        // (ie. the swapFee and the depositFee are included in the total markup fee, thus, we don't double charge for both the markup fee itself
-        // and the swap and deposit fees)
-        uint256 totalFee = markupFee - min(markupFee, swapFee + depositFee);
-
         // Commit USDC tokens, and discount fees totalling the markup fee
-        uint256 lpAmount = mulDiv(_zapIn(usdcAmount), 10**feeDecimals - totalFee, 10**feeDecimals);
+        uint256 lpAmount = mulDiv(_zapIn(usdcAmount), 10**feeDecimals - _totalMintFee(), 10**feeDecimals);
 
         // Calculate the number of PE tokens as the proportion of liquidity provided
         peAmount = mulDiv(lpAmount, totalSupply(), stakedAmount);
@@ -588,6 +578,28 @@ contract Peronio is
     {
         ratio = mulDiv(10**_decimals, _stakedValue(), totalSupply());
     }
+
+    /**
+     * Return the total minting fee to apply
+     *
+     * @return totalFee  The total fee to apply on minting
+     */
+    function _totalMintFee()
+        internal
+        view
+        returns (uint256 totalFee)
+    {
+        // Retrieve the deposit fee from QiDao's Farm (this is always expressed with 4 decimals, as "basic points")
+        // Convert these "basic points" to `feeDecimals` precision
+        (, , , , uint16 depositFeeBP) = IFarm(qiDaoFarmAddress).poolInfo(qiDaoPoolId);
+        uint256 depositFee = uint256(depositFeeBP) * 10**(feeDecimals - 4);
+
+        // Calculate total fee to apply
+        // (ie. the swapFee and the depositFee are included in the total markup fee, thus, we don't double charge for both the markup fee itself
+        // and the swap and deposit fees)
+        totalFee = markupFee - min(markupFee, swapFee + depositFee);
+    }
+
 
     /**
      * Commit the given number of USDC tokens
