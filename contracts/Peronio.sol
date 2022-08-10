@@ -372,7 +372,6 @@ contract Peronio is
         emit Withdrawal(_msgSender(), usdcTotal, peAmount);
     }
 
-    // TODO: why do we need this?
     /**
      * Extract the given number of PE tokens as LP USDC/MAI tokens
      *
