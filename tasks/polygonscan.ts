@@ -20,9 +20,7 @@ task("polygonscan", "Verify contract on Polyscan").setAction(
         const peronioAddress = (await deployments.get("Peronio")).address;
         const factoryAddress = (await deployments.get("UniswapV2Factory")).address;
         const routerAddress = (await deployments.get("UniswapV2Router02")).address;
-
-        const autoCompounderAddress = (await deployments.get("AutoCompounder"))
-            .address;
+        const autoCompounderAddress = (await deployments.get("AutoCompounder")).address;
 
         const wmaticAddress = process.env.WMATIC_ADDRESS;
 

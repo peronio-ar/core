@@ -71,13 +71,13 @@ const config: HardhatUserConfig = {
         matic: {
             chainId: 137,
             url: MAINNET_API_URL,
-            gasPrice: gasPrice * 10 ** 9,
+            gasPrice: gasPrice * 10**9,
             accounts: ACCOUNTS,
         },
         mumbai: {
             chainId: 80001,
             url: MUMBAI_API_URL,
-            gasPrice: gasPrice * 10 ** 9,
+            gasPrice: gasPrice * 10**9,
             accounts: ACCOUNTS,
         },
     },
