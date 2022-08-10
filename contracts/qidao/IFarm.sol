@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.2;
+pragma solidity ^0.8.16;
 
 interface IFarm {
     function add(uint256 _allocPoint, address _lpToken, bool _withUpdate, uint16 _depositFeeBP) external;

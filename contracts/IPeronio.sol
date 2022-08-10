@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.2;
+pragma solidity ^0.8.16;
 
 interface IPeronio {
 
@@ -128,21 +128,14 @@ interface IPeronio {
     // --- Fees - Automatic -----------------------------------------------------------------------------------------------------------------------------------
 
     /**
-     * Return the number of decimals the markup and swap fees are internally expressed with
-     *
-     * @return  Always 5
-     */
-    function feeDecimals() external view returns (uint8);
-
-    /**
-     * Return the markup fee the use, using `feeDecimals()` decimals implicitly
+     * Return the markup fee the use, using `_decimals()` decimals implicitly
      *
      * @return  The markup fee to use
      */
     function markupFee() external view returns (uint256);
 
     /**
-     * Return the swap fee the use, using `feeDecimals()` decimals implicitly
+     * Return the swap fee the use, using `_decimals()` decimals implicitly
      *
      * @return  The swap fee to use
      */
@@ -169,7 +162,7 @@ interface IPeronio {
     // --- Markup fee change ----------------------------------------------------------------------------------------------------------------------------------
 
     /**
-     * Set the markup fee to the given value (take into account that this will use `feeDecimals` decimals implicitly)
+     * Set the markup fee to the given value (take into account that this will use `_decimals` decimals implicitly)
      *
      * @param newMarkupFee  New markup fee value
      * @return prevMarkupFee  Previous markup fee value

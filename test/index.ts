@@ -329,24 +329,24 @@ describe("Peronio", function () {
             await initializePeronio(usdcContract, contract, peronioInitializeParams);
         });
 
-        it("should return 5 for feeDecimals", async function () {
+        it("should return 6 for decimals", async function () {
             expect(
-                await contract.feeDecimals()
+                await contract.decimals()
             ).to.equal(
-                5
+                6
             );
         });
 
-        it("should return 5000 for markup fee", async function () {
+        it("should return 50000 for markup fee", async function () {
             expect(
                 await contract.markupFee()
             ).to.equal(
-                5000
+                50000
             );
         });
 
         it("should set 20000 for markup fee", async function () {
-            const newMarkupFee: BigNumber = BigNumber.from(2000);
+            const newMarkupFee: BigNumber = BigNumber.from(20000);
             await contract.setMarkupFee(newMarkupFee);
             expect(
                 await contract.markupFee()
