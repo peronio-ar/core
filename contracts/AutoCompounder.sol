@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.2;
+pragma solidity ^0.8.16;
 
 import { IPeronio } from "./IPeronio.sol";
 import { Ownable } from "@openzeppelin/contracts_latest/access/Ownable.sol";
