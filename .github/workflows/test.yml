@@ -5,7 +5,7 @@ on:
     branches:
       - main
       - workflows
-      - 'releases/*'
+      - "releases/*"
 
 jobs:
   # unit tests
@@ -19,8 +19,8 @@ jobs:
         with:
           node-version: 16.x
       - uses: borales/actions-yarn@v3.0.0
-      with:
+        with:
           cmd: install
       - uses: borales/actions-yarn@v3.0.0
-          with:
-            cmd: test
+        with:
+          cmd: test
