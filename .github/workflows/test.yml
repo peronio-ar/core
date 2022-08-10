@@ -25,4 +25,7 @@ jobs:
           cmd: install
       - uses: borales/actions-yarn@v3.0.0
         with:
+          cmd: typechain
+      - uses: borales/actions-yarn@v3.0.0
+        with:
           cmd: test
