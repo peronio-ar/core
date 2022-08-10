@@ -18,7 +18,7 @@ import { IUniswapV2Pair } from "./uniswap/interfaces/IUniswapV2Pair.sol";
 import { IUniswapV2Router02 } from "./uniswap/interfaces/IUniswapV2Router02.sol";
 
 // Needed for Babylonian square-root & combined-multiplication-and-division
-import { sqrt256, mulDiv } from "./Utils.sol";
+import { min, mulDiv, sqrt256 } from "./Utils.sol";
 
 // Interface
 import { IPeronio } from "./IPeronio.sol";
@@ -325,9 +325,18 @@ contract Peronio is
         // Remember the previously staked balance
         uint256 stakedAmount = _stakedBalance();
 
+        // Retrieve the deposit fee from QiDao's Farm (this is always expressed with 4 decimals, as "basic points")
+        // Convert these "basic points" to `feeDecimals` precision
+        (, , , , uint16 depositFeeBP) = IFarm(qiDaoFarmAddress).poolInfo(qiDaoPoolId);
+        uint256 depositFee = uint256(depositFeeBP) * 10**(feeDecimals - 4);
+
+        // Calculate total fee to apply
+        // (ie. the swapFee and the depositFee are included in the total markup fee, thus, we don't double charge for both the markup fee itself
+        // and the swap and deposit fees)
+        uint256 totalFee = markupFee - min(markupFee, swapFee + depositFee);
+
         // Commit USDC tokens, and discount fees totalling the markup fee
-        // (ie. the swapFee is included in the total markup fee, thus, we don't double charge for both the markup fee itself and the swap fee)
-        uint256 lpAmount = mulDiv(_zapIn(usdcAmount), 10**feeDecimals - (markupFee - swapFee), 10**feeDecimals);
+        uint256 lpAmount = mulDiv(_zapIn(usdcAmount), 10**feeDecimals - totalFee, 10**feeDecimals);
 
         // Calculate the number of PE tokens as the proportion of liquidity provided
         peAmount = mulDiv(lpAmount, totalSupply(), stakedAmount);
