@@ -266,7 +266,7 @@ contract Peronio is
         override
         returns (uint256 price)
     {
-        price = mulDiv(totalSupply(), 10**_decimals, _stakedValue());
+        price = mulDiv(10**_decimals, totalSupply(), _stakedValue());
     }
 
     /**
@@ -486,8 +486,8 @@ contract Peronio is
         (uint256 usdcReserves, uint256 maiReserves) = _getLpReserves();
         (uint256 stakedUsdc, uint256 stakedMai) = _stakedTokens();
 
-        uint256 usdcAmount = mulDiv(stakedUsdc, pe, totalSupply());
-        uint256 maiAmount = mulDiv(stakedMai, pe, totalSupply());
+        uint256 usdcAmount = mulDiv(pe, stakedUsdc, totalSupply());
+        uint256 maiAmount = mulDiv(pe, stakedMai, totalSupply());
 
         usdc = usdcAmount + _getAmountOut(maiAmount, maiReserves, usdcReserves);
     }
@@ -542,8 +542,8 @@ contract Peronio is
 
         (uint256 usdcReserves, uint256 maiReserves) = _getLpReserves();
 
-        usdcAmount = mulDiv(usdcReserves, lpAmount, lpTotalSupply);
-        maiAmount = mulDiv(maiReserves, lpAmount, lpTotalSupply);
+        usdcAmount = mulDiv(lpAmount, usdcReserves, lpTotalSupply);
+        maiAmount = mulDiv(lpAmount, maiReserves, lpTotalSupply);
     }
 
     /**
