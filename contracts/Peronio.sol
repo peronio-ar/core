@@ -55,16 +55,15 @@ contract Peronio is
     // QiDao Pool ID
     uint256 public immutable override qiDaoPoolId;
 
+    // Constant number of significant decimals
+    uint8 private constant _decimals = 6;
+
     // Fees
-    uint8 public immutable override feeDecimals = 5;  // 5 decimals for "markupFee" and "swapFee"
-    uint256 public override markupFee = 5000; // 5.00%
-    uint256 public override swapFee = 150; // 0.15%
+    uint256 public override markupFee = 50000; // 5.00%
+    uint256 public override swapFee = 1500; // 0.15%
 
     // Initialization can only be run once
     bool public override initialized;
-
-    // Constant number of significant decimals
-    uint8 private constant _decimals = 6;
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------
     // --- Public Interface -----------------------------------------------------------------------------------------------------------------------------------
@@ -137,7 +136,7 @@ contract Peronio is
     // --- Markup fee change ----------------------------------------------------------------------------------------------------------------------------------
 
     /**
-     * Set the markup fee to the given value (take into account that this will use `feeDecimals` decimals implicitly)
+     * Set the markup fee to the given value (take into account that this will use `_decimals` decimals implicitly)
      *
      * @param newMarkupFee  New markup fee value
      * @return prevMarkupFee  Previous markup fee value
@@ -281,7 +280,7 @@ contract Peronio is
         override
         returns (uint256 price)
     {
-        price = mulDiv(_collateralRatio(), 10**feeDecimals + markupFee, 10**feeDecimals);
+        price = mulDiv(_collateralRatio(), 10**_decimals + markupFee, 10**_decimals);
     }
 
     /**
@@ -326,7 +325,7 @@ contract Peronio is
         uint256 stakedAmount = _stakedBalance();
 
         // Commit USDC tokens, and discount fees totalling the markup fee
-        uint256 lpAmount = mulDiv(_zapIn(usdcAmount), 10**feeDecimals - _totalMintFee(), 10**feeDecimals);
+        uint256 lpAmount = mulDiv(_zapIn(usdcAmount), 10**_decimals - _totalMintFee(), 10**_decimals);
 
         // Calculate the number of PE tokens as the proportion of liquidity provided
         peAmount = mulDiv(lpAmount, totalSupply(), stakedAmount);
@@ -467,7 +466,7 @@ contract Peronio is
 
         uint256 lpAmount = mulDiv(usdcAmount, IERC20(lpAddress).totalSupply(), usdcReserves + amountToSwap);
 
-        uint256 markup = mulDiv(lpAmount, markupFee - swapFee, 10**feeDecimals); // Calculate fee to subtract
+        uint256 markup = mulDiv(lpAmount, markupFee - swapFee, 10**_decimals); // Calculate fee to subtract
         lpAmount = lpAmount - markup; // remove 5% fee
 
         // Compute %
@@ -590,9 +589,9 @@ contract Peronio is
         returns (uint256 totalFee)
     {
         // Retrieve the deposit fee from QiDao's Farm (this is always expressed with 4 decimals, as "basic points")
-        // Convert these "basic points" to `feeDecimals` precision
+        // Convert these "basic points" to `_decimals` precision
         (, , , , uint16 depositFeeBP) = IFarm(qiDaoFarmAddress).poolInfo(qiDaoPoolId);
-        uint256 depositFee = uint256(depositFeeBP) * 10**(feeDecimals - 4);
+        uint256 depositFee = uint256(depositFeeBP) * 10**(_decimals - 4);
 
         // Calculate total fee to apply
         // (ie. the swapFee and the depositFee are included in the total markup fee, thus, we don't double charge for both the markup fee itself

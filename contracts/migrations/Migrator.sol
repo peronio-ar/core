@@ -85,7 +85,7 @@ contract Migrator is IMigrator, ReentrancyGuard {
         // uint256 amountToSwap = _calculateSwapInAmount(usdcReserves, usdc);
         // uint256 usdcAmount = usdc - amountToSwap;
         // uint256 lpAmount = usdcAmount.mul(10e18).div(usdcReserves);
-        // uint256 markupFee = lpAmount.mul(markupFee - swapFee).div(10**feeDecimals); // Calculate fee to subtract
+        // uint256 markupFee = lpAmount.mul(markupFee - swapFee).div(10**_decimals); // Calculate fee to subtract
         // lpAmount = lpAmount.sub(markupFee); // remove 5% fee
         // // Compute %
         // uint256 ratio = lpAmount.mul(10e8).div(stakedAmount);
