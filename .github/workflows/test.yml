@@ -19,7 +19,7 @@ jobs:
         with:
           node-version: 16.x
       - name: Copies .env variable
-          run: cp .env.example .env
+        run: cp .env.example .env
       - uses: borales/actions-yarn@v3.0.0
         with:
           cmd: install
