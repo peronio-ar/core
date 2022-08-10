@@ -1,0 +1,24 @@
+name: "units-test"
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - workflows
+      - 'releases/*'
+
+jobs:
+  # unit tests
+  units:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 16.x
+      - uses: borales/actions-yarn@v3.0.0
+      with:
+          cmd: install
+      - uses: borales/actions-yarn@v3.0.0
+          with:
+            cmd: test
