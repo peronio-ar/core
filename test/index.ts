@@ -166,7 +166,7 @@ describe("Peronio", function () {
 
             // Amount of USDCs to mint, expected PE amount, and minimum PEs to receive
             const amount: BigNumber = BigNumber.from(1_000000);
-            const expectedPe: BigNumber = BigNumber.from(237_160343);
+            const expectedPe: BigNumber = BigNumber.from(238_406588);
             const minReceive: BigNumber = BigNumber.from(235_000000);
 
             // Approve
@@ -198,7 +198,7 @@ describe("Peronio", function () {
 
             // Amount of PEs to withdraw, and expected USDC amount
             const amount: BigNumber = BigNumber.from(250_000000);
-            const quotedUSDC: BigNumber = BigNumber.from(1010524);
+            const quotedUSDC: BigNumber = BigNumber.from(1_010474);
 
             // Approve
             await contract.approve(contract.address, amount);

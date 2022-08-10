@@ -18,7 +18,7 @@ import { IUniswapV2Pair } from "./uniswap/interfaces/IUniswapV2Pair.sol";
 import { IUniswapV2Router02 } from "./uniswap/interfaces/IUniswapV2Router02.sol";
 
 // Needed for Babylonian square-root & combined-multiplication-and-division
-import { sqrt256, mulDiv } from "./Utils.sol";
+import { min, mulDiv, sqrt256 } from "./Utils.sol";
 
 // Interface
 import { IPeronio } from "./IPeronio.sol";
@@ -326,8 +326,7 @@ contract Peronio is
         uint256 stakedAmount = _stakedBalance();
 
         // Commit USDC tokens, and discount fees totalling the markup fee
-        // (ie. the swapFee is included in the total markup fee, thus, we don't double charge for both the markup fee itself and the swap fee)
-        uint256 lpAmount = mulDiv(_zapIn(usdcAmount), 10**feeDecimals - (markupFee - swapFee), 10**feeDecimals);
+        uint256 lpAmount = mulDiv(_zapIn(usdcAmount), 10**feeDecimals - _totalMintFee(), 10**feeDecimals);
 
         // Calculate the number of PE tokens as the proportion of liquidity provided
         peAmount = mulDiv(lpAmount, totalSupply(), stakedAmount);
@@ -372,7 +371,6 @@ contract Peronio is
         emit Withdrawal(_msgSender(), usdcTotal, peAmount);
     }
 
-    // TODO: why do we need this?
     /**
      * Extract the given number of PE tokens as LP USDC/MAI tokens
      *
@@ -580,6 +578,28 @@ contract Peronio is
     {
         ratio = mulDiv(10**_decimals, _stakedValue(), totalSupply());
     }
+
+    /**
+     * Return the total minting fee to apply
+     *
+     * @return totalFee  The total fee to apply on minting
+     */
+    function _totalMintFee()
+        internal
+        view
+        returns (uint256 totalFee)
+    {
+        // Retrieve the deposit fee from QiDao's Farm (this is always expressed with 4 decimals, as "basic points")
+        // Convert these "basic points" to `feeDecimals` precision
+        (, , , , uint16 depositFeeBP) = IFarm(qiDaoFarmAddress).poolInfo(qiDaoPoolId);
+        uint256 depositFee = uint256(depositFeeBP) * 10**(feeDecimals - 4);
+
+        // Calculate total fee to apply
+        // (ie. the swapFee and the depositFee are included in the total markup fee, thus, we don't double charge for both the markup fee itself
+        // and the swap and deposit fees)
+        totalFee = markupFee - min(markupFee, swapFee + depositFee);
+    }
+
 
     /**
      * Commit the given number of USDC tokens

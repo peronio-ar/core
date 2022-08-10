@@ -2,6 +2,40 @@
 pragma solidity ^0.8.2;
 
 /**
+ * Compute the maximum amongst the given quantities, returning the left one if equal
+ *
+ * @param left  The left value to compare
+ * @param right  The right value to compare
+ * @return maximum  The maximum of the values given
+ */
+function max(
+    uint256 left,
+    uint256 right
+)
+    pure
+    returns (uint256 maximum)
+{
+    maximum = right <= left ? left : right;
+}
+
+/**
+ * Compute the minimum amongst the given quantities, returning the left one if equal
+ *
+ * @param left  The left value to compare
+ * @param right  The right value to compare
+ * @return minimum  The minimum of the values given
+ */
+function min(
+    uint256 left,
+    uint256 right
+)
+    pure
+    returns (uint256 minimum)
+{
+    minimum = left <= right ? left : right;
+}
+
+/**
  * Compute square-roots according to the Babylonian (viz. Heron's) method (see: https://en.wikipedia.org/wiki/Methods_of_computing_square_roots#Babylonian_method)
  *
  * @param y  The argument to calculate the square root for
