@@ -72,7 +72,7 @@ describe("Peronio", function () {
     let childId: ChildProcess;
 
     before(async () => {
-        childId = exec('yarn chain');
+        childId = exec('nc -z localhost 8545 || yarn chain');
         execSync('while ! nc -z localhost 8545; do sleep 0.1; done');
 
         accounts = await hre.getNamedAccounts();
