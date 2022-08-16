@@ -33,7 +33,7 @@ task("polygonscan", "Verify contract on Polyscan").setAction(async (_a, { networ
     const { deployer } = await getNamedAccounts();
 
     runVerify("Publishing Peronio to Polygonscan", peronioAddress, getConstructorParams());
-    runVerify("Publishing Uniswap Factory to Polygonscan", factoryAddress, { deployer: deployer });
-    runVerify("Publishing Uniswap Router to Polygonscan", routerAddress, { factoryAddress: factoryAddress, wmaticAddress: wmaticAddress });
-    runVerify("Publishing AutoCompounder Polygonscan", autoCompounderAddress, { peronioAddress: peronioAddress });
+    runVerify("Publishing Uniswap Factory to Polygonscan", factoryAddress, { deployer });
+    runVerify("Publishing Uniswap Router to Polygonscan", routerAddress, { factoryAddress, wmaticAddress });
+    runVerify("Publishing AutoCompounder Polygonscan", autoCompounderAddress, { peronioAddress });
 });

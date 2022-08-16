@@ -4,7 +4,9 @@ import { ethers } from "hardhat";
 
 import { keccak256 } from "ethers/lib/utils";
 
+/* eslint-disable node/no-unpublished-import */
 import { Peronio } from "../typechain-types";
+/* eslint-enable node/no-unpublished-import */
 
 const autocompoundDeploy: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     console.info("Deploying Uniswap");

@@ -5,10 +5,12 @@ import { BigNumber, ContractTransaction } from "ethers";
 import { keccak256 } from "ethers/lib/utils";
 import hre, { ethers } from "hardhat";
 
+/* eslint-disable node/no-unpublished-import */
 import { Peronio, ERC20, AutoCompounder } from "../typechain-types";
 
-import { Peronio__factory } from "../typechain-types/factories/contracts/Peronio__factory";
-import { AutoCompounder__factory } from "../typechain-types/factories/contracts/AutoCompounder__factory";
+import { Peronio__factory as PeronioFactory } from "../typechain-types/factories/contracts/Peronio__factory";
+import { AutoCompounder__factory as AutoCompounderFactory } from "../typechain-types/factories/contracts/AutoCompounder__factory";
+/* eslint-enable node/no-unpublished-import */
 
 import { IPeronioConstructorParams } from "../utils/interfaces/IPeronioConstructorParams";
 import { IPeronioInitializeParams } from "../utils/interfaces/IPeronioInitializeParams";
@@ -23,8 +25,8 @@ const REWARDS_ROLE: string = keccak256(new TextEncoder().encode("REWARDS_ROLE"))
 const peronioConstructorParams: IPeronioConstructorParams = getConstructorParams();
 
 const deployPeronio = async (constructor: IPeronioConstructorParams): Promise<Peronio> => {
-    const Peronio: Peronio__factory = await ethers.getContractFactory("Peronio");
-    let contract: Peronio = await Peronio.deploy(
+    const Peronio: PeronioFactory = await ethers.getContractFactory("Peronio");
+    const contract: Peronio = await Peronio.deploy(
         constructor.name,
         constructor.symbol,
         constructor.usdcAddress,
@@ -333,8 +335,8 @@ describe("Peronio", function () {
 
         it("should compound from AutoCompounder", async function () {
             // Deploys auto-compounder
-            const AutoCompounder: AutoCompounder__factory = await ethers.getContractFactory("AutoCompounder");
-            let autoCompounder: AutoCompounder = await AutoCompounder.deploy(contract.address);
+            const AutoCompounder: AutoCompounderFactory = await ethers.getContractFactory("AutoCompounder");
+            const autoCompounder: AutoCompounder = await AutoCompounder.deploy(contract.address);
             await autoCompounder.deployed();
 
             // Grants role

@@ -1,5 +1,5 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { Address, DeployFunction } from "hardhat-deploy/types";
+import { DeployFunction } from "hardhat-deploy/types";
 
 import { getConstructorParams } from "../utils/helpers";
 

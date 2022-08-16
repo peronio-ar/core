@@ -1,6 +1,8 @@
 import hre from "hardhat";
 
+/* eslint-disable no-unused-vars */
 async function main() {
+    /* eslint-enable no-unused-vars */
     console.info("Network:", hre.network.name);
     if (hre.network.name !== "matic") {
         console.info("Skipped Polygonscan and sourcify submission.");

@@ -2,7 +2,9 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { Address, DeployFunction } from "hardhat-deploy/types";
 import { ethers } from "hardhat";
 
+/* eslint-disable node/no-unpublished-import */
 import { UniswapV2Factory } from "../typechain-types";
+/* eslint-enable node/no-unpublished-import */
 
 const uniswapDeploy: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     console.info("Deploying Uniswap");
