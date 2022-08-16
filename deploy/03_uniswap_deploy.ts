@@ -1,22 +1,21 @@
-// deploy/03_uniswap_deploy.ts
-import hre, { ethers } from "hardhat";
+import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { Address, DeployFunction } from 'hardhat-deploy/types';
+import { ethers } from "hardhat";
 
 import { UniswapV2Factory } from "../typechain-types";
 
-module.exports = async () => {
+const uniswapDeploy: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     console.info("Deploying Uniswap");
-    const { getNamedAccounts, deployments } = hre;
 
-    const { deploy } = deployments;
-    const { deployer } = await getNamedAccounts();
+    const { deployer } = await hre.getNamedAccounts();
 
     console.info("Deploying Factory");
-    const { address: factoryAddress } = await deploy("UniswapV2Factory", {
+    const factoryAddress: Address = (await hre.deployments.deploy("UniswapV2Factory", {
         contract: "UniswapV2Factory",
         from: deployer,
         log: true,
         args: [deployer],
-    });
+    })).address;
 
     const factoryContract: UniswapV2Factory = await ethers.getContractAt("UniswapV2Factory", factoryAddress);
 
@@ -24,7 +23,7 @@ module.exports = async () => {
     await factoryContract.setFeeTo(process.env.TREASURY_ADDRESS ?? "");
 
     console.info("Deploying Router");
-    await deploy("UniswapV2Router02", {
+    await hre.deployments.deploy("UniswapV2Router02", {
         contract: "UniswapV2Router02",
         from: deployer,
         log: true,
@@ -32,4 +31,4 @@ module.exports = async () => {
     });
 };
 
-module.exports.tags = ["Uniswap"];
+export default uniswapDeploy;

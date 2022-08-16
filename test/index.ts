@@ -10,8 +10,8 @@ import { Peronio, ERC20, AutoCompounder } from "../typechain-types";
 import { Peronio__factory } from "../typechain-types/factories/contracts/Peronio__factory";
 import { AutoCompounder__factory } from "../typechain-types/factories/contracts/AutoCompounder__factory";
 
-import { IPeronioConstructorParams } from "../utils/types/IPeronioConstructorParams";
-import { IPeronioInitializeParams } from "../utils/types/IPeronioInitializeParams";
+import { IPeronioConstructorParams } from "../utils/interfaces/IPeronioConstructorParams";
+import { IPeronioInitializeParams } from "../utils/interfaces/IPeronioInitializeParams";
 
 import { getConstructorParams, getInitializeParams } from "../utils/helpers";
 

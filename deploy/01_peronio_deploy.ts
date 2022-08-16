@@ -1,33 +1,18 @@
-// deploy/01_peronio_deploy.ts
-import hre from "hardhat";
+import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { Address, DeployFunction } from 'hardhat-deploy/types';
+
 import { getConstructorParams } from "../utils/helpers";
-import { IPeronioConstructorParams } from "../utils/types/IPeronioConstructorParams";
 
-module.exports = async () => {
+const peronioDeploy: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     console.info("Deploying Peronio");
-    const { getNamedAccounts, deployments } = hre;
+    const { deployer } = await hre.getNamedAccounts();
 
-    const { deploy } = deployments;
-    const { deployer } = await getNamedAccounts();
-
-    const peronioConstructor: IPeronioConstructorParams = getConstructorParams();
-
-    await deploy("Peronio", {
+    await hre.deployments.deploy("Peronio", {
         contract: "Peronio",
         from: deployer,
         log: true,
-        args: [
-            peronioConstructor.name,
-            peronioConstructor.symbol,
-            peronioConstructor.usdcAddress,
-            peronioConstructor.maiAddress,
-            peronioConstructor.lpAddress,
-            peronioConstructor.qiAddress,
-            peronioConstructor.quickswapRouterAddress,
-            peronioConstructor.qiFarmAddress,
-            peronioConstructor.qiPoolId,
-        ],
+        args: Object.values(getConstructorParams()),
     });
 };
 
-module.exports.tags = ["Peronio"];
+export default peronioDeploy;

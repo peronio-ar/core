@@ -8,11 +8,5 @@ async function main() {
     }
     await hre.run("polygonscan");
     await hre.run("sourcify");
-    console.log(
-        "\u2705  Every contract has been successfully submitted to PolygonScan."
-    );
+    console.log("\u2705  Every contract has been successfully submitted to PolygonScan.");
 }
-
-main().catch((error) => {
-    throw error;
-});

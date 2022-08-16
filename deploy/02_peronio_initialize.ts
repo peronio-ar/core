@@ -1,25 +1,24 @@
-// deploy/02_peronio_initialize.ts
-import hre, { ethers } from "hardhat";
+import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { DeployFunction } from 'hardhat-deploy/types';
+import { ethers } from "hardhat";
 
 import { getInitializeParams } from "../utils/helpers";
 import { Peronio, ERC20 } from "../typechain-types";
-import { IPeronioInitializeParams } from "../utils/types/IPeronioInitializeParams";
+import { IPeronioInitializeParams } from "../utils/interfaces/IPeronioInitializeParams";
 
-module.exports = async () => {
+const peronioInitialize: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     console.info("Initializing Peronio");
-    const { get } = hre.deployments;
 
-    const peronioInitialize: IPeronioInitializeParams = getInitializeParams();
+    const peronioInitializeParams: IPeronioInitializeParams = getInitializeParams();
 
     const usdcContract: ERC20 = await ethers.getContractAt("ERC20", process.env.USDC_ADDRESS ?? "");
-
-    const peronioContract: Peronio = await ethers.getContractAt("Peronio", (await get("Peronio")).address);
+    const peronioContract: Peronio = await ethers.getContractAt("Peronio", (await hre.deployments.get("Peronio")).address);
 
     // Approve
-    await usdcContract.approve(peronioContract.address, peronioInitialize.usdcAmount);
+    await usdcContract.approve(peronioContract.address, peronioInitializeParams.usdcAmount);
 
     // Initialize
-    await peronioContract.initialize(peronioInitialize.usdcAmount, peronioInitialize.startingRatio);
+    await peronioContract.initialize(peronioInitializeParams.usdcAmount, peronioInitializeParams.startingRatio);
 };
 
-module.exports.tags = ["Initialize"];
+export default peronioInitialize;
