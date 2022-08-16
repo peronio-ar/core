@@ -3,6 +3,7 @@
 
 import { Address } from "hardhat-deploy/types";
 import { task } from "hardhat/config";
+
 import { getConstructorParams } from "../utils/helpers";
 
 task("polygonscan", "Verify contract on Polyscan").setAction(

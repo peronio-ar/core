@@ -1,11 +1,13 @@
+import { Address } from "hardhat-deploy/types";
+
 export interface IPeronioConstructorParams {
     name: string;
     symbol: string;
-    usdcAddress: string;
-    maiAddress: string;
-    lpAddress: string;
-    qiAddress: string;
-    quickswapRouterAddress: string;
-    qiFarmAddress: string;
+    usdcAddress: Address;
+    maiAddress: Address;
+    lpAddress: Address;
+    qiAddress: Address;
+    quickswapRouterAddress: Address;
+    qiFarmAddress: Address;
     qiPoolId: string;
 }
