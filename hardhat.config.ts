@@ -8,7 +8,6 @@ import "hardhat-gas-reporter";
 import "solidity-coverage";
 import "hardhat-deploy";
 
-import "./tasks/basic";
 import "./tasks/polygonscan";
 
 dotenv.config();
