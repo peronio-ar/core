@@ -12,7 +12,3 @@ async function main() {
         "\u2705  Every contract has been successfully submitted to PolygonScan."
     );
 }
-
-main().catch((error) => {
-    throw error;
-});
