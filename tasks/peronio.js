@@ -25,61 +25,46 @@ task("deploy_peronio", "Deploy Peronio")
 task("init_peronio", "Initialize Peronio")
     // .addPositionalParam("address", "The address to check the balance from")
     .setAction(async ({ address }, { network }) => {
-        const collateralAmount = "100"; // USDT 100
-        const collateralRatio = "250"; // USDT 100
+        const collateralAmount = "100"; // USDC 100
+        const collateralRatio = "250"; // USDC 100
 
         const peronioAddress = getDeployedContract("Peronio", network.name).address;
-
         console.info("Peronio Address", peronioAddress);
 
-        const peronioContract = await ethers.getContractAt(
-            "Peronio",
-            peronioAddress
-        );
-
         console.info("Initializing contract");
-
-        await peronioContract.initialize(
-            ethers.utils.parseUnits(collateralAmount, 6),
-            collateralRatio
-        );
+        const peronioContract = await ethers.getContractAt("Peronio", peronioAddress);
+        await peronioContract.initialize(ethers.utils.parseUnits(collateralAmount, 6), collateralRatio);
 
         console.info("Fully Initialized!");
     });
 
 task("mint", "Mint Peronio")
-    .addOptionalParam("usdt", "USDT to use")
-    .setAction(async ({ usdt }, { getNamedAccounts, network }) => {
+    .addOptionalParam("usdc", "USDc to use")
+    .setAction(async ({ usdc }, { getNamedAccounts, network }) => {
         const { deployer } = await getNamedAccounts();
 
-        const usdtAmount = usdt ?? "100";
+        const usdcAmount = usdc ?? "100";
 
-        console.info("Amount to deposit", `USDT ${usdtAmount}`);
+        console.info("Amount to deposit", `USDC ${usdcAmount}`);
 
         const peronioAddress = getDeployedContract("Peronio", network.name).address;
-        const usdtAddress = process.env.USDT_ADDRESS;
+        const usdcAddress = process.env.USDC_ADDRESS;
 
-        const peronioContract = await ethers.getContractAt(
-            "Peronio",
-            peronioAddress
-        );
-        const usdtContract = await ethers.getContractAt("ERC20", usdtAddress);
+        const peronioContract = await ethers.getContractAt("Peronio", peronioAddress);
+        const usdcContract = await ethers.getContractAt("ERC20", usdcAddress);
 
         const buyingPrice = await peronioContract.buyingPrice();
 
         console.info("buying price: ", ethers.utils.formatUnits(buyingPrice, 6));
 
-        const peAmount = ethers.utils.parseUnits(usdtAmount, 12).div(buyingPrice);
+        const peAmount = ethers.utils.parseUnits(usdcAmount, 12).div(buyingPrice);
 
         console.info("PE amount: ", ethers.utils.formatUnits(peAmount, 6));
 
-        console.info(`Approving USDT ${usdtAmount}...`);
-        console.info("usdtContract.address", usdtContract.address);
+        console.info(`Approving USDC ${usdcAmount}...`);
+        console.info("usdcContract.address", usdcContract.address);
 
-        await usdtContract.approve(
-            peronioAddress,
-            ethers.utils.parseUnits(usdtAmount, 6)
-        );
+        await usdcContract.approve(peronioAddress, ethers.utils.parseUnits(usdcAmount, 6));
 
         console.info("- Minting PE", ethers.utils.formatUnits(peAmount, 6));
         await peronioContract.mint(deployer, peAmount);
@@ -92,45 +77,26 @@ task("withdraw", "Withdraw Peronio")
         const { deployer } = await getNamedAccounts();
 
         const peAmount = pe ?? "250";
-
         console.info("Amount to deposit", `PE ${peAmount}`);
 
         const peronioAddress = getDeployedContract("Peronio", network.name).address;
-
-        const peronioContract = await ethers.getContractAt(
-            "Peronio",
-            peronioAddress
-        );
+        const peronioContract = await ethers.getContractAt("Peronio", peronioAddress);
 
         const collateralRatio = await peronioContract.collateralRatio();
+        console.info("collateral ratio: ", ethers.utils.formatUnits(collateralRatio, 6));
 
-        console.info(
-            "collateral ratio: ",
-            ethers.utils.formatUnits(collateralRatio, 6)
-        );
-
-        const usdtAmount = ethers.utils
+        const usdcAmount = ethers.utils
             .parseUnits(peAmount, 6)
             .mul(collateralRatio)
             .div(BigNumber.from(Math.pow(10, 6)).toString());
-
-        console.info(
-            "USDT amount to receive ",
-            ethers.utils.formatUnits(usdtAmount, 6)
-        );
+        console.info("USDC amount to receive ", ethers.utils.formatUnits(usdcAmount, 6));
 
         console.info(`Approving PE ${pe}...`);
-
-        await peronioContract.approve(
-            peronioAddress,
-            ethers.utils.parseUnits(peAmount, 6)
-        );
+        await peronioContract.approve(peronioAddress, ethers.utils.parseUnits(peAmount, 6));
 
         console.info("Withdrawing PE", peAmount);
-        await peronioContract.withdraw(
-            deployer,
-            ethers.utils.parseUnits(peAmount, 6)
-        );
+        await peronioContract.withdraw(deployer, ethers.utils.parseUnits(peAmount, 6));
+
         console.info("Done!");
     });
 
@@ -140,10 +106,7 @@ task("harvest", "Harvest WMATIC and ZapIn").setAction(
         const peronioAddress = getDeployedContract("Peronio", network.name).address;
 
         // Get contracts
-        const peronioContract = await ethers.getContractAt(
-            "Peronio",
-            peronioAddress
-        );
+        const peronioContract = await ethers.getContractAt("Peronio", peronioAddress);
 
         console.dir(await peronioContract.harvestMaticIntoToken());
     }
