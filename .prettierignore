@@ -1,4 +1,6 @@
-artifacts
-cache
+artifacts/**
+cache/**
 coverage*
+deployments/**
 gasReporterOutput.json
+typechain-types/**

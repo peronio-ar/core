@@ -2,7 +2,6 @@
 pragma solidity ^0.8.16;
 
 interface IPeronio {
-
     // --- Events ---------------------------------------------------------------------------------------------------------------------------------------------
 
     /**
@@ -65,14 +64,14 @@ interface IPeronio {
      *
      * @return roleId  The role hash in question
      */
-    function MARKUP_ROLE() external view returns (bytes32 roleId);  // solhint-disable-line func-name-mixedcase
+    function MARKUP_ROLE() external view returns (bytes32 roleId); // solhint-disable-line func-name-mixedcase
 
     /**
      * Return the hash identifying the role responsible for compounding rewards
      *
      * @return roleId  The role hash in question
      */
-    function REWARDS_ROLE() external view returns (bytes32 roleId);  // solhint-disable-line func-name-mixedcase
+    function REWARDS_ROLE() external view returns (bytes32 roleId); // solhint-disable-line func-name-mixedcase
 
     // --- Addresses - Automatic ------------------------------------------------------------------------------------------------------------------------------
 
@@ -245,7 +244,11 @@ interface IPeronio {
      * @return peAmount  The number of PE tokens actually minted
      * @custom:emit  Minted
      */
-    function mint(address to, uint256 usdcAmount, uint256 minReceive) external returns (uint256 peAmount);
+    function mint(
+        address to,
+        uint256 usdcAmount,
+        uint256 minReceive
+    ) external returns (uint256 peAmount);
 
     /**
      * Extract the given number of PE tokens as USDC tokens

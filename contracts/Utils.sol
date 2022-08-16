@@ -8,13 +8,7 @@ pragma solidity ^0.8.16;
  * @param right  The right value to compare
  * @return maximum  The maximum of the values given
  */
-function max(
-    uint256 left,
-    uint256 right
-)
-    pure
-    returns (uint256 maximum)
-{
+function max(uint256 left, uint256 right) pure returns (uint256 maximum) {
     maximum = right <= left ? left : right;
 }
 
@@ -25,13 +19,7 @@ function max(
  * @param right  The right value to compare
  * @return minimum  The minimum of the values given
  */
-function min(
-    uint256 left,
-    uint256 right
-)
-    pure
-    returns (uint256 minimum)
-{
+function min(uint256 left, uint256 right) pure returns (uint256 minimum) {
     minimum = left <= right ? left : right;
 }
 
@@ -41,12 +29,7 @@ function min(
  * @param y  The argument to calculate the square root for
  * @return z  The square root of the provided number, calculated via the Babylonian method
  */
-function sqrt256(
-    uint256 y
-)
-    pure
-    returns (uint256 z)
-{
+function sqrt256(uint256 y) pure returns (uint256 z) {
     if (y > 3) {
         z = y;
         uint256 x = y / 2 + 1;
@@ -59,7 +42,6 @@ function sqrt256(
         z = 0;
     }
 }
-
 
 /**
  * Calculates floor(a * b / denominator) with full precision; throws if result overflows a uint256 or denominator == 0
@@ -75,16 +57,13 @@ function mulDiv(
     uint256 a,
     uint256 b,
     uint256 denominator
-)
-    pure
-    returns (uint256 result)
-{
+) pure returns (uint256 result) {
     // 512-bit multiply [prod1 prod0] = a * b
     // Compute the product mod 2**256 and mod 2**256 - 1, then use the Chinese Remainder Theorem to reconstruct the 512 bit result
     // The result is stored in two 256-bit variables such that product = prod1 * 2**256 + prod0
 
-    uint256 prod0;  // Least significant 256 bits of the product
-    uint256 prod1;  // Most significant 256 bits of the product
+    uint256 prod0; // Least significant 256 bits of the product
+    uint256 prod1; // Most significant 256 bits of the product
 
     assembly {
         let mm := mulmod(a, b, not(0))
@@ -144,12 +123,12 @@ function mulDiv(
 
         // Now use Newton-Raphson iteration to improve the precision.
         // Thanks to Hensel's lifting lemma, this also works in modular arithmetic, doubling the correct bits in each step.
-        inv *= 2 - denominator * inv;  // inverse mod 2**8
-        inv *= 2 - denominator * inv;  // inverse mod 2**16
-        inv *= 2 - denominator * inv;  // inverse mod 2**32
-        inv *= 2 - denominator * inv;  // inverse mod 2**64
-        inv *= 2 - denominator * inv;  // inverse mod 2**128
-        inv *= 2 - denominator * inv;  // inverse mod 2**256
+        inv *= 2 - denominator * inv; // inverse mod 2**8
+        inv *= 2 - denominator * inv; // inverse mod 2**16
+        inv *= 2 - denominator * inv; // inverse mod 2**32
+        inv *= 2 - denominator * inv; // inverse mod 2**64
+        inv *= 2 - denominator * inv; // inverse mod 2**128
+        inv *= 2 - denominator * inv; // inverse mod 2**256
 
         // Because the division is now exact we can divide by multiplying with the modular inverse of denominator
         // This will give us the correct result modulo 2**256

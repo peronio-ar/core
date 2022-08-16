@@ -2,36 +2,28 @@
 pragma solidity ^0.8.16;
 
 // OpenZeppelin imports
-import { AccessControl } from "@openzeppelin/contracts_latest/access/AccessControl.sol";
-import { ReentrancyGuard } from "@openzeppelin/contracts_latest/security/ReentrancyGuard.sol";
-import { ERC20 } from "@openzeppelin/contracts_latest/token/ERC20/ERC20.sol";
-import { IERC20 } from "@openzeppelin/contracts_latest/token/ERC20/IERC20.sol";
-import { ERC20Permit } from "@openzeppelin/contracts_latest/token/ERC20/extensions/draft-ERC20Permit.sol";
-import { ERC20Burnable } from "@openzeppelin/contracts_latest/token/ERC20/extensions/ERC20Burnable.sol";
-import { SafeERC20 } from "@openzeppelin/contracts_latest/token/ERC20/utils/SafeERC20.sol";
+import {AccessControl} from "@openzeppelin/contracts_latest/access/AccessControl.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts_latest/security/ReentrancyGuard.sol";
+import {ERC20} from "@openzeppelin/contracts_latest/token/ERC20/ERC20.sol";
+import {IERC20} from "@openzeppelin/contracts_latest/token/ERC20/IERC20.sol";
+import {ERC20Permit} from "@openzeppelin/contracts_latest/token/ERC20/extensions/draft-ERC20Permit.sol";
+import {ERC20Burnable} from "@openzeppelin/contracts_latest/token/ERC20/extensions/ERC20Burnable.sol";
+import {SafeERC20} from "@openzeppelin/contracts_latest/token/ERC20/utils/SafeERC20.sol";
 
 // QiDao
-import { IFarm } from "./qidao/IFarm.sol";
+import {IFarm} from "./qidao/IFarm.sol";
 
 // UniSwap
-import { IUniswapV2Pair } from "./uniswap/interfaces/IUniswapV2Pair.sol";
-import { IUniswapV2Router02 } from "./uniswap/interfaces/IUniswapV2Router02.sol";
+import {IUniswapV2Pair} from "./uniswap/interfaces/IUniswapV2Pair.sol";
+import {IUniswapV2Router02} from "./uniswap/interfaces/IUniswapV2Router02.sol";
 
 // Needed for Babylonian square-root & combined-multiplication-and-division
-import { min, mulDiv, sqrt256 } from "./Utils.sol";
+import {min, mulDiv, sqrt256} from "./Utils.sol";
 
 // Interface
-import { IPeronio } from "./IPeronio.sol";
+import {IPeronio} from "./IPeronio.sol";
 
-
-contract Peronio is
-    IPeronio,
-    ERC20,
-    ERC20Burnable,
-    ERC20Permit,
-    AccessControl,
-    ReentrancyGuard
-{
+contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     // Roles
@@ -91,10 +83,7 @@ contract Peronio is
         address _quickSwapRouterAddress,
         address _qiDaoFarmAddress,
         uint256 _qiDaoPoolId
-    )
-        ERC20(name, symbol)
-        ERC20Permit(name)
-    {
+    ) ERC20(name, symbol) ERC20Permit(name) {
         // Stablecoin Addresses
         usdcAddress = _usdcAddress;
         maiAddress = _maiAddress;
@@ -123,13 +112,7 @@ contract Peronio is
      *
      * @return decimals_  This will always be 6
      */
-    function decimals()
-        public
-        view
-        virtual
-        override(ERC20, IPeronio)
-        returns (uint8 decimals_)
-    {
+    function decimals() public view virtual override(ERC20, IPeronio) returns (uint8 decimals_) {
         decimals_ = DECIMALS;
     }
 
@@ -142,14 +125,7 @@ contract Peronio is
      * @return prevMarkupFee  Previous markup fee value
      * @custom:emit  MarkupFeeUpdated
      */
-    function setMarkupFee(
-        uint256 newMarkupFee
-    )
-        external
-        override
-        onlyRole(MARKUP_ROLE)
-        returns (uint256 prevMarkupFee)
-    {
+    function setMarkupFee(uint256 newMarkupFee) external override onlyRole(MARKUP_ROLE) returns (uint256 prevMarkupFee) {
         (prevMarkupFee, markupFee) = (markupFee, newMarkupFee);
 
         emit MarkupFeeUpdated(_msgSender(), newMarkupFee);
@@ -164,14 +140,7 @@ contract Peronio is
      * @param startingRatio  Initial minting ratio in PE tokens per USDC tokens minted
      * @custom:emit  Initialized
      */
-    function initialize(
-        uint256 usdcAmount,
-        uint256 startingRatio
-    )
-        external
-        override
-        onlyRole(DEFAULT_ADMIN_ROLE)
-    {
+    function initialize(uint256 usdcAmount, uint256 startingRatio) external override onlyRole(DEFAULT_ADMIN_ROLE) {
         // Prevent double initialization
         require(!initialized, "Contract already initialized");
         initialized = true;
@@ -203,12 +172,7 @@ contract Peronio is
      * @return usdcReserves  Number of USDC tokens in reserve
      * @return maiReserves  Number of MAI tokens in reserve
      */
-    function getLpReserves()
-        external
-        view
-        override
-        returns (uint256 usdcReserves, uint256 maiReserves)
-    {
+    function getLpReserves() external view override returns (uint256 usdcReserves, uint256 maiReserves) {
         (usdcReserves, maiReserves) = _getLpReserves();
     }
 
@@ -217,12 +181,7 @@ contract Peronio is
      *
      * @return lpAmount  Number of LP USDC/MAI token on stake
      */
-    function stakedBalance()
-        external
-        view
-        override
-        returns (uint256 lpAmount)
-    {
+    function stakedBalance() external view override returns (uint256 lpAmount) {
         lpAmount = _stakedBalance();
     }
 
@@ -232,12 +191,7 @@ contract Peronio is
      * @return usdcAmount  Number of USDC tokens on stake
      * @return maiAmount  Number of MAI tokens on stake
      */
-    function stakedTokens()
-        external
-        view
-        override
-        returns (uint256 usdcAmount, uint256 maiAmount)
-    {
+    function stakedTokens() external view override returns (uint256 usdcAmount, uint256 maiAmount) {
         (usdcAmount, maiAmount) = _stakedTokens();
     }
 
@@ -246,12 +200,7 @@ contract Peronio is
      *
      * @return usdcAmount  Total equivalent number of USDC token on stake
      */
-    function stakedValue()
-        external
-        view
-        override
-        returns (uint256 usdcAmount)
-    {
+    function stakedValue() external view override returns (uint256 usdcAmount) {
         usdcAmount = _stakedValue();
     }
 
@@ -260,12 +209,7 @@ contract Peronio is
      *
      * @return price  Collateralized price in USDC tokens per PE token
      */
-    function usdcPrice()
-        external
-        view
-        override
-        returns (uint256 price)
-    {
+    function usdcPrice() external view override returns (uint256 price) {
         price = mulDiv(10**DECIMALS, totalSupply(), _stakedValue());
     }
 
@@ -274,12 +218,7 @@ contract Peronio is
      *
      * @return price  Minting price in USDC tokens per PE token
      */
-    function buyingPrice()
-        external
-        view
-        override
-        returns (uint256 price)
-    {
+    function buyingPrice() external view override returns (uint256 price) {
         price = mulDiv(_collateralRatio(), 10**DECIMALS + markupFee, 10**DECIMALS);
     }
 
@@ -288,12 +227,7 @@ contract Peronio is
      *
      * @return ratio  Ratio of USDC tokens per PE token, with `_decimal` decimals
      */
-    function collateralRatio()
-        external
-        view
-        override
-        returns (uint256 ratio)
-    {
+    function collateralRatio() external view override returns (uint256 ratio) {
         ratio = _collateralRatio();
     }
 
@@ -312,12 +246,7 @@ contract Peronio is
         address to,
         uint256 usdcAmount,
         uint256 minReceive
-    )
-        external
-        override
-        nonReentrant
-        returns (uint256 peAmount)
-    {
+    ) external override nonReentrant returns (uint256 peAmount) {
         // Transfer USDC tokens as collateral to this contract
         IERC20(usdcAddress).safeTransferFrom(_msgSender(), address(this), usdcAmount);
 
@@ -346,15 +275,7 @@ contract Peronio is
      * @return usdcTotal  Number of USDC tokens extracted
      * @custom:emit  Withdrawal
      */
-    function withdraw(
-        address to,
-        uint256 peAmount
-    )
-        external
-        override
-        nonReentrant
-        returns (uint256 usdcTotal)
-    {
+    function withdraw(address to, uint256 peAmount) external override nonReentrant returns (uint256 usdcTotal) {
         // Burn the given number of PE tokens
         _burn(_msgSender(), peAmount);
 
@@ -378,15 +299,7 @@ contract Peronio is
      * @return lpAmount  Number of LP USDC/MAI tokens extracted
      * @custom:emit LiquidityWithdrawal
      */
-    function withdrawLiquidity(
-        address to,
-        uint256 peAmount
-    )
-        external
-        override
-        nonReentrant
-        returns (uint256 lpAmount)
-    {
+    function withdrawLiquidity(address to, uint256 peAmount) external override nonReentrant returns (uint256 lpAmount) {
         // Burn the given number of PE tokens
         _burn(_msgSender(), peAmount);
 
@@ -409,12 +322,7 @@ contract Peronio is
      *
      * @return qiAmount  Number of QI tokens accrued
      */
-    function getPendingRewardsAmount()
-        external
-        view
-        override
-        returns (uint256 qiAmount)
-    {
+    function getPendingRewardsAmount() external view override returns (uint256 qiAmount) {
         qiAmount = _getPendingRewardsAmount();
     }
 
@@ -425,12 +333,7 @@ contract Peronio is
      * @return lpAmount  The number of LP USDC/MAI tokens being put on stake
      * @custom:emit CompoundRewards
      */
-    function compoundRewards()
-        external
-        override
-        onlyRole(REWARDS_ROLE)
-        returns (uint256 usdcAmount, uint256 lpAmount)
-    {
+    function compoundRewards() external override onlyRole(REWARDS_ROLE) returns (uint256 usdcAmount, uint256 lpAmount) {
         // Claim rewards from QiDao's Farm
         IFarm(qiDaoFarmAddress).deposit(qiDaoPoolId, 0);
 
@@ -449,14 +352,7 @@ contract Peronio is
 
     // NEEDS TESTING
     // TODO
-    function quoteIn(
-        uint256 usdc
-    )
-        external
-        view
-        override
-        returns (uint256 pe)
-    {
+    function quoteIn(uint256 usdc) external view override returns (uint256 pe) {
         uint256 stakedAmount = _stakedBalance();
         (uint256 usdcReserves, ) = _getLpReserves(); // $$$$ remove maiReserves
 
@@ -475,14 +371,7 @@ contract Peronio is
 
     // NEEDS TESTING
     // TODO
-    function quoteOut(
-        uint256 pe
-    )
-        external
-        view
-        override
-        returns (uint256 usdc)
-    {
+    function quoteOut(uint256 pe) external view override returns (uint256 usdc) {
         (uint256 usdcReserves, uint256 maiReserves) = _getLpReserves();
         (uint256 stakedUsdc, uint256 stakedMai) = _stakedTokens();
 
@@ -502,15 +391,9 @@ contract Peronio is
      * @return usdcReserves  Number of USDC tokens in reserve
      * @return maiReserves  Number of MAI tokens in reserve
      */
-    function _getLpReserves()
-        internal
-        view
-        returns (uint256 usdcReserves, uint256 maiReserves)
-    {
+    function _getLpReserves() internal view returns (uint256 usdcReserves, uint256 maiReserves) {
         (uint112 reserve0, uint112 reserve1, ) = IUniswapV2Pair(lpAddress).getReserves();
-        (usdcReserves, maiReserves) = usdcAddress < maiAddress
-            ? (uint256(reserve0), uint256(reserve1))
-            : (uint256(reserve1), uint256(reserve0));
+        (usdcReserves, maiReserves) = usdcAddress < maiAddress ? (uint256(reserve0), uint256(reserve1)) : (uint256(reserve1), uint256(reserve0));
     }
 
     /**
@@ -518,11 +401,7 @@ contract Peronio is
      *
      * @return lpAmount  Number of LP USDC/MAI token on stake
      */
-    function _stakedBalance()
-        internal
-        view
-        returns (uint256 lpAmount)
-    {
+    function _stakedBalance() internal view returns (uint256 lpAmount) {
         lpAmount = IFarm(qiDaoFarmAddress).deposited(qiDaoPoolId, address(this));
     }
 
@@ -532,11 +411,7 @@ contract Peronio is
      * @return usdcAmount  Number of USDC tokens on stake
      * @return maiAmount  Number of MAI tokens on stake
      */
-    function _stakedTokens()
-        internal
-        view
-        returns (uint256 usdcAmount, uint256 maiAmount)
-    {
+    function _stakedTokens() internal view returns (uint256 usdcAmount, uint256 maiAmount) {
         uint256 lpAmount = _stakedBalance();
         uint256 lpTotalSupply = IERC20(lpAddress).totalSupply();
 
@@ -553,11 +428,7 @@ contract Peronio is
      *
      * @return totalUSDC  Total equivalent number of USDC token on stake
      */
-    function _stakedValue()
-        internal
-        view
-        returns (uint256 totalUSDC)
-    {
+    function _stakedValue() internal view returns (uint256 totalUSDC) {
         (uint256 usdcReserves, uint256 maiReserves) = _getLpReserves();
         (uint256 usdcAmount, uint256 maiAmount) = _stakedTokens();
 
@@ -570,11 +441,7 @@ contract Peronio is
      *
      * @return ratio  Ratio of USDC tokens per PE token, with `_decimal` decimals
      */
-    function _collateralRatio()
-        internal
-        view
-        returns (uint256 ratio)
-    {
+    function _collateralRatio() internal view returns (uint256 ratio) {
         ratio = mulDiv(10**DECIMALS, _stakedValue(), totalSupply());
     }
 
@@ -583,11 +450,7 @@ contract Peronio is
      *
      * @return totalFee  The total fee to apply on minting
      */
-    function _totalMintFee()
-        internal
-        view
-        returns (uint256 totalFee)
-    {
+    function _totalMintFee() internal view returns (uint256 totalFee) {
         // Retrieve the deposit fee from QiDao's Farm (this is always expressed with 4 decimals, as "basic points")
         // Convert these "basic points" to `DECIMALS` precision
         (, , , , uint16 depositFeeBP) = IFarm(qiDaoFarmAddress).poolInfo(qiDaoPoolId);
@@ -598,7 +461,6 @@ contract Peronio is
         // and the swap and deposit fees)
         totalFee = markupFee - min(markupFee, swapFee + depositFee);
     }
-
 
     /**
      * Commit the given number of USDC tokens
@@ -611,12 +473,7 @@ contract Peronio is
      * @param usdcAmount  Number of USDC tokens to commit
      * @return lpAmount  Number of LP USDC/MAI tokens committed
      */
-    function _zapIn(
-        uint256 usdcAmount
-    )
-        internal
-        returns (uint256 lpAmount)
-    {
+    function _zapIn(uint256 usdcAmount) internal returns (uint256 lpAmount) {
         uint256 maiAmount;
 
         (usdcAmount, maiAmount) = _splitUSDC(usdcAmount);
@@ -635,12 +492,7 @@ contract Peronio is
      * @param lpAmount  Number of LP USDC/MAI tokens to extract
      * @return usdcAmount  Number of extracted USDC tokens
      */
-    function _zapOut(
-        uint256 lpAmount
-    )
-        internal
-        returns (uint256 usdcAmount)
-    {
+    function _zapOut(uint256 lpAmount) internal returns (uint256 usdcAmount) {
         uint256 maiAmount;
 
         _unstakeLP(lpAmount);
@@ -655,12 +507,7 @@ contract Peronio is
      * @return usdcAmount  Number of resulting USDC tokens
      * @return maiAmount  Number of resulting MAI tokens
      */
-    function _splitUSDC(
-        uint256 amount
-    )
-        internal
-        returns (uint256 usdcAmount, uint256 maiAmount)
-    {
+    function _splitUSDC(uint256 amount) internal returns (uint256 usdcAmount, uint256 maiAmount) {
         (uint256 usdcReserves, ) = _getLpReserves();
         uint256 amountToSwap = _calculateSwapInAmount(usdcReserves, amount);
 
@@ -677,13 +524,7 @@ contract Peronio is
      * @param maiAmount  Number of MAI tokens to consolidate in
      * @return usdcAmount  Consolidated USDC amount
      */
-    function _unsplitUSDC(
-        uint256 amount,
-        uint256 maiAmount
-    )
-        internal
-        returns (uint256 usdcAmount)
-    {
+    function _unsplitUSDC(uint256 amount, uint256 maiAmount) internal returns (uint256 usdcAmount) {
         usdcAmount = amount + _swapMAItoUSDC(maiAmount);
     }
 
@@ -694,17 +535,14 @@ contract Peronio is
      * @param maiAmount  Number of MAI tokens to add
      * @return lpAmount  Number of LP USDC/MAI tokens obtained
      */
-    function _addLiquidity(
-        uint256 usdcAmount,
-        uint256 maiAmount
-    )
-        internal
-        returns (uint256 lpAmount)
-    {
+    function _addLiquidity(uint256 usdcAmount, uint256 maiAmount) internal returns (uint256 lpAmount) {
         (, , lpAmount) = IUniswapV2Router02(quickSwapRouterAddress).addLiquidity(
-            usdcAddress, maiAddress,
-            usdcAmount, maiAmount,
-            1, 1,
+            usdcAddress,
+            maiAddress,
+            usdcAmount,
+            maiAmount,
+            1,
+            1,
             address(this),
             block.timestamp + 3600
         );
@@ -717,16 +555,13 @@ contract Peronio is
      * @return usdcAmount  Number of USDC tokens withdrawn
      * @return maiAmount  Number of MAI tokens withdrawn
      */
-    function _removeLiquidity(
-        uint256 lpAmount
-    )
-        internal
-        returns (uint256 usdcAmount, uint256 maiAmount)
-    {
+    function _removeLiquidity(uint256 lpAmount) internal returns (uint256 usdcAmount, uint256 maiAmount) {
         (usdcAmount, maiAmount) = IUniswapV2Router02(quickSwapRouterAddress).removeLiquidity(
-            usdcAddress, maiAddress,
+            usdcAddress,
+            maiAddress,
             lpAmount,
-            1, 1,
+            1,
+            1,
             address(this),
             block.timestamp + 3600
         );
@@ -737,11 +572,7 @@ contract Peronio is
      *
      * @param lpAmount  Number of LP USDC/MAI tokens to deposit into QiDao's Farm
      */
-    function _stakeLP(
-        uint256 lpAmount
-    )
-        internal
-    {
+    function _stakeLP(uint256 lpAmount) internal {
         IERC20(lpAddress).approve(qiDaoFarmAddress, lpAmount);
         IFarm(qiDaoFarmAddress).deposit(qiDaoPoolId, lpAmount);
     }
@@ -751,11 +582,7 @@ contract Peronio is
      *
      * @param lpAmount  Number of LP USDC/MAI tokens to remove from QiDao's Farm
      */
-    function _unstakeLP(
-        uint256 lpAmount
-    )
-        internal
-    {
+    function _unstakeLP(uint256 lpAmount) internal {
         IFarm(qiDaoFarmAddress).withdraw(qiDaoPoolId, lpAmount);
     }
 
@@ -764,11 +591,7 @@ contract Peronio is
      *
      * @return qiAmount  Number of QI tokens accrued
      */
-    function _getPendingRewardsAmount()
-        internal
-        view
-        returns (uint256 qiAmount)
-    {
+    function _getPendingRewardsAmount() internal view returns (uint256 qiAmount) {
         // Get rewards on Farm
         qiAmount = IFarm(qiDaoFarmAddress).pending(qiDaoPoolId, address(this));
     }
@@ -779,12 +602,7 @@ contract Peronio is
      * @param maiAmount  Number of MAI tokens to swap
      * @return usdcAmount  Number of USDC tokens obtained
      */
-    function _swapMAItoUSDC(
-        uint256 maiAmount
-    )
-        internal
-        returns (uint256 usdcAmount)
-    {
+    function _swapMAItoUSDC(uint256 maiAmount) internal returns (uint256 usdcAmount) {
         usdcAmount = _swapTokens(maiAddress, usdcAddress, maiAmount);
     }
 
@@ -794,12 +612,7 @@ contract Peronio is
      * @param usdcAmount  Number of USDC tokens to swap
      * @return maiAmount  Number of MAI tokens obtained
      */
-    function _swapUSDCtoMAI(
-        uint256 usdcAmount
-    )
-        internal
-        returns (uint256 maiAmount)
-    {
+    function _swapUSDCtoMAI(uint256 usdcAmount) internal returns (uint256 maiAmount) {
         maiAmount = _swapTokens(usdcAddress, maiAddress, usdcAmount);
     }
 
@@ -809,12 +622,7 @@ contract Peronio is
      * @param qiAmount  Number of QI tokens to swap
      * @return usdcAmount  Number of USDC tokens obtained
      */
-    function _swapQItoUSDC(
-        uint256 qiAmount
-    )
-        internal
-        returns (uint256 usdcAmount)
-    {
+    function _swapQItoUSDC(uint256 qiAmount) internal returns (uint256 usdcAmount) {
         usdcAmount = _swapTokens(qiAddress, usdcAddress, qiAmount);
     }
 
@@ -830,10 +638,7 @@ contract Peronio is
         address fromAddress,
         address toAddress,
         uint256 amount
-    )
-        internal
-        returns (uint256 swappedAmount)
-    {
+    ) internal returns (uint256 swappedAmount) {
         address[] memory path = new address[](2);
         (path[0], path[1]) = (fromAddress, toAddress);
 
@@ -844,14 +649,7 @@ contract Peronio is
     // --- UniSwap Simulation ---------------------------------------------------------------------------------------------------------------------------------
     // --------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    function _calculateSwapInAmount(
-        uint256 reserveIn,
-        uint256 userIn
-    )
-        internal
-        pure
-        returns (uint256 amount)
-    {
+    function _calculateSwapInAmount(uint256 reserveIn, uint256 userIn) internal pure returns (uint256 amount) {
         amount = (sqrt256(reserveIn * ((userIn * 3988000) + (reserveIn * 3988009))) - (reserveIn * 1997)) / 1994;
     }
 
@@ -860,13 +658,9 @@ contract Peronio is
         uint256 amountIn,
         uint256 reserveIn,
         uint256 reserveOut
-    )
-        internal
-        pure
-        returns (uint256 amountOut)
-    {
-        require(amountIn > 0, "UniswapV2Library: INSUFFICIENT_INPUT_AMOUNT");  // solhint-disable-line reason-string
-        require(reserveIn > 0 && reserveOut > 0, "UniswapV2Library: INSUFFICIENT_LIQUIDITY");  // solhint-disable-line reason-string
+    ) internal pure returns (uint256 amountOut) {
+        require(amountIn > 0, "UniswapV2Library: INSUFFICIENT_INPUT_AMOUNT"); // solhint-disable-line reason-string
+        require(reserveIn > 0 && reserveOut > 0, "UniswapV2Library: INSUFFICIENT_LIQUIDITY"); // solhint-disable-line reason-string
         uint256 amountInWithFee = amountIn * 997;
         uint256 numerator = amountInWithFee * reserveOut;
         uint256 denominator = reserveIn * 1000 + amountInWithFee;
