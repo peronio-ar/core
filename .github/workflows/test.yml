@@ -1,31 +1,31 @@
 name: Test
 on:
-  pull_request:
-  push:
-    branches:
-      - main
-      - workflows
-      - "releases/*"
+    pull_request:
+    push:
+        branches:
+            - main
+            - workflows
+            - "releases/*"
 
 jobs:
-  # unit tests
-  unit-tests:
-    name: Unit Tests
-    runs-on: ubuntu-latest
+    # unit tests
+    unit-tests:
+        name: Unit Tests
+        runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 16.x
-      - name: Copies .env variable
-        run: cp .env.example .env
-      - uses: borales/actions-yarn@v3.0.0
-        with:
-          cmd: install
-      - uses: borales/actions-yarn@v3.0.0
-        with:
-          cmd: typechain
-      - uses: borales/actions-yarn@v3.0.0
-        with:
-          cmd: test
+        steps:
+            - uses: actions/checkout@v3
+            - uses: actions/setup-node@v1
+              with:
+                  node-version: 16.x
+            - name: Copies .env variable
+              run: cp .env.example .env
+            - uses: borales/actions-yarn@v3.0.0
+              with:
+                  cmd: install
+            - uses: borales/actions-yarn@v3.0.0
+              with:
+                  cmd: typechain
+            - uses: borales/actions-yarn@v3.0.0
+              with:
+                  cmd: test

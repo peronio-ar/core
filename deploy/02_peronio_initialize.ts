@@ -1,10 +1,13 @@
-import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { DeployFunction } from 'hardhat-deploy/types';
+import { HardhatRuntimeEnvironment } from "hardhat/types";
+import { DeployFunction } from "hardhat-deploy/types";
 import { ethers } from "hardhat";
 
 import { getInitializeParams } from "../utils/helpers";
-import { Peronio, ERC20 } from "../typechain-types";
 import { IPeronioInitializeParams } from "../utils/interfaces/IPeronioInitializeParams";
+
+/* eslint-disable node/no-unpublished-import */
+import { Peronio, ERC20 } from "../typechain-types";
+/* eslint-enable node/no-unpublished-import */
 
 const peronioInitialize: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     console.info("Initializing Peronio");

@@ -1,4 +1,5 @@
-<!-- markdownlint-disable-next-line MD001 MD041 -->
+<!-- markdownlint-disable MD001 MD041 -->
+
 ![Peronio](assets/header.png)
 
 # Peronio Core Contracts
@@ -9,7 +10,7 @@ Make sure to read the prerequisites carefully in order to set Peronio up locally
 ## Prerequisites
 
 Although not technically required, having [`direnv`](https://direnv.net/) installed will greatly simplify the set up process.
-Please check the provided link for installation in *nix and Mac OSs.
+Please check the provided link for installation in \*nix and Mac OSs.
 
 ## Installation
 
@@ -34,7 +35,7 @@ $ cd core
 If `direnv` is installed, you'll see:
 
 ```shell
-direnv: error /some/path/to/core/.envrc is blocked. Run `direnv allow` to approve its content
+direnv: error /some/path/to/core/.envrc is blocked. Run $(direnv allow) to approve its content
 ```
 
 Simply do:
@@ -68,7 +69,7 @@ v16.14.0 is already installed.
 Now using node v16.14.0 (npm v8.3.1)
 ```
 
-> **In case you do NOT have `direnv` installed, you'll need to issue `nvm use` from within the working directory each time you `cd` into it so as to let `nvm` pick up the correct version from the `.nvmrc` file; `direnv` will do this *automagically* for you if installed.**
+> **In case you do NOT have `direnv` installed, you'll need to issue `nvm use` from within the working directory each time you `cd` into it so as to let `nvm` pick up the correct version from the `.nvmrc` file; `direnv` will do this _automagically_ for you if installed.**
 
 ### Yarn
 
@@ -104,7 +105,7 @@ It's important that you overwrite the `ETHERSCAN_API_KEY` environment variable w
 
 If you want the variables declared therein to be immediately available to you, you'll need to `export` them manually.
 
-> **In case you do NOT have `direnv` installed, you'll need to re-`export` the environmental variables in `.env` each time you want them to become available; `direnv` will do this *automagically* for you if installed.**
+> **In case you do NOT have `direnv` installed, you'll need to re-`export` the environmental variables in `.env` each time you want them to become available; `direnv` will do this _automagically_ for you if installed.**
 
 If you have `direnv`, simply do `cd ..; cd -` and that should re-load all `export`s and `nvm` configuration in one fell swoop.
 
@@ -227,14 +228,14 @@ If you want to see what background jobs your shell is maintaining, you can do:
 
 ```shell
 $ jobs
-[1]  + running    yarn chain
+[1] + running yarn chain
 ```
 
 And if you want to end the chain fork, you can simply do:
 
 ```shell
 $ kill %N
-[N]  + 55830 exit 1     yarn chain
+[N] + 55830 exit 1 yarn chain
 ```
 
 Where `N` is the number in brackets (ie. `[N]`) the `jobs` command reported.
@@ -249,12 +250,11 @@ yarn run v1.22.19
 $ hardhat test
 No need to generate any newer typings.
 
-
-  Peronio
-    ...
+Peronio
+...
 ```
 
-> **Remember:** you *must* have the chain fork running for this to work!
+> **Remember:** you _must_ have the chain fork running for this to work!
 
 ### Deploying
 
@@ -275,4 +275,4 @@ deploying "Peronio"
     ...
 ```
 
-> **Remember:** you *must* have the chain fork running for this to work!
+> **Remember:** you _must_ have the chain fork running for this to work!

@@ -1,8 +1,10 @@
-import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { Address, DeployFunction } from 'hardhat-deploy/types';
+import { HardhatRuntimeEnvironment } from "hardhat/types";
+import { Address, DeployFunction } from "hardhat-deploy/types";
 import { ethers } from "hardhat";
 
+/* eslint-disable node/no-unpublished-import */
 import { UniswapV2Factory } from "../typechain-types";
+/* eslint-enable node/no-unpublished-import */
 
 const uniswapDeploy: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     console.info("Deploying Uniswap");
@@ -10,12 +12,14 @@ const uniswapDeploy: DeployFunction = async (hre: HardhatRuntimeEnvironment) => 
     const { deployer } = await hre.getNamedAccounts();
 
     console.info("Deploying Factory");
-    const factoryAddress: Address = (await hre.deployments.deploy("UniswapV2Factory", {
-        contract: "UniswapV2Factory",
-        from: deployer,
-        log: true,
-        args: [deployer],
-    })).address;
+    const factoryAddress: Address = (
+        await hre.deployments.deploy("UniswapV2Factory", {
+            contract: "UniswapV2Factory",
+            from: deployer,
+            log: true,
+            args: [deployer],
+        })
+    ).address;
 
     const factoryContract: UniswapV2Factory = await ethers.getContractAt("UniswapV2Factory", factoryAddress);
 

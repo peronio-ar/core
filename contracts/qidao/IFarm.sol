@@ -2,7 +2,12 @@
 pragma solidity ^0.8.16;
 
 interface IFarm {
-    function add(uint256 _allocPoint, address _lpToken, bool _withUpdate, uint16 _depositFeeBP) external;
+    function add(
+        uint256 _allocPoint,
+        address _lpToken,
+        bool _withUpdate,
+        uint16 _depositFeeBP
+    ) external;
 
     function deposit(uint256 _pid, uint256 _amount) external;
 
@@ -26,7 +31,16 @@ interface IFarm {
 
     function pending(uint256 _pid, address _user) external view returns (uint256);
 
-    function poolInfo(uint256) external view returns (address lpToken, uint256 allocPoint, uint256 lastRewardBlock, uint256 accERC20PerShare, uint16 depositFeeBP);
+    function poolInfo(uint256)
+        external
+        view
+        returns (
+            address lpToken,
+            uint256 allocPoint,
+            uint256 lastRewardBlock,
+            uint256 accERC20PerShare,
+            uint16 depositFeeBP
+        );
 
     function poolLength() external view returns (uint256);
 
@@ -34,7 +48,11 @@ interface IFarm {
 
     function rewardPerBlock() external view returns (uint256);
 
-    function set(uint256 _pid, uint256 _allocPoint, bool _withUpdate ) external;
+    function set(
+        uint256 _pid,
+        uint256 _allocPoint,
+        bool _withUpdate
+    ) external;
 
     function setFeeAddress(address _feeAddress) external;
 

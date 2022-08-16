@@ -2,30 +2,28 @@
 pragma solidity ^0.8.16;
 
 // OpenZeppelin imports
-import { AccessControl } from "@openzeppelin/contracts_latest/access/AccessControl.sol";
-import { ReentrancyGuard } from "@openzeppelin/contracts_latest/security/ReentrancyGuard.sol";
-import { ERC20 } from "@openzeppelin/contracts_latest/token/ERC20/ERC20.sol";
-import { IERC20 } from "@openzeppelin/contracts_latest/token/ERC20/IERC20.sol";
-import { ERC20Permit } from "@openzeppelin/contracts_latest/token/ERC20/extensions/draft-ERC20Permit.sol";
-import { ERC20Burnable } from "@openzeppelin/contracts_latest/token/ERC20/extensions/ERC20Burnable.sol";
-import { SafeERC20 } from "@openzeppelin/contracts_latest/token/ERC20/utils/SafeERC20.sol";
+import {AccessControl} from "@openzeppelin/contracts_latest/access/AccessControl.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts_latest/security/ReentrancyGuard.sol";
+import {ERC20} from "@openzeppelin/contracts_latest/token/ERC20/ERC20.sol";
+import {IERC20} from "@openzeppelin/contracts_latest/token/ERC20/IERC20.sol";
+import {ERC20Permit} from "@openzeppelin/contracts_latest/token/ERC20/extensions/draft-ERC20Permit.sol";
+import {ERC20Burnable} from "@openzeppelin/contracts_latest/token/ERC20/extensions/ERC20Burnable.sol";
+import {SafeERC20} from "@openzeppelin/contracts_latest/token/ERC20/utils/SafeERC20.sol";
 
 // QiDao
-import { IFarm } from "../qidao/IFarm.sol";
+import {IFarm} from "../qidao/IFarm.sol";
 
 // UniSwap
-import { IUniswapV2Pair } from "../uniswap/interfaces/IUniswapV2Pair.sol";
-import { IUniswapV2Router02 } from "../uniswap/interfaces/IUniswapV2Router02.sol";
+import {IUniswapV2Pair} from "../uniswap/interfaces/IUniswapV2Pair.sol";
+import {IUniswapV2Router02} from "../uniswap/interfaces/IUniswapV2Router02.sol";
 
 // Needed for Babylonian square-root
-import { sqrt256 } from "../Utils.sol";
+import {sqrt256} from "../Utils.sol";
 
 // Interface
 import "./IMigrator.sol";
 
-
-import { console } from "hardhat/console.sol";
-
+import {console} from "hardhat/console.sol";
 
 contract Migrator is IMigrator, ReentrancyGuard {
     using SafeERC20 for IERC20;
@@ -74,12 +72,7 @@ contract Migrator is IMigrator, ReentrancyGuard {
     }
 
     // PENDING
-    function quoteV1(uint256 pe)
-        external
-        view
-        override
-        returns (uint256 usdc, uint256 p)
-    {
+    function quoteV1(uint256 pe) external view override returns (uint256 usdc, uint256 p) {
         // uint256 stakedAmount = _stakedBalance();
         // (uint112 usdcReserves, ) = _getLpReserves();
         // uint256 amountToSwap = _calculateSwapInAmount(usdcReserves, usdc);
@@ -93,12 +86,7 @@ contract Migrator is IMigrator, ReentrancyGuard {
     }
 
     // NEEDS TESTING
-    function migrateV1(uint256 pe)
-        external
-        view
-        override
-        returns (uint256 usdc, uint256 p)
-    {
+    function migrateV1(uint256 pe) external view override returns (uint256 usdc, uint256 p) {
         // (uint112 usdcReserves, uint112 maiReserves) = _getLpReserves();
         // uint256 ratio = pe.mul(10e8).div(totalSupply());
         // (uint256 stakedUsdc, uint256 stakedMai) = _stakedTokens();
@@ -114,10 +102,7 @@ contract Migrator is IMigrator, ReentrancyGuard {
         uint256 reserveOut
     ) internal pure returns (uint256 amountOut) {
         require(amountIn > 0, "UniswapV2Library: INSUFFICIENT_INPUT_AMOUNT");
-        require(
-            reserveIn > 0 && reserveOut > 0,
-            "UniswapV2Library: INSUFFICIENT_LIQUIDITY"
-        );
+        require(reserveIn > 0 && reserveOut > 0, "UniswapV2Library: INSUFFICIENT_LIQUIDITY");
         uint256 amountInWithFee = amountIn * 997;
         uint256 numerator = amountInWithFee * reserveOut;
         uint256 denominator = (reserveIn * 1000) + amountInWithFee;

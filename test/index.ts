@@ -1,14 +1,16 @@
-import { ChildProcess, exec, execSync } from 'node:child_process';
+import { ChildProcess, exec, execSync } from "node:child_process";
 
 import { expect } from "chai";
 import { BigNumber, ContractTransaction } from "ethers";
 import { keccak256 } from "ethers/lib/utils";
 import hre, { ethers } from "hardhat";
 
+/* eslint-disable node/no-unpublished-import */
 import { Peronio, ERC20, AutoCompounder } from "../typechain-types";
 
-import { Peronio__factory } from "../typechain-types/factories/contracts/Peronio__factory";
-import { AutoCompounder__factory } from "../typechain-types/factories/contracts/AutoCompounder__factory";
+import { Peronio__factory as PeronioFactory } from "../typechain-types/factories/contracts/Peronio__factory";
+import { AutoCompounder__factory as AutoCompounderFactory } from "../typechain-types/factories/contracts/AutoCompounder__factory";
+/* eslint-enable node/no-unpublished-import */
 
 import { IPeronioConstructorParams } from "../utils/interfaces/IPeronioConstructorParams";
 import { IPeronioInitializeParams } from "../utils/interfaces/IPeronioInitializeParams";
@@ -18,16 +20,13 @@ import { getConstructorParams, getInitializeParams } from "../utils/helpers";
 const MARKUP_ROLE: string = keccak256(new TextEncoder().encode("MARKUP_ROLE"));
 const REWARDS_ROLE: string = keccak256(new TextEncoder().encode("REWARDS_ROLE"));
 
-
 // --- Helpers ------------------------------------------------------------------------------------------------------------------------------------------------
 
 const peronioConstructorParams: IPeronioConstructorParams = getConstructorParams();
 
-const deployPeronio = async (
-    constructor: IPeronioConstructorParams
-): Promise<Peronio> => {
-    const Peronio: Peronio__factory = await ethers.getContractFactory("Peronio");
-    let contract: Peronio = await Peronio.deploy(
+const deployPeronio = async (constructor: IPeronioConstructorParams): Promise<Peronio> => {
+    const Peronio: PeronioFactory = await ethers.getContractFactory("Peronio");
+    const contract: Peronio = await Peronio.deploy(
         constructor.name,
         constructor.symbol,
         constructor.usdcAddress,
@@ -36,20 +35,15 @@ const deployPeronio = async (
         constructor.qiAddress,
         constructor.quickswapRouterAddress,
         constructor.qiFarmAddress,
-        constructor.qiPoolId
+        constructor.qiPoolId,
     );
     await contract.deployed();
     return contract;
 };
 
-
 const peronioInitializeParams: IPeronioInitializeParams = getInitializeParams();
 
-const initializePeronio = async (
-    usdcContract: ERC20,
-    peContract: Peronio,
-    params: IPeronioInitializeParams
-): Promise<ContractTransaction> => {
+const initializePeronio = async (usdcContract: ERC20, peContract: Peronio, params: IPeronioInitializeParams): Promise<ContractTransaction> => {
     // Approve
     await usdcContract.approve(peContract.address, params.usdcAmount);
 
@@ -57,11 +51,13 @@ const initializePeronio = async (
     return peContract.initialize(params.usdcAmount, params.startingRatio);
 };
 
-
 const sleep = async (ms: number) => {
-    return new Promise((resolve) => setTimeout(() => { resolve(null); }, ms));
+    return new Promise((resolve) =>
+        setTimeout(() => {
+            resolve(null);
+        }, ms),
+    );
 };
-
 
 // --- Tests --------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -72,8 +68,8 @@ describe("Peronio", function () {
     let childId: ChildProcess;
 
     before(async () => {
-        childId = exec('nc -z localhost 8545 || yarn chain');
-        execSync('while ! nc -z localhost 8545; do sleep 0.1; done');
+        childId = exec("nc -z localhost 8545 || yarn chain");
+        execSync("while ! nc -z localhost 8545; do sleep 0.1; done");
 
         accounts = await hre.getNamedAccounts();
         usdcContract = await ethers.getContractAt("ERC20", process.env.USDC_ADDRESS ?? "");
@@ -91,75 +87,39 @@ describe("Peronio", function () {
         });
 
         it("should return correct keccak256 MARKUP_ROLE", async function () {
-            expect(
-                await contract.MARKUP_ROLE()
-            ).to.equal(
-                MARKUP_ROLE
-            );
+            expect(await contract.MARKUP_ROLE()).to.equal(MARKUP_ROLE);
         });
 
         it("should return correct keccak256 REWARDS_ROLE", async function () {
-            expect(
-                await contract.REWARDS_ROLE()
-            ).to.equal(
-                REWARDS_ROLE
-            );
+            expect(await contract.REWARDS_ROLE()).to.equal(REWARDS_ROLE);
         });
 
         it("should return correct usdcAddress", async function () {
-            expect(
-                await contract.usdcAddress()
-            ).to.equal(
-                peronioConstructorParams.usdcAddress
-            );
+            expect(await contract.usdcAddress()).to.equal(peronioConstructorParams.usdcAddress);
         });
 
         it("should return correct maiAddress", async function () {
-            expect(
-                await contract.maiAddress()
-            ).to.equal(
-                peronioConstructorParams.maiAddress
-            );
+            expect(await contract.maiAddress()).to.equal(peronioConstructorParams.maiAddress);
         });
 
         it("should return correct lpAddress", async function () {
-            expect(
-                await contract.lpAddress()
-            ).to.equal(
-                peronioConstructorParams.lpAddress
-            );
+            expect(await contract.lpAddress()).to.equal(peronioConstructorParams.lpAddress);
         });
 
         it("should return correct qiAddress", async function () {
-            expect(
-                await contract.qiAddress()
-            ).to.equal(
-                peronioConstructorParams.qiAddress
-            );
+            expect(await contract.qiAddress()).to.equal(peronioConstructorParams.qiAddress);
         });
 
         it("should return correct quickSwapRouterAddress", async function () {
-            expect(
-                await contract.quickSwapRouterAddress()
-            ).to.equal(
-                peronioConstructorParams.quickswapRouterAddress
-            );
+            expect(await contract.quickSwapRouterAddress()).to.equal(peronioConstructorParams.quickswapRouterAddress);
         });
 
         it("should return correct qiDaoFarmAddress", async function () {
-            expect(
-                await contract.qiDaoFarmAddress()
-            ).to.equal(
-                peronioConstructorParams.qiFarmAddress
-            );
+            expect(await contract.qiDaoFarmAddress()).to.equal(peronioConstructorParams.qiFarmAddress);
         });
 
         it("should return correct qiDaoPoolId", async function () {
-            expect(
-                await contract.qiDaoPoolId()
-            ).to.equal(
-                peronioConstructorParams.qiPoolId
-            );
+            expect(await contract.qiDaoPoolId()).to.equal(peronioConstructorParams.qiPoolId);
         });
     });
 
@@ -191,16 +151,8 @@ describe("Peronio", function () {
             const receivedPe: BigNumber = peBalance.sub(peBalanceOld);
             const mintedUsdc: BigNumber = usdcBalanceOld.sub(usdcBalance);
 
-            expect(
-                mintedUsdc
-            ).to.equal(
-                amount
-            );
-            expect(
-                receivedPe
-            ).to.equal(
-                expectedPe
-            );
+            expect(mintedUsdc).to.equal(amount);
+            expect(receivedPe).to.equal(expectedPe);
         });
 
         it("should withdraw PE 250", async function () {
@@ -222,16 +174,8 @@ describe("Peronio", function () {
             const withdrawnPe: BigNumber = peBalanceOld.sub(peBalance);
             const receivedUsdc: BigNumber = usdcBalance.sub(usdcBalanceOld);
 
-            expect(
-                withdrawnPe
-            ).to.equal(
-                amount
-            );
-            expect(
-                receivedUsdc
-            ).to.equal(
-                quotedUSDC
-            );
+            expect(withdrawnPe).to.equal(amount);
+            expect(receivedUsdc).to.equal(quotedUSDC);
         });
 
         it("should revert on not enough received PE", async function () {
@@ -244,29 +188,17 @@ describe("Peronio", function () {
             const minReceive: BigNumber = BigNumber.from(250_000000);
             const call: Promise<ContractTransaction> = contract.mint(accounts.deployer, amount, minReceive);
 
-            expect(
-                call
-            ).to.be.revertedWith(
-                "Minimum required not met"
-            );
+            expect(call).to.be.revertedWith("Minimum required not met");
         });
 
         it("should quote IN correctly", async function () {
             // TODO
-            expect(
-                true
-            ).to.equal(
-                false
-            );
+            expect(true).to.equal(false);
         });
 
         it("should quote OUT correctly", async function () {
             // TODO
-            expect(
-                true
-            ).to.equal(
-                false
-            );
+            expect(true).to.equal(false);
         });
     });
 
@@ -280,55 +212,28 @@ describe("Peronio", function () {
 
         it("should return stakedBalance more than 0", async function () {
             const stakedBalance: BigNumber = await contract.stakedBalance();
-            expect(
-                stakedBalance
-            ).to.be.gt(
-                BigNumber.from(0)
-            );
+            expect(stakedBalance).to.be.gt(BigNumber.from(0));
         });
 
         it("should return stakedTokens close to USDC 50 and MAI 50", async function () {
             const { usdcAmount, maiAmount }: { usdcAmount: BigNumber; maiAmount: BigNumber } = await contract.stakedTokens();
-            expect(
-                usdcAmount
-            ).to.be.closeTo(
-                BigNumber.from(50_000000),
-                BigNumber.from(500000)
-            );
-            expect(
-                maiAmount.div(1_000000_000000)
-            ).to.be.closeTo(
-                BigNumber.from(50_000000),
-                BigNumber.from(500000)
-            );
+            expect(usdcAmount).to.be.closeTo(BigNumber.from(50_000000), BigNumber.from(500000));
+            expect(maiAmount.div(1_000000_000000)).to.be.closeTo(BigNumber.from(50_000000), BigNumber.from(500000));
         });
 
         it("should return stakedValue similar to 100 with 1.5% margin", async function () {
             const stakedValue: BigNumber = await contract.stakedValue();
-            expect(
-                stakedValue
-            ).to.be.closeTo(
-                BigNumber.from(100_000000),
-                BigNumber.from(1_500000)
-            );
+            expect(stakedValue).to.be.closeTo(BigNumber.from(100_000000), BigNumber.from(1_500000));
         });
 
         it("should return a buyingPrice near PE/USDC 0.004 (+5%)", async function () {
             const buyingPrice: BigNumber = await contract.buyingPrice();
-            expect(
-                buyingPrice
-            ).to.equal(
-                BigNumber.from(4200)
-            );
+            expect(buyingPrice).to.equal(BigNumber.from(4200));
         });
 
         it("should return a collateralRatio near PE/USDC 0.004", async function () {
             const collateralRatio: BigNumber = await contract.collateralRatio();
-            expect(
-                collateralRatio
-            ).to.equal(
-                BigNumber.from(4000)
-            );
+            expect(collateralRatio).to.equal(BigNumber.from(4000));
         });
     });
 
@@ -341,29 +246,17 @@ describe("Peronio", function () {
         });
 
         it("should return 6 for decimals", async function () {
-            expect(
-                await contract.decimals()
-            ).to.equal(
-                6
-            );
+            expect(await contract.decimals()).to.equal(6);
         });
 
         it("should return 50000 for markup fee", async function () {
-            expect(
-                await contract.markupFee()
-            ).to.equal(
-                50000
-            );
+            expect(await contract.markupFee()).to.equal(50000);
         });
 
         it("should set 20000 for markup fee", async function () {
             const newMarkupFee: BigNumber = BigNumber.from(20000);
             await contract.setMarkupFee(newMarkupFee);
-            expect(
-                await contract.markupFee()
-            ).to.equal(
-                newMarkupFee
-            );
+            expect(await contract.markupFee()).to.equal(newMarkupFee);
         });
     });
 
@@ -376,11 +269,7 @@ describe("Peronio", function () {
 
         it("should return initialized=false when not initialized", async function () {
             const isInitialized: Boolean = await contract.initialized();
-            expect(
-                isInitialized
-            ).to.equal(
-                false
-            );
+            expect(isInitialized).to.equal(false);
         });
 
         it("should initialize", async function () {
@@ -389,11 +278,7 @@ describe("Peronio", function () {
 
         it("should return initialized true when initialized", async function () {
             const isInitialized: Boolean = await contract.initialized();
-            expect(
-                isInitialized
-            ).to.equal(
-                true
-            );
+            expect(isInitialized).to.equal(true);
         });
 
         it("should revert when trying to initialize twice", async function () {
@@ -401,11 +286,7 @@ describe("Peronio", function () {
             const initUsdcAmount: BigNumber = peronioInitializeParams.usdcAmount;
             const initRatio: BigNumber = peronioInitializeParams.startingRatio;
 
-            expect(
-                contract.initialize(initUsdcAmount, initRatio)
-            ).to.be.revertedWith(
-                "Contract already initialized"
-            );
+            expect(contract.initialize(initUsdcAmount, initRatio)).to.be.revertedWith("Contract already initialized");
         });
     });
 
@@ -417,18 +298,14 @@ describe("Peronio", function () {
         });
 
         it("should revert when setMarkupFee as not MARKUP_ROLE", async function () {
-            expect(
-                contract.connect(accounts.tester).setMarkupFee("5000")
-            ).to.be.revertedWith(
-                `AccessControl: account ${accounts.tester.toLowerCase()} is missing role ${MARKUP_ROLE}`
+            expect(contract.connect(accounts.tester).setMarkupFee("5000")).to.be.revertedWith(
+                `AccessControl: account ${accounts.tester.toLowerCase()} is missing role ${MARKUP_ROLE}`,
             );
         });
 
         it("should revert when compoundRewards as not REWARDS_ROLE", async function () {
-            expect(
-                contract.connect(accounts.tester).compoundRewards()
-            ).to.be.revertedWith(
-                `AccessControl: account ${accounts.tester.toLowerCase()} is missing role ${REWARDS_ROLE}`
+            expect(contract.connect(accounts.tester).compoundRewards()).to.be.revertedWith(
+                `AccessControl: account ${accounts.tester.toLowerCase()} is missing role ${REWARDS_ROLE}`,
             );
         });
     });
@@ -438,7 +315,7 @@ describe("Peronio", function () {
 
         before(async () => {
             contract = await deployPeronio(peronioConstructorParams);
-            await initializePeronio(usdcContract, contract, peronioInitializeParams)
+            await initializePeronio(usdcContract, contract, peronioInitializeParams);
         });
 
         it("should compound rewards", async function () {
@@ -451,19 +328,15 @@ describe("Peronio", function () {
             // Stop Mining
             await ethers.provider.send("evm_setAutomine", [false]);
 
-            expect(
-                await contract.getPendingRewardsAmount()
-            ).to.be.gt(
-                0
-            );
+            expect(await contract.getPendingRewardsAmount()).to.be.gt(0);
 
             await contract.compoundRewards();
         });
 
         it("should compound from AutoCompounder", async function () {
             // Deploys auto-compounder
-            const AutoCompounder: AutoCompounder__factory = await ethers.getContractFactory("AutoCompounder");
-            let autoCompounder: AutoCompounder = await AutoCompounder.deploy(contract.address);
+            const AutoCompounder: AutoCompounderFactory = await ethers.getContractFactory("AutoCompounder");
+            const autoCompounder: AutoCompounder = await AutoCompounder.deploy(contract.address);
             await autoCompounder.deployed();
 
             // Grants role
