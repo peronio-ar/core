@@ -2,14 +2,14 @@
 
 pragma solidity =0.6.12;
 
-import './libraries/SafeMath.sol';
+import "./libraries/SafeMath.sol";
 
 contract UniswapV2ERC20 {
     using SafeMathUniswap for uint;
 
-    string public constant name = 'Peronio LP Token';
-    string public constant symbol = 'PLP';
-    uint8 public constant decimals = 18;
+    string public constant NAME = "Peronio LP Token";
+    string public constant SYMBOL = "PLP";
+    uint8 public constant DECIMALS = 18;
     uint  public totalSupply;
     mapping(address => uint) public balanceOf;
     mapping(address => mapping(address => uint)) public allowance;
@@ -29,9 +29,9 @@ contract UniswapV2ERC20 {
         }
         DOMAIN_SEPARATOR = keccak256(
             abi.encode(
-                keccak256('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'),
-                keccak256(bytes(name)),
-                keccak256(bytes('1')),
+                keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
+                keccak256(bytes(NAME)),
+                keccak256(bytes("1")),
                 chainId,
                 address(this)
             )
@@ -80,16 +80,16 @@ contract UniswapV2ERC20 {
     }
 
     function permit(address owner, address spender, uint value, uint deadline, uint8 v, bytes32 r, bytes32 s) external {
-        require(deadline >= block.timestamp, 'UniswapV2: EXPIRED');
+        require(deadline >= block.timestamp, "UniswapV2: EXPIRED");
         bytes32 digest = keccak256(
             abi.encodePacked(
-                '\x19\x01',
+                "\x19\x01",
                 DOMAIN_SEPARATOR,
                 keccak256(abi.encode(PERMIT_TYPEHASH, owner, spender, value, nonces[owner]++, deadline))
             )
         );
         address recoveredAddress = ecrecover(digest, v, r, s);
-        require(recoveredAddress != address(0) && recoveredAddress == owner, 'UniswapV2: INVALID_SIGNATURE');
+        require(recoveredAddress != address(0) && recoveredAddress == owner, "UniswapV2: INVALID_SIGNATURE");
         _approve(owner, spender, value);
     }
 }
