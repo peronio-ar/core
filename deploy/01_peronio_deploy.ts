@@ -1,8 +1,9 @@
-// deploy/01_peronio_deploy.ts
-import hre from "hardhat";
+import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { DeployFunction } from 'hardhat-deploy/types';
+
 import { getConstructorParams } from "../utils/helpers";
 
-module.exports = async () => {
+const peronioDeploy: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     console.info("Deploying Peronio");
     const { getNamedAccounts, deployments } = hre;
 
@@ -17,4 +18,4 @@ module.exports = async () => {
     });
 };
 
-module.exports.tags = ["Peronio"];
+export default peronioDeploy;

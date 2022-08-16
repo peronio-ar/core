@@ -1,10 +1,12 @@
-// deploy/04_deploy_peronio.ts
+import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { DeployFunction } from 'hardhat-deploy/types';
+import { ethers } from "hardhat";
+
 import { keccak256 } from "ethers/lib/utils";
-import hre, { ethers } from "hardhat";
 
 import { Peronio } from "../typechain-types";
 
-module.exports = async () => {
+const autocompoundDeploy: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     console.info("Deploying Uniswap");
     const { getNamedAccounts, deployments } = hre;
     const { deploy, get } = deployments;
@@ -24,4 +26,4 @@ module.exports = async () => {
     await peronioContract.grantRole(keccak256(new TextEncoder().encode("REWARDS_ROLE")), peronioContract.address);
 };
 
-module.exports.tags = ["AutoCompound"];
+export default autocompoundDeploy;

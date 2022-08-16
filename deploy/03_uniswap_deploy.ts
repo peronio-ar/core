@@ -1,9 +1,10 @@
-// deploy/03_uniswap_deploy.ts
-import hre, { ethers } from "hardhat";
+import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { DeployFunction } from 'hardhat-deploy/types';
+import { ethers } from "hardhat";
 
 import { UniswapV2Factory } from "../typechain-types";
 
-module.exports = async () => {
+const uniswapDeploy: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     console.info("Deploying Uniswap");
     const { getNamedAccounts, deployments } = hre;
 
@@ -32,4 +33,4 @@ module.exports = async () => {
     });
 };
 
-module.exports.tags = ["Uniswap"];
+export default uniswapDeploy;

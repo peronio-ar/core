@@ -1,11 +1,12 @@
-// deploy/02_peronio_initialize.ts
-import hre, { ethers } from "hardhat";
+import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { DeployFunction } from 'hardhat-deploy/types';
+import { ethers } from "hardhat";
 
 import { getInitializeParams } from "../utils/helpers";
 import { Peronio, ERC20 } from "../typechain-types";
 import { IPeronioInitializeParams } from "../utils/types/IPeronioInitializeParams";
 
-module.exports = async () => {
+const peronioInitialize: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     console.info("Initializing Peronio");
     const { get } = hre.deployments;
 
@@ -21,4 +22,4 @@ module.exports = async () => {
     await peronioContract.initialize(peronioInitialize.usdcAmount, peronioInitialize.startingRatio);
 };
 
-module.exports.tags = ["Initialize"];
+export default peronioInitialize;
