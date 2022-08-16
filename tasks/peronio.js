@@ -1,5 +1,5 @@
-const { BigNumber } = require("ethers");
-const { getDeployedContract } = require("../utils");
+import { BigNumber } from "ethers";
+import { getDeployedContract } from "../utils";
 import { getConstructorParams } from "../utils/helpers";
 
 task("deploy_peronio", "Deploy Peronio")
