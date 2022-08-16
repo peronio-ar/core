@@ -1,7 +1,7 @@
 import { BigNumber, ethers } from "ethers";
 
-import { IPeronioConstructorParams } from "./types/IPeronioConstructorParams";
-import { IPeronioInitializeParams } from "./types/IPeronioInitializeParams";
+import { IPeronioConstructorParams } from "./interfaces/IPeronioConstructorParams";
+import { IPeronioInitializeParams } from "./interfaces/IPeronioInitializeParams";
 
 export function getConstructorParams(): IPeronioConstructorParams {
     return {
