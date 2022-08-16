@@ -12,7 +12,6 @@ module.exports = async () => {
     const peronioInitialize: IPeronioInitializeParams = getInitializeParams();
 
     const usdcContract: ERC20 = await ethers.getContractAt("ERC20", process.env.USDC_ADDRESS ?? "");
-
     const peronioContract: Peronio = await ethers.getContractAt("Peronio", (await get("Peronio")).address);
 
     // Approve

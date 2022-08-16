@@ -9,8 +9,8 @@ task("polygonscan", "Verify contract on Polyscan").setAction(
         if (network.name !== "matic") {
             console.warn(
                 "You are running the faucet task with Hardhat network, which" +
-                    "gets automatically created and destroyed every time. Use the Hardhat" +
-                    " option '--network localhost'"
+                "gets automatically created and destroyed every time. Use the Hardhat" +
+                " option '--network localhost'"
             );
         }
 
