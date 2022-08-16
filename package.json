@@ -66,5 +66,6 @@
     },
     "dependencies": {
         "yarn": "^1.22.19"
-    }
+    },
+    "eslintIgnore": ["artifacts", "cache", "coverage"]
 }
