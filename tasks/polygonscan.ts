@@ -3,9 +3,6 @@
 
 import { task } from "hardhat/config";
 import { getConstructorParams } from "../utils/helpers";
-import { IPeronioConstructorParams } from "../utils/types/IPeronioConstructorParams";
-
-const peronioConstructor: IPeronioConstructorParams = getConstructorParams();
 
 task("polygonscan", "Verify contract on Polyscan").setAction(
     async (_a, { network, deployments, getNamedAccounts, run }) => {
@@ -30,17 +27,7 @@ task("polygonscan", "Verify contract on Polyscan").setAction(
         try {
             await run("verify:verify", {
                 address: peronioAddress,
-                constructorArguments: [
-                    peronioConstructor.name,
-                    peronioConstructor.symbol,
-                    peronioConstructor.usdcAddress,
-                    peronioConstructor.maiAddress,
-                    peronioConstructor.lpAddress,
-                    peronioConstructor.qiAddress,
-                    peronioConstructor.quickswapRouterAddress,
-                    peronioConstructor.qiFarmAddress,
-                    peronioConstructor.qiPoolId,
-                ],
+                constructorArguments: getConstructorParams(),
             });
         } catch (e: any) {
             console.error(e.reason);

@@ -1,5 +1,6 @@
 const { BigNumber } = require("ethers");
 const { getDeployedContract } = require("../utils");
+import { getConstructorParams } from "../utils/helpers";
 
 task("deploy_peronio", "Deploy Peronio")
     // .addPositionalParam("address", "The address to check the balance from")
@@ -8,26 +9,15 @@ task("deploy_peronio", "Deploy Peronio")
             const { deploy } = deployments;
             const { deployer } = await getNamedAccounts();
 
-            const routerAddress = getDeployedContract(
-                "UniswapV2Router02",
-                network.name
-            ).address;
-
-            const peronioContract = await deploy("Peronio", {
-                contract: "Peronio",
-                from: deployer,
-                log: true,
-                args: [
-                    process.env.TOKEN_NAME,
-                    process.env.TOKEN_SYMBOL,
-                    process.env.USDT_ADDRESS,
-                    process.env.AMUSDT_ADDRESS,
-                    process.env.AAVE_LENDING_POOL_ADDRESS,
-                    process.env.WMATIC_ADDRESS,
-                    routerAddress,
-                    process.env.AAVE_INCENTIVE_ADDRESS,
-                ],
-            });
+            const peronioContract = await deploy(
+                "Peronio",
+                {
+                    contract: "Peronio",
+                    from: deployer,
+                    log: true,
+                    args: getConstructorParams(),
+                }
+            );
             console.info("Deployed address", peronioContract.address);
         }
     );
