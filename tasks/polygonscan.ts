@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 
+import { Address } from "hardhat-deploy/types";
 import { task } from "hardhat/config";
 import { getConstructorParams } from "../utils/helpers";
 
@@ -14,53 +15,26 @@ task("polygonscan", "Verify contract on Polyscan").setAction(
             );
         }
 
-        const peronioAddress = (await deployments.get("Peronio")).address;
-        const factoryAddress = (await deployments.get("UniswapV2Factory")).address;
-        const routerAddress = (await deployments.get("UniswapV2Router02")).address;
-        const autoCompounderAddress = (await deployments.get("AutoCompounder")).address;
+        async function runVerify(message: string, publishAddress: Address, args: object) {
+            console.info(message);
+            try {
+                await run("verify:verify", { address: publishAddress, constructorArguments: Object.values(args) });
+            } catch (e: any) {
+                console.error(e.reason);
+            }
+        }
 
-        const wmaticAddress = process.env.WMATIC_ADDRESS;
+        const peronioAddress: Address = (await deployments.get("Peronio")).address;
+        const factoryAddress: Address = (await deployments.get("UniswapV2Factory")).address;
+        const routerAddress: Address = (await deployments.get("UniswapV2Router02")).address;
+        const autoCompounderAddress: Address = (await deployments.get("AutoCompounder")).address;
+        const wmaticAddress: Address = process.env.WMATIC_ADDRESS ?? "";
 
         const { deployer } = await getNamedAccounts();
 
-        console.info("Publishing Peronio to Polygonscan");
-        try {
-            await run("verify:verify", {
-                address: peronioAddress,
-                constructorArguments: getConstructorParams(),
-            });
-        } catch (e: any) {
-            console.error(e.reason);
-        }
-
-        console.info("Publishing Uniswap Factory to Polygonscan");
-        try {
-            await run("verify:verify", {
-                address: factoryAddress,
-                constructorArguments: [deployer],
-            });
-        } catch (e: any) {
-            console.error(e.reason);
-        }
-
-        console.info("Publishing Uniswap Router to Polygonscan");
-        try {
-            await run("verify:verify", {
-                address: routerAddress,
-                constructorArguments: [factoryAddress, wmaticAddress],
-            });
-        } catch (e: any) {
-            console.error(e.reason);
-        }
-
-        console.info("Publishing AutoCompounder Polygonscan");
-        try {
-            await run("verify:verify", {
-                address: autoCompounderAddress,
-                constructorArguments: [peronioAddress],
-            });
-        } catch (e: any) {
-            console.error(e.reason);
-        }
+        runVerify("Publishing Peronio to Polygonscan", peronioAddress, getConstructorParams());
+        runVerify("Publishing Uniswap Factory to Polygonscan", factoryAddress, { deployer: deployer });
+        runVerify("Publishing Uniswap Router to Polygonscan", routerAddress, { factoryAddress: factoryAddress, wmaticAddress: wmaticAddress });
+        runVerify("Publishing AutoCompounder Polygonscan", autoCompounderAddress, { peronioAddress: peronioAddress });
     }
 );
