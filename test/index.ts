@@ -197,8 +197,27 @@ describe("Peronio", function () {
         });
 
         it("should quote OUT correctly", async function () {
-            // TODO
-            expect(true).to.equal(false);
+            const peBalanceOld: BigNumber = await contract.balanceOf(accounts.deployer);
+            const usdcBalanceOld: BigNumber = await usdcContract.balanceOf(accounts.deployer);
+
+            // Amount of PEs to withdraw, and expected USDC amount
+            const amount: BigNumber = BigNumber.from(250_000000);
+            const quotedUSDC: BigNumber = await contract.quoteOut(amount);
+
+            // Approve
+            await contract.approve(contract.address, amount);
+
+            // Withdraw
+            await contract.withdraw(accounts.deployer, amount);
+
+            const peBalance: BigNumber = await contract.balanceOf(accounts.deployer);
+            const usdcBalance: BigNumber = await usdcContract.balanceOf(accounts.deployer);
+
+            const withdrawnPe: BigNumber = peBalanceOld.sub(peBalance);
+            const receivedUsdc: BigNumber = usdcBalance.sub(usdcBalanceOld);
+
+            expect(withdrawnPe).to.equal(amount);
+            expect(receivedUsdc).to.equal(quotedUSDC);
         });
     });
 

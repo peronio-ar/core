@@ -369,8 +369,12 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         pe = mulDiv(lpAmount, totalSupply(), stakedAmount);
     }
 
-    // NEEDS TESTING
-    // TODO
+    /**
+     * Retrieve the expected number of USDC tokens corresponding to the given number of PE tokens for withdrawal.
+     *
+     * @param pe  Number of PE tokens to quote for
+     * @return usdc  Number of USDC tokens quoted for the given number of PE tokens
+     */
     function quoteOut(uint256 pe) external view override returns (uint256 usdc) {
         (uint256 usdcReserves, uint256 maiReserves) = _getLpReserves();
         (uint256 stakedUsdc, uint256 stakedMai) = _stakedTokens();
@@ -378,7 +382,8 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         uint256 usdcAmount = mulDiv(pe, stakedUsdc, totalSupply());
         uint256 maiAmount = mulDiv(pe, stakedMai, totalSupply());
 
-        usdc = usdcAmount + _getAmountOut(maiAmount, maiReserves, usdcReserves);
+        (uint256 scaledMaiAmount, uint256 scaledMaiReserve) = (maiAmount * 997, maiReserves * 1000);
+        usdc = usdcAmount + mulDiv(scaledMaiAmount, usdcReserves, scaledMaiAmount + scaledMaiReserve);
     }
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------
