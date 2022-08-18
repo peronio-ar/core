@@ -1,28 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.16;
 
-// OpenZeppelin imports
-import {AccessControl} from "@openzeppelin/contracts_latest/access/AccessControl.sol";
-import {ReentrancyGuard} from "@openzeppelin/contracts_latest/security/ReentrancyGuard.sol";
-import {ERC20} from "@openzeppelin/contracts_latest/token/ERC20/ERC20.sol";
-import {IERC20} from "@openzeppelin/contracts_latest/token/ERC20/IERC20.sol";
-import {SafeERC20} from "@openzeppelin/contracts_latest/token/ERC20/utils/SafeERC20.sol";
-
-import {min, mulDiv, sqrt256} from "../Utils.sol";
-
 import {IPeronioV1Wrapper} from "./old/IPeronioV1Wrapper.sol";
 import {IPeronio} from "../IPeronio.sol";
-
-// Needed for Babylonian square-root
-import {sqrt256} from "../Utils.sol";
 
 // Interface
 import "./IMigrator.sol";
 
-import {console} from "hardhat/console.sol";
-
-contract Migrator is IMigrator, ReentrancyGuard {
-    using SafeERC20 for IERC20;
+contract Migrator is IMigrator {
     // Peronio V1 Wrapper Address
     address public immutable peronioV1Address;
 
