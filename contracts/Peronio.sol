@@ -68,6 +68,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
      * @param symbol  Symbol to use for the token being created ("PE")
      * @param _usdcAddress  Address used for the USDC tokens in vault
      * @param _maiAddress  Address used for the MAI tokens in vault
+     * @param _lpAddress  LP Address for MAI/USDC
      * @param _qiAddress  Address used for the QI tokens in vault
      * @param _quickSwapRouterAddress  Address of the QuickSwap Router to talk to
      * @param _qiDaoFarmAddress  Address of the QiDao Farm to use
