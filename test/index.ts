@@ -6,9 +6,11 @@ import { keccak256 } from "ethers/lib/utils";
 import hre, { ethers } from "hardhat";
 
 /* eslint-disable node/no-unpublished-import */
-import { Peronio, ERC20, AutoCompounder } from "../typechain-types";
+import { Peronio, ERC20, AutoCompounder, Migrator, PeronioV1Wrapper } from "../typechain-types";
 
 import { Peronio__factory as PeronioFactory } from "../typechain-types/factories/contracts/Peronio__factory";
+import { PeronioV1Wrapper__factory as PeronioV1WrapperFactory } from "../typechain-types/factories/contracts/migrations/old/PeronioV1Wrapper__factory";
+import { Migrator__factory as MigratorFactory } from "../typechain-types/factories/contracts/migrations/Migrator__factory";
 import { AutoCompounder__factory as AutoCompounderFactory } from "../typechain-types/factories/contracts/AutoCompounder__factory";
 /* eslint-enable node/no-unpublished-import */
 
@@ -360,6 +362,32 @@ describe("Peronio", function () {
 
             // Grants role
             await contract.grantRole(REWARDS_ROLE, autoCompounder.address);
+        });
+    });
+
+    describe("Migration", () => {
+        let contract: Peronio;
+        let peronioV1Wrapper: PeronioV1Wrapper;
+        // eslint-disable-next-line no-unused-vars
+        let migrator: Migrator;
+
+        before(async () => {
+            const PeronioV1Wrapper: PeronioV1WrapperFactory = await ethers.getContractFactory("PeronioV1Wrapper");
+            const Migrator: MigratorFactory = await ethers.getContractFactory("Migrator");
+
+            contract = await deployPeronio(peronioConstructorParams);
+            await initializePeronio(usdcContract, contract, peronioInitializeParams);
+
+            peronioV1Wrapper = await PeronioV1Wrapper.deploy(process.env.PERONIO_V1_ADDRESS || "");
+            migrator = await Migrator.deploy(peronioV1Wrapper.address, contract.address);
+        });
+
+        it("quote 1 PE(v1)", async function () {
+            expect(true).to.equal(false);
+        });
+
+        it("migrate 1 PE(v1) to PE(v2)", async function () {
+            expect(true).to.equal(false);
         });
     });
 });
