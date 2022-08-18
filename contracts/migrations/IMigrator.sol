@@ -8,7 +8,7 @@ interface IMigrator {
     function peronioV2Address() external view returns (address);
 
     // Methods
-    function quote(uint256 pe) external view returns (uint256 usdc, uint256 p);
+    function quote(uint256 peV1) external view returns (uint256 usdc, uint256 pe);
 
-    function migrate(uint256 pe) external returns (uint256 usdc, uint256 p);
+    function migrate(uint256 peV1) external returns (uint256 usdc, uint256 pe);
 }
