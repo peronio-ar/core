@@ -276,9 +276,6 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
      * @custom:emit  Withdrawal
      */
     function withdraw(address to, uint256 peAmount) external override nonReentrant returns (uint256 usdcTotal) {
-        // Burn the given number of PE tokens
-        _burn(_msgSender(), peAmount);
-
         // Calculate equivalent number of LP USDC/MAI tokens for the given burnt PE tokens
         uint256 lpAmount = mulDiv(peAmount, _stakedBalance(), totalSupply());
 
@@ -287,6 +284,9 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
 
         // Transfer USDC tokens the the given address
         IERC20(usdcAddress).safeTransfer(to, usdcTotal);
+
+        // Burn the given number of PE tokens
+        _burn(_msgSender(), peAmount);
 
         emit Withdrawal(_msgSender(), usdcTotal, peAmount);
     }

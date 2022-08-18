@@ -161,7 +161,7 @@ describe("Peronio", function () {
 
             // Amount of PEs to withdraw, and expected USDC amount
             const amount: BigNumber = BigNumber.from(250_000000);
-            const quotedUSDC: BigNumber = BigNumber.from(1_010474);
+            const quotedUSDC: BigNumber = BigNumber.from(1_000385);
 
             // Approve
             await contract.approve(contract.address, amount);
