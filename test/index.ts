@@ -6,10 +6,9 @@ import { keccak256 } from "ethers/lib/utils";
 import hre, { ethers } from "hardhat";
 
 /* eslint-disable node/no-unpublished-import */
-import { Peronio, ERC20, AutoCompounder, Migrator, PeronioV1Wrapper } from "../typechain-types";
+import { Peronio, ERC20, UniswapV2Router02, AutoCompounder, Migrator } from "../typechain-types";
 
 import { Peronio__factory as PeronioFactory } from "../typechain-types/factories/contracts/Peronio__factory";
-import { PeronioV1Wrapper__factory as PeronioV1WrapperFactory } from "../typechain-types/factories/contracts/migrations/old/PeronioV1Wrapper__factory";
 import { Migrator__factory as MigratorFactory } from "../typechain-types/factories/contracts/migrations/Migrator__factory";
 import { AutoCompounder__factory as AutoCompounderFactory } from "../typechain-types/factories/contracts/AutoCompounder__factory";
 /* eslint-enable node/no-unpublished-import */
@@ -18,9 +17,13 @@ import { IPeronioConstructorParams } from "../utils/interfaces/IPeronioConstruct
 import { IPeronioInitializeParams } from "../utils/interfaces/IPeronioInitializeParams";
 
 import { getConstructorParams, getInitializeParams } from "../utils/helpers";
+// eslint-disable-next-line node/no-unpublished-import
+import { setBalance } from "@nomicfoundation/hardhat-network-helpers";
 
 const MARKUP_ROLE: string = keccak256(new TextEncoder().encode("MARKUP_ROLE"));
 const REWARDS_ROLE: string = keccak256(new TextEncoder().encode("REWARDS_ROLE"));
+
+const USDC_AMOUNT: BigNumber = BigNumber.from(100000000_000000);
 
 // --- Helpers ------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -53,6 +56,20 @@ const initializePeronio = async (usdcContract: ERC20, peContract: Peronio, param
     return peContract.initialize(params.usdcAmount, params.startingRatio);
 };
 
+const swapMATICtoUSDC = async (
+    uniswapContractAddress: string,
+    wmaticAddress: string,
+    usdcAddress: string,
+    to: string,
+    amount: string,
+): Promise<ContractTransaction> => {
+    const quickswapRouter: UniswapV2Router02 = await ethers.getContractAt("UniswapV2Router02", uniswapContractAddress);
+
+    return await quickswapRouter.swapExactETHForTokens(BigNumber.from("1"), [wmaticAddress, usdcAddress], to, "9999999999999999999", {
+        value: BigNumber.from(amount),
+    });
+};
+
 const sleep = async (ms: number) => {
     return new Promise((resolve) =>
         setTimeout(() => {
@@ -79,6 +96,20 @@ describe("Peronio", function () {
 
     after(() => {
         childId.kill();
+    });
+
+    before(async () => {
+        // Mint MATIC to deployer account
+        await setBalance(accounts.deployer, BigNumber.from("1000000000000000000000000000"));
+
+        // Swap MATIC into USDC from QuickSwap Router
+        await swapMATICtoUSDC(
+            process.env.QUICKSWAP_ROUTER_ADDRESS ?? "",
+            process.env.WMATIC_ADDRESS ?? "",
+            process.env.USDC_ADDRESS ?? "",
+            accounts.deployer,
+            "10000000000000000000000000",
+        );
     });
 
     describe("Constructor variables", () => {
@@ -367,19 +398,17 @@ describe("Peronio", function () {
 
     describe("Migration", () => {
         let contract: Peronio;
-        let peronioV1Wrapper: PeronioV1Wrapper;
         // eslint-disable-next-line no-unused-vars
         let migrator: Migrator;
 
         before(async () => {
-            const PeronioV1Wrapper: PeronioV1WrapperFactory = await ethers.getContractFactory("PeronioV1Wrapper");
+            const peronioV1Address = process.env.PERONIO_V1_ADDRESS || "";
             const Migrator: MigratorFactory = await ethers.getContractFactory("Migrator");
 
             contract = await deployPeronio(peronioConstructorParams);
             await initializePeronio(usdcContract, contract, peronioInitializeParams);
 
-            peronioV1Wrapper = await PeronioV1Wrapper.deploy(process.env.PERONIO_V1_ADDRESS || "");
-            migrator = await Migrator.deploy(peronioV1Wrapper.address, contract.address);
+            migrator = await Migrator.deploy(peronioV1Address, contract.address);
         });
 
         it("quote 1 PE(v1)", async function () {
