@@ -16,7 +16,7 @@ library PeronioV1Wrapper {
      * @param pe  Number of PE tokens to quote for
      * @return usdc  Number of USDC tokens quoted for the given number of PE tokens
      */
-    function quoteOut(IPeronioV1 peronioContract, uint256 pe) external view returns (uint256 usdc) {
+    function quoteOut(IPeronioV1 peronioContract, uint256 pe) internal view returns (uint256 usdc) {
         uint256 totalSupply = IERC20(address(peronioContract)).totalSupply(); // save gas
 
         (uint256 usdcReserves, uint256 maiReserves) = peronioContract.getLpReserves();
@@ -42,7 +42,7 @@ library PeronioV1Wrapper {
         IPeronioV1 peronioContract,
         address to,
         uint256 peAmount
-    ) external returns (uint256 usdcTotal) {
+    ) internal returns (uint256 usdcTotal) {
         address usdcAddress = peronioContract.USDC_ADDRESS();
         uint256 oldUsdcBalance = IERC20(usdcAddress).balanceOf(to);
 
