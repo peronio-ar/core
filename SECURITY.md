@@ -4,9 +4,9 @@
 
 Currently, only the 0.9.2 version is officially released, thus, it is the only one supported.
 
-| Version | Supported          |
+| Version |     Supported      |
 | :-----: | :----------------: |
-| 0.9.x   | :white_check_mark: |
+|  0.9.x  | :white_check_mark: |
 
 ## Reporting a Vulnerability
 
