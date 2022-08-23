@@ -23,8 +23,6 @@ import { setBalance } from "@nomicfoundation/hardhat-network-helpers";
 const MARKUP_ROLE: string = keccak256(new TextEncoder().encode("MARKUP_ROLE"));
 const REWARDS_ROLE: string = keccak256(new TextEncoder().encode("REWARDS_ROLE"));
 
-const USDC_AMOUNT: BigNumber = BigNumber.from(100000000_000000);
-
 // --- Helpers ------------------------------------------------------------------------------------------------------------------------------------------------
 
 const peronioConstructorParams: IPeronioConstructorParams = getConstructorParams();
@@ -110,6 +108,76 @@ describe("Peronio", function () {
             accounts.deployer,
             "10000000000000000000000000",
         );
+    });
+
+    describe("Migration", () => {
+        let contract: Peronio;
+        let oldContract: ERC20;
+        let migrator: Migrator;
+
+        before(async () => {
+            const peronioV1Address = process.env.PERONIO_V1_ADDRESS || "";
+            const Migrator: MigratorFactory = await ethers.getContractFactory("Migrator");
+            const peronioV1 = await ethers.getContractAt("IPeronioV1", peronioV1Address);
+            oldContract = await ethers.getContractAt("ERC20", peronioV1Address);
+
+            contract = await deployPeronio(peronioConstructorParams);
+            await initializePeronio(usdcContract, contract, peronioInitializeParams);
+
+            migrator = await Migrator.deploy(peronioV1Address, contract.address, process.env.USDC_ADDRESS ?? "");
+
+            // Mint Peronio V1 tokens
+            await usdcContract.approve(peronioV1Address, BigNumber.from(1000_000000));
+            await peronioV1.mint(accounts.deployer, BigNumber.from(1000_000000), "1");
+        });
+
+        it("quote 1 PE(v1)", async function () {
+            const peV1Amount = BigNumber.from(250_000000);
+            const { usdc: quotedUSDC, pe: quotedPe } = await migrator.quote(peV1Amount);
+
+            expect(quotedUSDC).to.be.gt(BigNumber.from(1_000000));
+            expect(quotedPe).to.be.gt(BigNumber.from(0));
+        });
+
+        it("migrate 1 PE(v1) to PE(v2)", async function () {
+            const peV1Amount = BigNumber.from(250_000000);
+
+            // Save initial balance for future comparation
+            const peV1BalanceOld: BigNumber = await oldContract.balanceOf(accounts.deployer);
+            const peV2BalanceOld: BigNumber = await contract.balanceOf(accounts.deployer);
+
+            const { pe: quotedPE, usdc: quotedUSDC } = await migrator.quote(peV1Amount);
+
+            // Approve PE v1 for Migration contract
+            console.info("PE Balance", await oldContract.balanceOf(accounts.deployer));
+
+            await oldContract.approve(migrator.address, peV1Amount);
+
+            // Simulate migration to get return
+
+            const { pe: migratedPe, usdc: migratedUSDC } = await migrator.callStatic.migrate(peV1Amount);
+            await migrator.migrate(peV1Amount);
+
+            console.info("migratedPe", migratedPe);
+            console.info("migratedUSDC", migratedUSDC);
+
+            // Calculate current balance
+            const peV1Balance: BigNumber = await oldContract.balanceOf(accounts.deployer);
+            const peV2Balance: BigNumber = await contract.balanceOf(accounts.deployer);
+
+            // Difference
+            const withdrawnPeV1: BigNumber = peV1BalanceOld.sub(peV1Balance);
+            const receivedPeV2: BigNumber = peV2Balance.sub(peV2BalanceOld);
+
+            // Withdraw proper amount
+            expect(withdrawnPeV1).to.equal(peV1Amount);
+            // Received proper amount
+            expect(receivedPeV2).to.equal(migratedPe);
+
+            // Quote
+            expect(quotedPE).to.equal(migratedPe);
+            expect(quotedUSDC).to.equal(migratedUSDC);
+        });
     });
 
     describe("Constructor variables", () => {
@@ -393,30 +461,6 @@ describe("Peronio", function () {
 
             // Grants role
             await contract.grantRole(REWARDS_ROLE, autoCompounder.address);
-        });
-    });
-
-    describe("Migration", () => {
-        let contract: Peronio;
-        // eslint-disable-next-line no-unused-vars
-        let migrator: Migrator;
-
-        before(async () => {
-            const peronioV1Address = process.env.PERONIO_V1_ADDRESS || "";
-            const Migrator: MigratorFactory = await ethers.getContractFactory("Migrator");
-
-            contract = await deployPeronio(peronioConstructorParams);
-            await initializePeronio(usdcContract, contract, peronioInitializeParams);
-
-            migrator = await Migrator.deploy(peronioV1Address, contract.address);
-        });
-
-        it("quote 1 PE(v1)", async function () {
-            expect(true).to.equal(false);
-        });
-
-        it("migrate 1 PE(v1) to PE(v2)", async function () {
-            expect(true).to.equal(false);
         });
     });
 });
