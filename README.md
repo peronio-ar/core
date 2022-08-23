@@ -2,6 +2,9 @@
 
 ![Peronio](assets/header.png)
 
+![Tests Status](https://github.com/peronio-ar/core/actions/workflows/test.yml/badge.svg)
+![CodeQL Status](https://github.com/peronio-ar/core/actions/workflows/codeql-analysis.yml/badge.svg)
+
 # Peronio Core Contracts
 
 This repository contains the Core contracts used by Peronio.
