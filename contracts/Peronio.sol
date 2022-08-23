@@ -277,9 +277,6 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
      * @custom:emit  Withdrawal
      */
     function withdraw(address to, uint256 peAmount) external override nonReentrant returns (uint256 usdcTotal) {
-        // Burn the given number of PE tokens
-        _burn(_msgSender(), peAmount);
-
         // Calculate equivalent number of LP USDC/MAI tokens for the given burnt PE tokens
         uint256 lpAmount = mulDiv(peAmount, _stakedBalance(), totalSupply());
 
@@ -288,6 +285,9 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
 
         // Transfer USDC tokens the the given address
         IERC20(usdcAddress).safeTransfer(to, usdcTotal);
+
+        // Burn the given number of PE tokens
+        _burn(_msgSender(), peAmount);
 
         emit Withdrawal(_msgSender(), usdcTotal, peAmount);
     }
@@ -351,27 +351,68 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
 
     // --- Quotes ---------------------------------------------------------------------------------------------------------------------------------------------
 
-    // NEEDS TESTING
-    // TODO
-    function quoteIn(uint256 usdc) external view override returns (uint256 pe) {
-        uint256 stakedAmount = _stakedBalance();
-        (uint256 usdcReserves, ) = _getLpReserves(); // $$$$ remove maiReserves
+    /**
+     * Retrieve the expected number of PE tokens corresponding to the given number of USDC tokens for minting.
+     *
+     * @param usdc  Number of USDC tokens to quote for
+     * @return pe  Number of PE tokens quoted for the given number of USDC tokens
+     */
+    function quoteIn(
+        uint256 usdc
+    ) external view override returns (uint256 pe) {
+        // retrieve LP state (simulations will modify these)
+        (uint256 usdcReserves, uint256 maiReserves) = _getLpReserves();
+        uint256 lpTotalSupply = IERC20(lpAddress).totalSupply();
 
-        uint256 amountToSwap = _calculateSwapInAmount(usdcReserves, usdc);
+        // -- SPLIT -------------------------------------------------------------------------------
+        uint256 usdcAmount = _calculateSwapInAmount(usdcReserves, usdc);
+        uint256 maiAmount = _getAmountOut(usdcAmount, usdcReserves, maiReserves);
 
-        uint256 usdcAmount = usdc - amountToSwap;
+        // simulate LP state update
+        usdcReserves += usdcAmount;
+        maiReserves -= maiAmount;
 
-        uint256 lpAmount = mulDiv(usdcAmount, IERC20(lpAddress).totalSupply(), usdcReserves + amountToSwap);
+        // -- SWAP --------------------------------------------------------------------------------
 
-        uint256 markup = mulDiv(lpAmount, markupFee - swapFee, 10**DECIMALS); // Calculate fee to subtract
-        lpAmount = lpAmount - markup; // remove 5% fee
+        // calculate actual values swapped
+        {
+            uint256 amountMaiOptimal = mulDiv(usdc - usdcAmount, maiReserves, usdcReserves);
+            if (amountMaiOptimal <= maiAmount) {
+                (usdcAmount, maiAmount) = (usdc - usdcAmount, amountMaiOptimal);
+            } else {
+                uint256 amountUsdcOptimal = mulDiv(maiAmount, usdcReserves, maiReserves);
+                (usdcAmount, maiAmount) = (amountUsdcOptimal, maiAmount);
+            }
+        }
 
-        // Compute %
-        pe = mulDiv(lpAmount, totalSupply(), stakedAmount);
+        // deal with LP minting when changing its K
+        {
+            uint256 rootK = sqrt256(usdcReserves * maiReserves);
+            uint256 rootKLast = sqrt256(IUniswapV2Pair(lpAddress).kLast());
+            if (rootKLast < rootK) {
+                lpTotalSupply += mulDiv(lpTotalSupply, rootK - rootKLast, (rootK * 5) + rootKLast);
+            }
+        }
+
+        // calculate LP values actually provided
+        uint256 zapInLps;
+        {
+            uint256 maiCandidate = mulDiv(maiAmount, lpTotalSupply, maiReserves);
+            uint256 usdcCandidate = mulDiv(usdcAmount, lpTotalSupply, usdcReserves);
+            zapInLps = min(maiCandidate, usdcCandidate);
+        }
+
+        // -- PERONIO -----------------------------------------------------------------------------
+        uint256 lpAmount = mulDiv(zapInLps, 10**DECIMALS - _totalMintFee(), 10**DECIMALS);
+        pe = mulDiv(lpAmount, totalSupply(), _stakedBalance());
     }
 
-    // NEEDS TESTING
-    // TODO
+    /**
+     * Retrieve the expected number of USDC tokens corresponding to the given number of PE tokens for withdrawal.
+     *
+     * @param pe  Number of PE tokens to quote for
+     * @return usdc  Number of USDC tokens quoted for the given number of PE tokens
+     */
     function quoteOut(uint256 pe) external view override returns (uint256 usdc) {
         (uint256 usdcReserves, uint256 maiReserves) = _getLpReserves();
         (uint256 stakedUsdc, uint256 stakedMai) = _stakedTokens();
@@ -379,7 +420,8 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         uint256 usdcAmount = mulDiv(pe, stakedUsdc, totalSupply());
         uint256 maiAmount = mulDiv(pe, stakedMai, totalSupply());
 
-        usdc = usdcAmount + _getAmountOut(maiAmount, maiReserves, usdcReserves);
+        (uint256 scaledMaiAmount, uint256 scaledMaiReserve) = (maiAmount * 997, maiReserves * 1000);
+        usdc = usdcAmount + mulDiv(scaledMaiAmount, usdcReserves, scaledMaiAmount + scaledMaiReserve);
     }
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -651,20 +693,15 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------
 
     function _calculateSwapInAmount(uint256 reserveIn, uint256 userIn) internal pure returns (uint256 amount) {
-        amount = (sqrt256(reserveIn * ((userIn * 3988000) + (reserveIn * 3988009))) - (reserveIn * 1997)) / 1994;
+        amount = sqrt256(mulDiv(3988009 * reserveIn + 3988000 * userIn, reserveIn, 3976036)) - mulDiv(reserveIn, 1997, 1994);
     }
 
-    //**  UNISWAP Library Functions Below **/
     function _getAmountOut(
         uint256 amountIn,
         uint256 reserveIn,
         uint256 reserveOut
     ) internal pure returns (uint256 amountOut) {
-        require(amountIn > 0, "UniswapV2Library: INSUFFICIENT_INPUT_AMOUNT"); // solhint-disable-line reason-string
-        require(reserveIn > 0 && reserveOut > 0, "UniswapV2Library: INSUFFICIENT_LIQUIDITY"); // solhint-disable-line reason-string
         uint256 amountInWithFee = amountIn * 997;
-        uint256 numerator = amountInWithFee * reserveOut;
-        uint256 denominator = reserveIn * 1000 + amountInWithFee;
-        amountOut = numerator / denominator;
+        amountOut = mulDiv(amountInWithFee, reserveOut, reserveIn * 1000 + amountInWithFee);
     }
 }

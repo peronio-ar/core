@@ -161,7 +161,7 @@ describe("Peronio", function () {
 
             // Amount of PEs to withdraw, and expected USDC amount
             const amount: BigNumber = BigNumber.from(250_000000);
-            const quotedUSDC: BigNumber = BigNumber.from(1_010474);
+            const quotedUSDC: BigNumber = BigNumber.from(1_000385);
 
             // Approve
             await contract.approve(contract.address, amount);
@@ -192,13 +192,51 @@ describe("Peronio", function () {
         });
 
         it("should quote IN correctly", async function () {
-            // TODO
-            expect(true).to.equal(false);
+            const peBalanceOld: BigNumber = await contract.balanceOf(accounts.deployer);
+            const usdcBalanceOld: BigNumber = await usdcContract.balanceOf(accounts.deployer);
+
+            // Amount of USDCs to mint, expected PE amount, and minimum PEs to receive
+            const amount: BigNumber = BigNumber.from(1_000000);
+            const expectedPe: BigNumber = await contract.quoteIn(1_000000);
+            const minReceive: BigNumber = BigNumber.from(235_000000);
+
+            // Approve
+            await usdcContract.approve(contract.address, amount);
+
+            // Mint
+            await contract.mint(accounts.deployer, amount, minReceive);
+
+            const peBalance: BigNumber = await contract.balanceOf(accounts.deployer);
+            const usdcBalance: BigNumber = await usdcContract.balanceOf(accounts.deployer);
+            const receivedPe: BigNumber = peBalance.sub(peBalanceOld);
+            const mintedUsdc: BigNumber = usdcBalanceOld.sub(usdcBalance);
+
+            expect(mintedUsdc).to.equal(amount);
+            expect(receivedPe).to.equal(expectedPe);
         });
 
         it("should quote OUT correctly", async function () {
-            // TODO
-            expect(true).to.equal(false);
+            const peBalanceOld: BigNumber = await contract.balanceOf(accounts.deployer);
+            const usdcBalanceOld: BigNumber = await usdcContract.balanceOf(accounts.deployer);
+
+            // Amount of PEs to withdraw, and expected USDC amount
+            const amount: BigNumber = BigNumber.from(250_000000);
+            const quotedUSDC: BigNumber = await contract.quoteOut(amount);
+
+            // Approve
+            await contract.approve(contract.address, amount);
+
+            // Withdraw
+            await contract.withdraw(accounts.deployer, amount);
+
+            const peBalance: BigNumber = await contract.balanceOf(accounts.deployer);
+            const usdcBalance: BigNumber = await usdcContract.balanceOf(accounts.deployer);
+
+            const withdrawnPe: BigNumber = peBalanceOld.sub(peBalance);
+            const receivedUsdc: BigNumber = usdcBalance.sub(usdcBalanceOld);
+
+            expect(withdrawnPe).to.equal(amount);
+            expect(receivedUsdc).to.equal(quotedUSDC);
         });
     });
 
