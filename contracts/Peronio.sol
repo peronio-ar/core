@@ -155,15 +155,17 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         IERC20 lpERC20 = IERC20(lpAddress);
         IERC20 qiERC20 = IERC20(qiAddress);
         address sender = _msgSender();
+        address _quickSwapRouterAddress = quickSwapRouterAddress;
+        uint256 maxVal = type(uint256).max;
 
         // Transfer initial USDC amount from user to current contract
         usdcERC20.safeTransferFrom(sender, address(this), usdcAmount);
 
         // Unlimited ERC20 approval for Router
-        maiERC20.approve(quickSwapRouterAddress, type(uint256).max);
-        usdcERC20.approve(quickSwapRouterAddress, type(uint256).max);
-        lpERC20.approve(quickSwapRouterAddress, type(uint256).max);
-        qiERC20.approve(quickSwapRouterAddress, type(uint256).max);
+        maiERC20.approve(_quickSwapRouterAddress, maxVal);
+        usdcERC20.approve(_quickSwapRouterAddress, maxVal);
+        lpERC20.approve(_quickSwapRouterAddress, maxVal);
+        qiERC20.approve(_quickSwapRouterAddress, maxVal);
 
         // Commit the complete initial USDC amount
         _zapIn(usdcAmount);
