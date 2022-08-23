@@ -44,7 +44,7 @@
         "hardhat-deploy": "^0.11.12",
         "hardhat-gas-reporter": "^1.0.8",
         "lodash": "^4.17.21",
-        "node-fetch": "^2.6.7",
+        "node-fetch": "^3.2.10",
         "prettier": "^2.7.1",
         "prettier-plugin-sh": "^0.12.8",
         "prettier-plugin-solidity": "^1.0.0-beta.20",
