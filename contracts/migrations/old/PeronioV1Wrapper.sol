@@ -46,10 +46,8 @@ library PeronioV1Wrapper {
         address usdcAddress = peronioContract.USDC_ADDRESS();
         uint256 oldUsdcBalance = IERC20(usdcAddress).balanceOf(to);
 
-        // peronioContract.withdraw(to, peAmount);
+        peronioContract.withdraw(to, peAmount);
 
-        (bool success, ) = address(peronioContract).delegatecall(abi.encodeWithSignature("withdraw(address,uint256)", to, peAmount));
-        require(success, "Error delegating call");
         usdcTotal = IERC20(usdcAddress).balanceOf(to) - oldUsdcBalance;
     }
 
