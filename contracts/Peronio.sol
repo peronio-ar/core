@@ -334,7 +334,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
 
         // Burn the given number of PE tokens
         _burn(sender, peAmount);
-        
+
         emit LiquidityWithdrawal(sender, lpAmount, peAmount);
     }
 
