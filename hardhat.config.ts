@@ -54,7 +54,7 @@ const config: HardhatUserConfig = {
             chainId: 137,
             forking: {
                 url: MAINNET_API_URL,
-                blockNumber: 30908100,
+                blockNumber: 32121120,
             },
             mining: {
                 auto: true,
