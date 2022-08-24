@@ -67,7 +67,7 @@ contract Migrator is IMigrator {
         // Calculate PE to be minted by Peronio V2
         pe = peronioV2.mint(msg.sender, usdc, 1);
 
-        // Emit Migration event
-        emit Migration(block.timestamp, amount, usdc, pe);
+        // Emit Migrated event
+        emit Migrated(block.timestamp, amount, usdc, pe);
     }
 }
