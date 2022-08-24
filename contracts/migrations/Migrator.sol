@@ -39,16 +39,18 @@ contract Migrator is IMigrator {
     }
 
     function quote(uint256 amount) external view override returns (uint256 usdc, uint256 pe) {
-        // Peronio V1 Contract Wrapper
-        IPeronioV1 peronioV1 = IPeronioV1(peronioV1Address);
-        // Peronio V2 Contract
-        IPeronio peronioV2 = IPeronio(peronioV2Address);
-
         // Calculate USDC to be received by Peronio V1
-        usdc = peronioV1.quoteOut(amount);
+        usdc = IPeronioV1(peronioV1Address).quoteOut(amount);
 
         // Calculate PE to be minted by Peronio V2
-        pe = peronioV2.quoteIn(usdc);
+        pe = IPeronio(peronioV2Address).quoteIn(usdc);
+    }
+
+    function withdraw(uint256 amount) external returns (uint256 usdc) {
+        // Transfer PE V1 to this contract
+        IERC20(peronioV1Address).transferFrom(msg.sender, address(this), amount);
+
+        usdc = IPeronioV1(peronioV1Address).withdrawV2(msg.sender, amount);
     }
 
     function migrate(uint256 amount) external override returns (uint256 usdc, uint256 pe) {
@@ -62,7 +64,6 @@ contract Migrator is IMigrator {
 
         // Calculate USDC to be received by Peronio V1
         usdc = peronioV1.withdrawV2(address(this), amount);
-
         // Calculate PE to be minted by Peronio V2
         pe = peronioV2.mint(msg.sender, usdc, 1);
 
