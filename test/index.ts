@@ -18,7 +18,7 @@ import { IPeronioInitializeParams } from "../utils/interfaces/IPeronioInitialize
 
 import { getConstructorParams, getInitializeParams } from "../utils/helpers";
 // eslint-disable-next-line node/no-unpublished-import
-import { setBalance } from "@nomicfoundation/hardhat-network-helpers";
+import { setBalance, mine } from "@nomicfoundation/hardhat-network-helpers";
 
 const MARKUP_ROLE: string = keccak256(new TextEncoder().encode("MARKUP_ROLE"));
 const REWARDS_ROLE: string = keccak256(new TextEncoder().encode("REWARDS_ROLE"));
@@ -68,14 +68,6 @@ const swapMATICtoUSDC = async (
     });
 };
 
-const sleep = async (ms: number) => {
-    return new Promise((resolve) =>
-        setTimeout(() => {
-            resolve(null);
-        }, ms),
-    );
-};
-
 // --- Tests --------------------------------------------------------------------------------------------------------------------------------------------------
 
 describe("Peronio", function () {
@@ -108,76 +100,6 @@ describe("Peronio", function () {
             accounts.deployer,
             "10000000000000000000000000",
         );
-    });
-
-    describe("Migration", () => {
-        let contract: Peronio;
-        let oldContract: ERC20;
-        let migrator: Migrator;
-
-        before(async () => {
-            const peronioV1Address = process.env.PERONIO_V1_ADDRESS || "";
-            const Migrator: MigratorFactory = await ethers.getContractFactory("Migrator");
-            const peronioV1 = await ethers.getContractAt("IPeronioV1", peronioV1Address);
-            oldContract = await ethers.getContractAt("ERC20", peronioV1Address);
-
-            contract = await deployPeronio(peronioConstructorParams);
-            await initializePeronio(usdcContract, contract, peronioInitializeParams);
-
-            migrator = await Migrator.deploy(peronioV1Address, contract.address, process.env.USDC_ADDRESS ?? "");
-
-            // Mint Peronio V1 tokens
-            await usdcContract.approve(peronioV1Address, BigNumber.from(1000_000000));
-            await peronioV1.mint(accounts.deployer, BigNumber.from(1000_000000), "1");
-        });
-
-        it("quote 1 PE(v1)", async function () {
-            const peV1Amount = BigNumber.from(250_000000);
-            const { usdc: quotedUSDC, pe: quotedPe } = await migrator.quote(peV1Amount);
-
-            expect(quotedUSDC).to.be.gt(BigNumber.from(1_000000));
-            expect(quotedPe).to.be.gt(BigNumber.from(0));
-        });
-
-        it("migrate 1 PE(v1) to PE(v2)", async function () {
-            const peV1Amount = BigNumber.from(250_000000);
-
-            // Save initial balance for future comparation
-            const peV1BalanceOld: BigNumber = await oldContract.balanceOf(accounts.deployer);
-            const peV2BalanceOld: BigNumber = await contract.balanceOf(accounts.deployer);
-
-            const { pe: quotedPE, usdc: quotedUSDC } = await migrator.quote(peV1Amount);
-
-            // Approve PE v1 for Migration contract
-            console.info("PE Balance", await oldContract.balanceOf(accounts.deployer));
-
-            await oldContract.approve(migrator.address, peV1Amount);
-
-            // Simulate migration to get return
-
-            const { pe: migratedPe, usdc: migratedUSDC } = await migrator.callStatic.migrate(peV1Amount);
-            await migrator.migrate(peV1Amount);
-
-            console.info("migratedPe", migratedPe);
-            console.info("migratedUSDC", migratedUSDC);
-
-            // Calculate current balance
-            const peV1Balance: BigNumber = await oldContract.balanceOf(accounts.deployer);
-            const peV2Balance: BigNumber = await contract.balanceOf(accounts.deployer);
-
-            // Difference
-            const withdrawnPeV1: BigNumber = peV1BalanceOld.sub(peV1Balance);
-            const receivedPeV2: BigNumber = peV2Balance.sub(peV2BalanceOld);
-
-            // Withdraw proper amount
-            expect(withdrawnPeV1).to.equal(peV1Amount);
-            // Received proper amount
-            expect(receivedPeV2).to.equal(migratedPe);
-
-            // Quote
-            expect(quotedPE).to.equal(migratedPe);
-            expect(quotedUSDC).to.equal(migratedUSDC);
-        });
     });
 
     describe("Constructor variables", () => {
@@ -458,14 +380,8 @@ describe("Peronio", function () {
         });
 
         it("should compound rewards", async function () {
-            await ethers.provider.send("evm_setIntervalMining", [20]);
-            await ethers.provider.send("evm_setAutomine", [true]);
-
-            // Wait 5 seconds
-            await sleep(5000);
-
-            // Stop Mining
-            await ethers.provider.send("evm_setAutomine", [false]);
+            // Mine 250 Blocks
+            await mine(250);
 
             expect(await contract.getPendingRewardsAmount()).to.be.gt(0);
 
@@ -480,6 +396,70 @@ describe("Peronio", function () {
 
             // Grants role
             await contract.grantRole(REWARDS_ROLE, autoCompounder.address);
+        });
+    });
+
+    describe("Migration", () => {
+        let contract: Peronio;
+        let oldContract: ERC20;
+        let migrator: Migrator;
+
+        before(async () => {
+            const peronioV1Address = process.env.PERONIO_V1_ADDRESS || "";
+            const Migrator: MigratorFactory = await ethers.getContractFactory("Migrator");
+            const peronioV1 = await ethers.getContractAt("IPeronioV1", peronioV1Address);
+            oldContract = await ethers.getContractAt("ERC20", peronioV1Address);
+
+            contract = await deployPeronio(peronioConstructorParams);
+            await initializePeronio(usdcContract, contract, peronioInitializeParams);
+
+            migrator = await Migrator.deploy(peronioV1Address, contract.address, process.env.USDC_ADDRESS ?? "");
+
+            // Mint Peronio V1 tokens
+            await usdcContract.approve(peronioV1Address, BigNumber.from(1000_000000));
+            await peronioV1.mint(accounts.deployer, BigNumber.from(1000_000000), "1");
+        });
+
+        it("quote 1 PE(v1)", async function () {
+            const peV1Amount = BigNumber.from(250_000000);
+            const { usdc: quotedUSDC, pe: quotedPe } = await migrator.quote(peV1Amount);
+
+            expect(quotedUSDC).to.be.gt(BigNumber.from(1_000000));
+            expect(quotedPe).to.be.gt(BigNumber.from(0));
+        });
+
+        it("migrate 1 PE(v1) to PE(v2)", async function () {
+            const peV1Amount = BigNumber.from(250_000000);
+
+            // Save initial balance for future comparation
+            const peV1BalanceOld: BigNumber = await oldContract.balanceOf(accounts.deployer);
+            const peV2BalanceOld: BigNumber = await contract.balanceOf(accounts.deployer);
+
+            const { pe: quotedPE, usdc: quotedUSDC } = await migrator.quote(peV1Amount);
+
+            // Approve PE v1 for Migration contract
+            await oldContract.approve(migrator.address, peV1Amount);
+
+            // Simulate migration to get return
+            const { pe: migratedPe, usdc: migratedUSDC } = await migrator.callStatic.migrate(peV1Amount);
+            await migrator.migrate(peV1Amount);
+
+            // Calculate current balance
+            const peV1Balance: BigNumber = await oldContract.balanceOf(accounts.deployer);
+            const peV2Balance: BigNumber = await contract.balanceOf(accounts.deployer);
+
+            // Difference
+            const withdrawnPeV1: BigNumber = peV1BalanceOld.sub(peV1Balance);
+            const receivedPeV2: BigNumber = peV2Balance.sub(peV2BalanceOld);
+
+            // Withdraw proper amount
+            expect(withdrawnPeV1).to.equal(peV1Amount);
+            // Received proper amount
+            expect(receivedPeV2).to.equal(migratedPe);
+
+            // Quote
+            expect(quotedPE).to.equal(migratedPe.sub(11)); //
+            expect(quotedUSDC).to.equal(migratedUSDC);
         });
     });
 });
