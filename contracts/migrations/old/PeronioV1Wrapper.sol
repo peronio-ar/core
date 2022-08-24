@@ -1,11 +1,19 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.16;
 
+// Peronio V1 Interface
 import {IPeronioV1} from "./IPeronioV1.sol";
 
+// ERC20 Interface
 import {IERC20} from "@openzeppelin/contracts_latest/token/ERC20/IERC20.sol";
 
-// Needed for Babylonian square-root & combined-multiplication-and-division
+// QiDao
+import "../../qidao/IFarm.sol";
+
+// UniSwap
+import "../../uniswap/interfaces/IUniswapV2Pair.sol";
+
+// mulDiv
 import {mulDiv} from "../../Utils.sol";
 
 library PeronioV1Wrapper {
@@ -18,12 +26,16 @@ library PeronioV1Wrapper {
      */
     function quoteOut(IPeronioV1 peronioContract, uint256 pe) internal view returns (uint256 usdc) {
         uint256 totalSupply = IERC20(address(peronioContract)).totalSupply(); // save gas
+        uint256 lpTotalSupply = IERC20(peronioContract.LP_ADDRESS()).totalSupply(); // save gas
 
-        (uint256 usdcReserves, uint256 maiReserves) = peronioContract.getLpReserves();
-        (uint256 stakedUsdc, uint256 stakedMai) = _stakedTokens(peronioContract);
+        // Transfer collateral back to user wallet to current contract
+        uint256 ratio = (pe * 10e8) / totalSupply;
+        uint256 lpAmount = (ratio * _stakedBalance(peronioContract)) / 10e8;
 
-        uint256 usdcAmount = mulDiv(pe, stakedUsdc, totalSupply);
-        uint256 maiAmount = mulDiv(pe, stakedMai, totalSupply);
+        (uint256 usdcReserves, uint256 maiReserves) = _getLpReserves(peronioContract);
+
+        uint256 usdcAmount = mulDiv(lpAmount, usdcReserves, lpTotalSupply);
+        uint256 maiAmount = mulDiv(lpAmount, maiReserves, lpTotalSupply);
 
         (uint256 scaledMaiAmount, uint256 scaledMaiReserve) = (maiAmount * 997, maiReserves * 1000);
         usdc = usdcAmount + mulDiv(scaledMaiAmount, usdcReserves, scaledMaiAmount + scaledMaiReserve);
@@ -66,5 +78,18 @@ library PeronioV1Wrapper {
 
         usdcAmount = mulDiv(lpAmount, usdcReserves, lpTotalSupply);
         maiAmount = mulDiv(lpAmount, maiReserves, lpTotalSupply);
+    }
+
+    // Returns LP Amount staked in the QiDao Farm
+    function _stakedBalance(IPeronioV1 peronioContract) internal view returns (uint256) {
+        return IFarm(peronioContract.QIDAO_FARM_ADDRESS()).deposited(peronioContract.QIDAO_POOL_ID(), address(peronioContract));
+    }
+
+    // Return all QuickSwap Liquidity Pool (MAI/USDC) reserves
+    function _getLpReserves(IPeronioV1 peronioContract) internal view returns (uint112 usdcReserves, uint112 maiReserves) {
+        uint112 reserve0;
+        uint112 reserve1;
+        (reserve0, reserve1, ) = IUniswapV2Pair(peronioContract.LP_ADDRESS()).getReserves();
+        (usdcReserves, maiReserves) = peronioContract.USDC_ADDRESS() < peronioContract.MAI_ADDRESS() ? (reserve0, reserve1) : (reserve1, reserve0);
     }
 }
