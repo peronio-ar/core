@@ -8,7 +8,7 @@ import {IPeronio} from "../IPeronio.sol";
 import {IERC20} from "@openzeppelin/contracts_latest/token/ERC20/IERC20.sol";
 
 // Interface
-import "./IMigrator.sol";
+import {IMigrator} from "./IMigrator.sol";
 
 contract Migrator is IMigrator {
     using PeronioV1Wrapper for IPeronioV1;
