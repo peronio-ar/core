@@ -431,7 +431,7 @@ describe("Peronio", function () {
         it("migrate 1 PE(v1) to PE(v2)", async function () {
             const peV1Amount = BigNumber.from(250_000000);
 
-            // Save initial balance for future comparation
+            // Save initial balance for future comparison
             const peV1BalanceOld: BigNumber = await oldContract.balanceOf(accounts.deployer);
             const peV2BalanceOld: BigNumber = await contract.balanceOf(accounts.deployer);
 
