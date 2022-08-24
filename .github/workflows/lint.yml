@@ -13,7 +13,7 @@ jobs:
 
         steps:
             - name: Check out Git repository
-              uses: actions/checkout@v2
+              uses: actions/checkout@v3
 
             - name: Set up node
               uses: actions/setup-node@v1
@@ -24,9 +24,9 @@ jobs:
               run: yarn install --frozen-lockfile
 
             - name: Run linters
-              uses: wearerequired/lint-action@a8497ddb33fb1205941fd40452ca9fff07e0770d
+              uses: wearerequired/lint-action@121b69fdf77b22fa2bbb8d081b455bd31d563197
               with:
                   github_token: ${{ secrets.github_token }}
                   prettier: true
                   auto_fix: true
-                  prettier_extensions: "css,html,js,json,,ts,sol"
+                  prettier_extensions: "js,json,ts,sol,md"
