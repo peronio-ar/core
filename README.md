@@ -2,6 +2,7 @@
 
 ![Peronio](assets/header.png)
 
+[![Lint](https://github.com/peronio-ar/core/actions/workflows/lint.yml/badge.svg)](https://github.com/peronio-ar/core/actions/workflows/lint.yml)
 ![Tests Status](https://github.com/peronio-ar/core/actions/workflows/test.yml/badge.svg)
 ![CodeQL Status](https://github.com/peronio-ar/core/actions/workflows/codeql-analysis.yml/badge.svg)
 
