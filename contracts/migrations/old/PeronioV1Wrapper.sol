@@ -12,9 +12,10 @@ import {IFarm} from "../../qidao/IFarm.sol";
 
 // UniSwap
 import {IUniswapV2Pair} from "../../uniswap/interfaces/IUniswapV2Pair.sol";
+import {IERC20Uniswap} from "../../uniswap/interfaces/IERC20Uniswap.sol";
 
 // mulDiv
-import {mulDiv} from "../../Utils.sol";
+import {mulDiv, sqrt256} from "../../Utils.sol";
 
 library PeronioV1Wrapper {
     /**
@@ -25,20 +26,29 @@ library PeronioV1Wrapper {
      * @return usdc  Number of USDC tokens quoted for the given number of PE tokens
      */
     function quoteOut(IPeronioV1 peronioContract, uint256 pe) internal view returns (uint256 usdc) {
-        uint256 totalSupply = IERC20(address(peronioContract)).totalSupply(); // save gas
-        uint256 lpTotalSupply = IERC20(peronioContract.LP_ADDRESS()).totalSupply(); // save gas
-
-        // Transfer collateral back to user wallet to current contract
-        uint256 ratio = (pe * 10e8) / totalSupply;
-        uint256 lpAmount = (ratio * _stakedBalance(peronioContract)) / 10e8;
+        // --- Gas Saving -------------------------------------------------------------------------
+        address _lpAddress = peronioContract.LP_ADDRESS();
 
         (uint256 usdcReserves, uint256 maiReserves) = _getLpReserves(peronioContract);
+        uint256 lpTotalSupply = IERC20(_lpAddress).totalSupply();
 
-        uint256 usdcAmount = mulDiv(lpAmount, usdcReserves, lpTotalSupply);
-        uint256 maiAmount = mulDiv(lpAmount, maiReserves, lpTotalSupply);
+        // deal with LP minting when changing its K
+        {
+            uint256 rootK = sqrt256(usdcReserves * maiReserves);
+            uint256 rootKLast = sqrt256(IUniswapV2Pair(_lpAddress).kLast());
+            if (rootKLast < rootK) {
+                lpTotalSupply += mulDiv(lpTotalSupply, rootK - rootKLast, (rootK * 5) + rootKLast);
+            }
+        }
 
-        (uint256 scaledMaiAmount, uint256 scaledMaiReserve) = (maiAmount * 997, maiReserves * 1000);
-        usdc = usdcAmount + mulDiv(scaledMaiAmount, usdcReserves, scaledMaiAmount + scaledMaiReserve);
+        // calculate LP values actually withdrawn
+        uint256 lpAmount = IERC20Uniswap(_lpAddress).balanceOf(_lpAddress) +
+            mulDiv(pe, _stakedBalance(peronioContract), IERC20(address(peronioContract)).totalSupply());
+
+        uint256 usdcAmount = mulDiv(usdcReserves, lpAmount, lpTotalSupply);
+        uint256 maiAmount = mulDiv(maiReserves, lpAmount, lpTotalSupply);
+
+        usdc = usdcAmount + _getAmountOut(maiAmount, maiReserves - maiAmount, usdcReserves - usdcAmount);
     }
 
     /**
@@ -103,5 +113,14 @@ library PeronioV1Wrapper {
         uint112 reserve1;
         (reserve0, reserve1, ) = IUniswapV2Pair(peronioContract.LP_ADDRESS()).getReserves();
         (usdcReserves, maiReserves) = peronioContract.USDC_ADDRESS() < peronioContract.MAI_ADDRESS() ? (reserve0, reserve1) : (reserve1, reserve0);
+    }
+
+    function _getAmountOut(
+        uint256 amountIn,
+        uint256 reserveIn,
+        uint256 reserveOut
+    ) internal pure returns (uint256 amountOut) {
+        uint256 amountInWithFee = amountIn * 997;
+        amountOut = mulDiv(amountInWithFee, reserveOut, reserveIn * 1000 + amountInWithFee);
     }
 }

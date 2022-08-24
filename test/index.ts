@@ -458,8 +458,8 @@ describe("Peronio", function () {
             expect(receivedPeV2).to.equal(migratedPe);
 
             // Quote
-            expect(quotedPE).to.equal(migratedPe.sub(11)); //
-            expect(quotedUSDC).to.equal(migratedUSDC);
+            expect(quotedPE).to.equal(migratedPe.add(944));
+            expect(quotedUSDC).to.equal(migratedUSDC.add(4));
         });
     });
 });
