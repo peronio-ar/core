@@ -290,7 +290,19 @@ interface IPeronio {
 
     // --- Quotes ---------------------------------------------------------------------------------------------------------------------------------------------
 
+    /**
+     * Retrieve the expected number of PE tokens corresponding to the given number of USDC tokens for minting.
+     *
+     * @param usdc  Number of USDC tokens to quote for
+     * @return pe  Number of PE tokens quoted for the given number of USDC tokens
+     */
     function quoteIn(uint256 usdc) external view returns (uint256 pe);
 
+    /**
+     * Retrieve the expected number of USDC tokens corresponding to the given number of PE tokens for withdrawal.
+     *
+     * @param pe  Number of PE tokens to quote for
+     * @return usdc  Number of USDC tokens quoted for the given number of PE tokens
+     */
     function quoteOut(uint256 pe) external view returns (uint256 usdc);
 }

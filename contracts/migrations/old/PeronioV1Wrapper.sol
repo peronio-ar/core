@@ -65,6 +65,7 @@ library PeronioV1Wrapper {
 
     /**
      * Return the number of USDC and MAI tokens on stake at QiDao's Farm
+     *
      * @param peronioContract  Peronio contract interface
      * @return usdcAmount  Number of USDC tokens on stake
      * @return maiAmount  Number of MAI tokens on stake
@@ -80,12 +81,23 @@ library PeronioV1Wrapper {
         maiAmount = mulDiv(lpAmount, maiReserves, lpTotalSupply);
     }
 
-    // Returns LP Amount staked in the QiDao Farm
-    function _stakedBalance(IPeronioV1 peronioContract) internal view returns (uint256) {
-        return IFarm(peronioContract.QIDAO_FARM_ADDRESS()).deposited(peronioContract.QIDAO_POOL_ID(), address(peronioContract));
+    /**
+     * Return the number of LP USDC/MAI tokens on stake at QiDao's Farm
+     *
+     * @param peronioContract  Peronio contract interface
+     * @return lpAmount  Number of LP USDC/MAI token on stake
+     */
+    function _stakedBalance(IPeronioV1 peronioContract) internal view returns (uint256 lpAmount) {
+        lpAmount = IFarm(peronioContract.QIDAO_FARM_ADDRESS()).deposited(peronioContract.QIDAO_POOL_ID(), address(peronioContract));
     }
 
-    // Return all QuickSwap Liquidity Pool (MAI/USDC) reserves
+    /**
+     * Return the USDC and MAI token reserves present in QuickSwap
+     *
+     * @param peronioContract  Peronio contract interface
+     * @return usdcReserves  Number of USDC tokens in reserve
+     * @return maiReserves  Number of MAI tokens in reserve
+     */
     function _getLpReserves(IPeronioV1 peronioContract) internal view returns (uint112 usdcReserves, uint112 maiReserves) {
         uint112 reserve0;
         uint112 reserve1;
