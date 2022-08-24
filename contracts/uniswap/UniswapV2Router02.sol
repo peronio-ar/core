@@ -7,7 +7,7 @@ import "./libraries/SafeMath.sol";
 import "./libraries/TransferHelper.sol";
 import "./interfaces/IUniswapV2Router02.sol";
 import "./interfaces/IUniswapV2Factory.sol";
-import "./interfaces/IERC20.sol";
+import "./interfaces/IERC20Uniswap.sol";
 import "./interfaces/IWETH.sol";
 
 contract UniswapV2Router02 is IUniswapV2Router02 {

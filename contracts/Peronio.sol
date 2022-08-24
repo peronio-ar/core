@@ -14,6 +14,7 @@ import {SafeERC20} from "@openzeppelin/contracts_latest/token/ERC20/utils/SafeER
 import {IFarm} from "./qidao/IFarm.sol";
 
 // UniSwap
+import {IERC20Uniswap} from "./uniswap/interfaces/IERC20Uniswap.sol";
 import {IUniswapV2Pair} from "./uniswap/interfaces/IUniswapV2Pair.sol";
 import {IUniswapV2Router02} from "./uniswap/interfaces/IUniswapV2Router02.sol";
 
@@ -333,7 +334,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
 
         // Burn the given number of PE tokens
         _burn(sender, peAmount);
-        
+
         emit LiquidityWithdrawal(sender, lpAmount, peAmount);
     }
 
@@ -437,16 +438,27 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
      */
     function quoteOut(uint256 pe) external view override returns (uint256 usdc) {
         // --- Gas Saving -------------------------------------------------------------------------
-        uint256 _totalSupply = totalSupply();
+        address _lpAddress = lpAddress;
 
         (uint256 usdcReserves, uint256 maiReserves) = _getLpReserves();
-        (uint256 stakedUsdc, uint256 stakedMai) = _stakedTokens();
+        uint256 lpTotalSupply = IERC20(_lpAddress).totalSupply();
 
-        uint256 usdcAmount = mulDiv(pe, stakedUsdc, _totalSupply);
-        uint256 maiAmount = mulDiv(pe, stakedMai, _totalSupply);
+        // deal with LP minting when changing its K
+        {
+            uint256 rootK = sqrt256(usdcReserves * maiReserves);
+            uint256 rootKLast = sqrt256(IUniswapV2Pair(_lpAddress).kLast());
+            if (rootKLast < rootK) {
+                lpTotalSupply += mulDiv(lpTotalSupply, rootK - rootKLast, (rootK * 5) + rootKLast);
+            }
+        }
 
-        (uint256 scaledMaiAmount, uint256 scaledMaiReserve) = (maiAmount * 997, maiReserves * 1000);
-        usdc = usdcAmount + mulDiv(scaledMaiAmount, usdcReserves, scaledMaiAmount + scaledMaiReserve);
+        // calculate LP values actually withdrawn
+        uint256 lpAmount = IERC20Uniswap(_lpAddress).balanceOf(_lpAddress) + mulDiv(pe, _stakedBalance(), totalSupply());
+
+        uint256 usdcAmount = mulDiv(usdcReserves, lpAmount, lpTotalSupply);
+        uint256 maiAmount = mulDiv(maiReserves, lpAmount, lpTotalSupply);
+
+        usdc = usdcAmount + _getAmountOut(maiAmount, maiReserves - maiAmount, usdcReserves - usdcAmount);
     }
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------
