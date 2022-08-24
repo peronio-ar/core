@@ -2,23 +2,25 @@
 pragma solidity ^0.8.16;
 
 interface IMigrator {
-    // Constants
-    function usdcAddress() external view returns (address);
+    // --- Events ---------------------------------------------------------------------------------------------------------------------------------------------
 
-    function maiAddress() external view returns (address);
+    /**
+     * Emitted upon migration
+     *
+     * @param timestamp  The address initializing the contract
+     * @param oldPe  The number of old PE tokens withdraw
+     * @param usdc  The number of USDC tokens converted
+     * @param newPe  The number of new PE tokens migrated
+     */
+    event Migration(uint256 timestamp, uint256 oldPe, uint256 usdc, uint256 newPe);
 
-    function lpAddress() external view returns (address);
+    // Peronio Addresses
+    function peronioV1Address() external view returns (address);
 
-    function quickSwapRouterAddress() external view returns (address);
-
-    function qiDaoFarmAddress() external view returns (address);
-
-    function qiAddress() external view returns (address);
-
-    function qiDaoPoolId() external view returns (uint256);
+    function peronioV2Address() external view returns (address);
 
     // Methods
-    function quoteV1(uint256 pe) external view returns (uint256 usdc, uint256 p);
+    function quote(uint256 peV1) external view returns (uint256 usdc, uint256 pe);
 
-    function migrateV1(uint256 pe) external view returns (uint256 usdc, uint256 p);
+    function migrate(uint256 peV1) external returns (uint256 usdc, uint256 pe);
 }

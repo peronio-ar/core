@@ -323,9 +323,6 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         // --- Gas Saving -------------------------------------------------------------------------
         address sender = _msgSender();
 
-        // Burn the given number of PE tokens
-        _burn(sender, peAmount);
-
         // Calculate equivalent number of LP USDC/MAI tokens for the given burnt PE tokens
         lpAmount = mulDiv(peAmount, _stakedBalance(), totalSupply());
 
@@ -335,6 +332,9 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         // Transfer LP USDC/MAI tokens to the given address
         IERC20(lpAddress).safeTransfer(to, lpAmount);
 
+        // Burn the given number of PE tokens
+        _burn(sender, peAmount);
+        
         emit LiquidityWithdrawal(sender, lpAmount, peAmount);
     }
 

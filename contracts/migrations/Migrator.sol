@@ -1,111 +1,73 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.16;
 
-// OpenZeppelin imports
-import {AccessControl} from "@openzeppelin/contracts_latest/access/AccessControl.sol";
-import {ReentrancyGuard} from "@openzeppelin/contracts_latest/security/ReentrancyGuard.sol";
-import {ERC20} from "@openzeppelin/contracts_latest/token/ERC20/ERC20.sol";
+import {PeronioV1Wrapper} from "./old/PeronioV1Wrapper.sol";
+import {IPeronioV1} from "./old/IPeronioV1.sol";
+import {IPeronio} from "../IPeronio.sol";
+
 import {IERC20} from "@openzeppelin/contracts_latest/token/ERC20/IERC20.sol";
-import {ERC20Permit} from "@openzeppelin/contracts_latest/token/ERC20/extensions/draft-ERC20Permit.sol";
-import {ERC20Burnable} from "@openzeppelin/contracts_latest/token/ERC20/extensions/ERC20Burnable.sol";
-import {SafeERC20} from "@openzeppelin/contracts_latest/token/ERC20/utils/SafeERC20.sol";
-
-// QiDao
-import {IFarm} from "../qidao/IFarm.sol";
-
-// UniSwap
-import {IUniswapV2Pair} from "../uniswap/interfaces/IUniswapV2Pair.sol";
-import {IUniswapV2Router02} from "../uniswap/interfaces/IUniswapV2Router02.sol";
-
-// Needed for Babylonian square-root
-import {sqrt256} from "../Utils.sol";
 
 // Interface
 import "./IMigrator.sol";
 
-import {console} from "hardhat/console.sol";
+contract Migrator is IMigrator {
+    using PeronioV1Wrapper for IPeronioV1;
 
-contract Migrator is IMigrator, ReentrancyGuard {
-    using SafeERC20 for IERC20;
+    // Peronio V1 Address
+    address public immutable peronioV1Address;
 
-    // USDC Token Address
-    address public immutable override usdcAddress;
-    // MAI Token Address
-    address public immutable override maiAddress;
+    // Peronio V2 Address
+    address public immutable peronioV2Address;
 
-    // LP USDC/MAI Address from QuickSwap
-    address public immutable override lpAddress;
-
-    // QuickSwap Router
-    address public immutable override quickSwapRouterAddress;
-
-    // QiDao Farm
-    address public immutable override qiDaoFarmAddress;
-    // QI Token Address
-    address public immutable override qiAddress;
-    // QiDao Pool ID
-    uint256 public immutable override qiDaoPoolId;
+    // USDC Address
+    address public immutable usdcAddress;
 
     constructor(
-        address _usdcAddress,
-        address _maiAddress,
-        address _lpAddress,
-        address _qiAddress,
-        address _quickSwapRouterAddress,
-        address _qiDaoFarmAddress,
-        uint256 _qiDaoPoolId
+        address _peronioV1Address,
+        address _peronioV2Address,
+        address _usdcAddress
     ) {
-        // Stable coins
+        // Peronio Addresses
+        peronioV1Address = _peronioV1Address;
+        peronioV2Address = _peronioV2Address;
+
+        // USDC Address
         usdcAddress = _usdcAddress;
-        maiAddress = _maiAddress;
 
-        // LP USDC/MAI Address
-        lpAddress = _lpAddress;
-
-        // Router
-        quickSwapRouterAddress = _quickSwapRouterAddress;
-
-        // QiDao
-        qiDaoFarmAddress = _qiDaoFarmAddress;
-        qiDaoPoolId = _qiDaoPoolId;
-        qiAddress = _qiAddress;
+        // Unlimited USDC Approve to Peronio V2 contract
+        IERC20(_usdcAddress).approve(_peronioV2Address, type(uint256).max);
     }
 
-    // PENDING
-    function quoteV1(uint256 pe) external view override returns (uint256 usdc, uint256 p) {
-        // uint256 stakedAmount = _stakedBalance();
-        // (uint112 usdcReserves, ) = _getLpReserves();
-        // uint256 amountToSwap = _calculateSwapInAmount(usdcReserves, usdc);
-        // uint256 usdcAmount = usdc - amountToSwap;
-        // uint256 lpAmount = usdcAmount.mul(10e18).div(usdcReserves);
-        // uint256 markupFee = lpAmount.mul(markupFee - swapFee).div(10**_decimals); // Calculate fee to subtract
-        // lpAmount = lpAmount.sub(markupFee); // remove 5% fee
-        // // Compute %
-        // uint256 ratio = lpAmount.mul(10e8).div(stakedAmount);
-        // pe = ratio.mul(totalSupply()).div(10e8);
+    function quote(uint256 amount) external view override returns (uint256 usdc, uint256 pe) {
+        // Calculate USDC to be received by Peronio V1
+        usdc = IPeronioV1(peronioV1Address).quoteOut(amount);
+
+        // Calculate PE to be minted by Peronio V2
+        pe = IPeronio(peronioV2Address).quoteIn(usdc);
     }
 
-    // NEEDS TESTING
-    function migrateV1(uint256 pe) external view override returns (uint256 usdc, uint256 p) {
-        // (uint112 usdcReserves, uint112 maiReserves) = _getLpReserves();
-        // uint256 ratio = pe.mul(10e8).div(totalSupply());
-        // (uint256 stakedUsdc, uint256 stakedMai) = _stakedTokens();
-        // uint256 usdcAmount = stakedUsdc.mul(ratio).div(10e8);
-        // uint256 maiAmount = stakedMai.mul(ratio).div(10e8);
-        // usdc = usdcAmount.sum(_getAmountOut(maiAmount, maiReserves, usdcReserves));
+    function withdraw(uint256 amount) external returns (uint256 usdc) {
+        // Transfer PE V1 to this contract
+        IERC20(peronioV1Address).transferFrom(msg.sender, address(this), amount);
+
+        usdc = IPeronioV1(peronioV1Address).withdrawV2(msg.sender, amount);
     }
 
-    //**  UNISWAP Library Functions Below **/
-    function _getAmountOut(
-        uint256 amountIn,
-        uint256 reserveIn,
-        uint256 reserveOut
-    ) internal pure returns (uint256 amountOut) {
-        require(amountIn > 0, "UniswapV2Library: INSUFFICIENT_INPUT_AMOUNT");
-        require(reserveIn > 0 && reserveOut > 0, "UniswapV2Library: INSUFFICIENT_LIQUIDITY");
-        uint256 amountInWithFee = amountIn * 997;
-        uint256 numerator = amountInWithFee * reserveOut;
-        uint256 denominator = (reserveIn * 1000) + amountInWithFee;
-        amountOut = numerator / denominator;
+    function migrate(uint256 amount) external override returns (uint256 usdc, uint256 pe) {
+        // Peronio V1 Contract Wrapper
+        IPeronioV1 peronioV1 = IPeronioV1(peronioV1Address);
+        // Peronio V2 Contract
+        IPeronio peronioV2 = IPeronio(peronioV2Address);
+
+        // Transfer PE V1 to this contract
+        IERC20(peronioV1Address).transferFrom(msg.sender, address(this), amount);
+
+        // Calculate USDC to be received by Peronio V1
+        usdc = peronioV1.withdrawV2(address(this), amount);
+        // Calculate PE to be minted by Peronio V2
+        pe = peronioV2.mint(msg.sender, usdc, 1);
+
+        // Emit Migration event
+        emit Migration(block.timestamp, amount, usdc, pe);
     }
 }
