@@ -25,10 +25,7 @@ contract Migrator is IMigrator {
      * @param _peronioV1Address  The address of the old PE contract
      * @param _peronioV2Address  The address of the new PE contract
      */
-    constructor(
-        address _peronioV1Address,
-        address _peronioV2Address
-    ) {
+    constructor(address _peronioV1Address, address _peronioV2Address) {
         // Peronio Addresses
         peronioV1Address = _peronioV1Address;
         peronioV2Address = _peronioV2Address;
