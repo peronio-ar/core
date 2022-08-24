@@ -413,7 +413,7 @@ describe("Peronio", function () {
             contract = await deployPeronio(peronioConstructorParams);
             await initializePeronio(usdcContract, contract, peronioInitializeParams);
 
-            migrator = await Migrator.deploy(peronioV1Address, contract.address, process.env.USDC_ADDRESS ?? "");
+            migrator = await Migrator.deploy(peronioV1Address, contract.address);
 
             // Mint Peronio V1 tokens
             await usdcContract.approve(peronioV1Address, BigNumber.from(1000_000000));

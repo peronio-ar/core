@@ -19,23 +19,16 @@ contract Migrator is IMigrator {
     // Peronio V2 Address
     address public immutable peronioV2Address;
 
-    // USDC Address
-    address public immutable usdcAddress;
-
     constructor(
         address _peronioV1Address,
-        address _peronioV2Address,
-        address _usdcAddress
+        address _peronioV2Address
     ) {
         // Peronio Addresses
         peronioV1Address = _peronioV1Address;
         peronioV2Address = _peronioV2Address;
 
-        // USDC Address
-        usdcAddress = _usdcAddress;
-
         // Unlimited USDC Approve to Peronio V2 contract
-        IERC20(_usdcAddress).approve(_peronioV2Address, type(uint256).max);
+        IERC20(IPeronioV1(_peronioV1Address).USDC_ADDRESS()).approve(_peronioV2Address, type(uint256).max);
     }
 
     function quote(uint256 amount) external view override returns (uint256 usdc, uint256 pe) {
