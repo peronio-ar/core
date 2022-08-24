@@ -8,10 +8,10 @@ import {IPeronioV1} from "./IPeronioV1.sol";
 import {IERC20} from "@openzeppelin/contracts_latest/token/ERC20/IERC20.sol";
 
 // QiDao
-import "../../qidao/IFarm.sol";
+import {IFarm} from "../../qidao/IFarm.sol";
 
 // UniSwap
-import "../../uniswap/interfaces/IUniswapV2Pair.sol";
+import {IUniswapV2Pair} from "../../uniswap/interfaces/IUniswapV2Pair.sol";
 
 // mulDiv
 import {mulDiv} from "../../Utils.sol";
