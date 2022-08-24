@@ -46,13 +46,6 @@ contract Migrator is IMigrator {
         pe = IPeronio(peronioV2Address).quoteIn(usdc);
     }
 
-    function withdraw(uint256 amount) external returns (uint256 usdc) {
-        // Transfer PE V1 to this contract
-        IERC20(peronioV1Address).transferFrom(msg.sender, address(this), amount);
-
-        usdc = IPeronioV1(peronioV1Address).withdrawV2(msg.sender, amount);
-    }
-
     function migrate(uint256 amount) external override returns (uint256 usdc, uint256 pe) {
         // Peronio V1 Contract Wrapper
         IPeronioV1 peronioV1 = IPeronioV1(peronioV1Address);
