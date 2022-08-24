@@ -7,7 +7,7 @@ interface IMigrator {
     /**
      * Emitted upon migration
      *
-     * @param timestamp  The address initializing the contract
+     * @param timestamp  The moment in time when migration took place
      * @param oldPe  The number of old PE tokens withdraw
      * @param usdc  The number of USDC tokens converted
      * @param newPe  The number of new PE tokens migrated
