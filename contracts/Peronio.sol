@@ -301,9 +301,6 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
      * @custom:emit LiquidityWithdrawal
      */
     function withdrawLiquidity(address to, uint256 peAmount) external override nonReentrant returns (uint256 lpAmount) {
-        // Burn the given number of PE tokens
-        _burn(_msgSender(), peAmount);
-
         // Calculate equivalent number of LP USDC/MAI tokens for the given burnt PE tokens
         lpAmount = mulDiv(peAmount, _stakedBalance(), totalSupply());
 
@@ -312,6 +309,9 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
 
         // Transfer LP USDC/MAI tokens to the given address
         IERC20(lpAddress).safeTransfer(to, lpAmount);
+
+        // Burn the given number of PE tokens
+        _burn(_msgSender(), peAmount);
 
         emit LiquidityWithdrawal(_msgSender(), lpAmount, peAmount);
     }
@@ -337,7 +337,6 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
     function compoundRewards() external override onlyRole(REWARDS_ROLE) returns (uint256 usdcAmount, uint256 lpAmount) {
         // Claim rewards from QiDao's Farm
         IFarm(qiDaoFarmAddress).deposit(qiDaoPoolId, 0);
-
         // Retrieve the number of QI tokens rewarded and swap them to USDC tokens
         uint256 amount = IERC20(qiAddress).balanceOf(address(this));
         _swapQItoUSDC(amount);
@@ -357,9 +356,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
      * @param usdc  Number of USDC tokens to quote for
      * @return pe  Number of PE tokens quoted for the given number of USDC tokens
      */
-    function quoteIn(
-        uint256 usdc
-    ) external view override returns (uint256 pe) {
+    function quoteIn(uint256 usdc) external view override returns (uint256 pe) {
         // retrieve LP state (simulations will modify these)
         (uint256 usdcReserves, uint256 maiReserves) = _getLpReserves();
         uint256 lpTotalSupply = IERC20(lpAddress).totalSupply();
@@ -371,7 +368,6 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         // simulate LP state update
         usdcReserves += usdcAmount;
         maiReserves -= maiAmount;
-
         // -- SWAP --------------------------------------------------------------------------------
 
         // calculate actual values swapped
@@ -404,6 +400,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
 
         // -- PERONIO -----------------------------------------------------------------------------
         uint256 lpAmount = mulDiv(zapInLps, 10**DECIMALS - _totalMintFee(), 10**DECIMALS);
+
         pe = mulDiv(lpAmount, totalSupply(), _stakedBalance());
     }
 
