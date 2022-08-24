@@ -85,6 +85,9 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         address _qiDaoFarmAddress,
         uint256 _qiDaoPoolId
     ) ERC20(name, symbol) ERC20Permit(name) {
+        // --- Gas Saving -------------------------------------------------------------------------
+        address sender = _msgSender();
+
         // Stablecoin Addresses
         usdcAddress = _usdcAddress;
         maiAddress = _maiAddress;
@@ -101,9 +104,9 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         qiAddress = _qiAddress;
 
         // Grant roles
-        _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
-        _setupRole(MARKUP_ROLE, _msgSender());
-        _setupRole(REWARDS_ROLE, _msgSender());
+        _setupRole(DEFAULT_ADMIN_ROLE, sender);
+        _setupRole(MARKUP_ROLE, sender);
+        _setupRole(REWARDS_ROLE, sender);
     }
 
     // --- Decimals -------------------------------------------------------------------------------------------------------------------------------------------
@@ -146,23 +149,32 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         require(!initialized, "Contract already initialized");
         initialized = true;
 
+        // --- Gas Saving -------------------------------------------------------------------------
+        IERC20 maiERC20 = IERC20(maiAddress);
+        IERC20 usdcERC20 = IERC20(usdcAddress);
+        IERC20 lpERC20 = IERC20(lpAddress);
+        IERC20 qiERC20 = IERC20(qiAddress);
+        address sender = _msgSender();
+        address _quickSwapRouterAddress = quickSwapRouterAddress;
+        uint256 maxVal = type(uint256).max;
+
         // Transfer initial USDC amount from user to current contract
-        IERC20(usdcAddress).safeTransferFrom(_msgSender(), address(this), usdcAmount);
+        usdcERC20.safeTransferFrom(sender, address(this), usdcAmount);
 
         // Unlimited ERC20 approval for Router
-        IERC20(maiAddress).approve(quickSwapRouterAddress, type(uint256).max);
-        IERC20(usdcAddress).approve(quickSwapRouterAddress, type(uint256).max);
-        IERC20(lpAddress).approve(quickSwapRouterAddress, type(uint256).max);
-        IERC20(qiAddress).approve(quickSwapRouterAddress, type(uint256).max);
+        maiERC20.approve(_quickSwapRouterAddress, maxVal);
+        usdcERC20.approve(_quickSwapRouterAddress, maxVal);
+        lpERC20.approve(_quickSwapRouterAddress, maxVal);
+        qiERC20.approve(_quickSwapRouterAddress, maxVal);
 
         // Commit the complete initial USDC amount
         _zapIn(usdcAmount);
         usdcAmount = _stakedValue();
 
         // Mints exactly startingRatio for each collateral USDC token
-        _mint(_msgSender(), startingRatio * usdcAmount);
+        _mint(sender, startingRatio * usdcAmount);
 
-        emit Initialized(_msgSender(), usdcAmount, startingRatio);
+        emit Initialized(sender, usdcAmount, startingRatio);
     }
 
     // --- State views ----------------------------------------------------------------------------------------------------------------------------------------
@@ -248,8 +260,11 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         uint256 usdcAmount,
         uint256 minReceive
     ) external override nonReentrant returns (uint256 peAmount) {
+        // --- Gas Saving -------------------------------------------------------------------------
+        address sender = _msgSender();
+
         // Transfer USDC tokens as collateral to this contract
-        IERC20(usdcAddress).safeTransferFrom(_msgSender(), address(this), usdcAmount);
+        IERC20(usdcAddress).safeTransferFrom(sender, address(this), usdcAmount);
 
         // Remember the previously staked balance
         uint256 stakedAmount = _stakedBalance();
@@ -265,7 +280,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         // Actually mint the PE tokens
         _mint(to, peAmount);
 
-        emit Minted(_msgSender(), usdcAmount, peAmount);
+        emit Minted(sender, usdcAmount, peAmount);
     }
 
     /**
@@ -277,6 +292,9 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
      * @custom:emit  Withdrawal
      */
     function withdraw(address to, uint256 peAmount) external override nonReentrant returns (uint256 usdcTotal) {
+        // --- Gas Saving -------------------------------------------------------------------------
+        address sender = _msgSender();
+
         // Calculate equivalent number of LP USDC/MAI tokens for the given burnt PE tokens
         uint256 lpAmount = mulDiv(peAmount, _stakedBalance(), totalSupply());
 
@@ -287,9 +305,9 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         IERC20(usdcAddress).safeTransfer(to, usdcTotal);
 
         // Burn the given number of PE tokens
-        _burn(_msgSender(), peAmount);
+        _burn(sender, peAmount);
 
-        emit Withdrawal(_msgSender(), usdcTotal, peAmount);
+        emit Withdrawal(sender, usdcTotal, peAmount);
     }
 
     /**
@@ -301,6 +319,9 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
      * @custom:emit LiquidityWithdrawal
      */
     function withdrawLiquidity(address to, uint256 peAmount) external override nonReentrant returns (uint256 lpAmount) {
+        // --- Gas Saving -------------------------------------------------------------------------
+        address sender = _msgSender();
+
         // Calculate equivalent number of LP USDC/MAI tokens for the given burnt PE tokens
         lpAmount = mulDiv(peAmount, _stakedBalance(), totalSupply());
 
@@ -311,9 +332,9 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         IERC20(lpAddress).safeTransfer(to, lpAmount);
 
         // Burn the given number of PE tokens
-        _burn(_msgSender(), peAmount);
-
-        emit LiquidityWithdrawal(_msgSender(), lpAmount, peAmount);
+        _burn(sender, peAmount);
+        
+        emit LiquidityWithdrawal(sender, lpAmount, peAmount);
     }
 
     // --- Rewards --------------------------------------------------------------------------------------------------------------------------------------------
@@ -337,6 +358,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
     function compoundRewards() external override onlyRole(REWARDS_ROLE) returns (uint256 usdcAmount, uint256 lpAmount) {
         // Claim rewards from QiDao's Farm
         IFarm(qiDaoFarmAddress).deposit(qiDaoPoolId, 0);
+
         // Retrieve the number of QI tokens rewarded and swap them to USDC tokens
         uint256 amount = IERC20(qiAddress).balanceOf(address(this));
         _swapQItoUSDC(amount);
@@ -357,9 +379,12 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
      * @return pe  Number of PE tokens quoted for the given number of USDC tokens
      */
     function quoteIn(uint256 usdc) external view override returns (uint256 pe) {
+        // --- Gas Saving -------------------------------------------------------------------------
+        address _lpAddress = lpAddress;
+
         // retrieve LP state (simulations will modify these)
         (uint256 usdcReserves, uint256 maiReserves) = _getLpReserves();
-        uint256 lpTotalSupply = IERC20(lpAddress).totalSupply();
+        uint256 lpTotalSupply = IERC20(_lpAddress).totalSupply();
 
         // -- SPLIT -------------------------------------------------------------------------------
         uint256 usdcAmount = _calculateSwapInAmount(usdcReserves, usdc);
@@ -368,6 +393,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         // simulate LP state update
         usdcReserves += usdcAmount;
         maiReserves -= maiAmount;
+
         // -- SWAP --------------------------------------------------------------------------------
 
         // calculate actual values swapped
@@ -384,7 +410,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         // deal with LP minting when changing its K
         {
             uint256 rootK = sqrt256(usdcReserves * maiReserves);
-            uint256 rootKLast = sqrt256(IUniswapV2Pair(lpAddress).kLast());
+            uint256 rootKLast = sqrt256(IUniswapV2Pair(_lpAddress).kLast());
             if (rootKLast < rootK) {
                 lpTotalSupply += mulDiv(lpTotalSupply, rootK - rootKLast, (rootK * 5) + rootKLast);
             }
@@ -400,7 +426,6 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
 
         // -- PERONIO -----------------------------------------------------------------------------
         uint256 lpAmount = mulDiv(zapInLps, 10**DECIMALS - _totalMintFee(), 10**DECIMALS);
-
         pe = mulDiv(lpAmount, totalSupply(), _stakedBalance());
     }
 
@@ -411,11 +436,14 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
      * @return usdc  Number of USDC tokens quoted for the given number of PE tokens
      */
     function quoteOut(uint256 pe) external view override returns (uint256 usdc) {
+        // --- Gas Saving -------------------------------------------------------------------------
+        uint256 _totalSupply = totalSupply();
+
         (uint256 usdcReserves, uint256 maiReserves) = _getLpReserves();
         (uint256 stakedUsdc, uint256 stakedMai) = _stakedTokens();
 
-        uint256 usdcAmount = mulDiv(pe, stakedUsdc, totalSupply());
-        uint256 maiAmount = mulDiv(pe, stakedMai, totalSupply());
+        uint256 usdcAmount = mulDiv(pe, stakedUsdc, _totalSupply);
+        uint256 maiAmount = mulDiv(pe, stakedMai, _totalSupply);
 
         (uint256 scaledMaiAmount, uint256 scaledMaiReserve) = (maiAmount * 997, maiReserves * 1000);
         usdc = usdcAmount + mulDiv(scaledMaiAmount, usdcReserves, scaledMaiAmount + scaledMaiReserve);
@@ -491,6 +519,9 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
      * @return totalFee  The total fee to apply on minting
      */
     function _totalMintFee() internal view returns (uint256 totalFee) {
+        // --- Gas Saving -------------------------------------------------------------------------
+        uint256 _markupFee = markupFee;
+
         // Retrieve the deposit fee from QiDao's Farm (this is always expressed with 4 decimals, as "basic points")
         // Convert these "basic points" to `DECIMALS` precision
         (, , , , uint16 depositFeeBP) = IFarm(qiDaoFarmAddress).poolInfo(qiDaoPoolId);
@@ -499,7 +530,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         // Calculate total fee to apply
         // (ie. the swapFee and the depositFee are included in the total markup fee, thus, we don't double charge for both the markup fee itself
         // and the swap and deposit fees)
-        totalFee = markupFee - min(markupFee, swapFee + depositFee);
+        totalFee = _markupFee - min(_markupFee, swapFee + depositFee);
     }
 
     /**
@@ -613,8 +644,11 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
      * @param lpAmount  Number of LP USDC/MAI tokens to deposit into QiDao's Farm
      */
     function _stakeLP(uint256 lpAmount) internal {
-        IERC20(lpAddress).approve(qiDaoFarmAddress, lpAmount);
-        IFarm(qiDaoFarmAddress).deposit(qiDaoPoolId, lpAmount);
+        // --- Gas Saving -------------------------------------------------------------------------
+        address _qiDaoFarmAddress = qiDaoFarmAddress;
+
+        IERC20(lpAddress).approve(_qiDaoFarmAddress, lpAmount);
+        IFarm(_qiDaoFarmAddress).deposit(qiDaoPoolId, lpAmount);
     }
 
     /**
