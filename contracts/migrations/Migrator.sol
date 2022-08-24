@@ -19,6 +19,12 @@ contract Migrator is IMigrator {
     // Peronio V2 Address
     address public immutable peronioV2Address;
 
+    /**
+     * Construct a new Peronio migrator
+     *
+     * @param _peronioV1Address  The address of the old PE contract
+     * @param _peronioV2Address  The address of the new PE contract
+     */
     constructor(
         address _peronioV1Address,
         address _peronioV2Address
@@ -31,6 +37,13 @@ contract Migrator is IMigrator {
         IERC20(IPeronioV1(_peronioV1Address).USDC_ADDRESS()).approve(_peronioV2Address, type(uint256).max);
     }
 
+    /**
+     * Retrieve the number of USDC tokens to withdraw from the old contract, and the number of OE tokens to mint on the new one
+     *
+     * @param amount  The number of PE tokens to withdraw from the old contract
+     * @return usdc  The number of USDC tokens to withdraw from the old contract
+     * @return pe  The number of PE tokens to mint on the new contract
+     */
     function quote(uint256 amount) external view override returns (uint256 usdc, uint256 pe) {
         // Calculate USDC to be received by Peronio V1
         usdc = IPeronioV1(peronioV1Address).quoteOut(amount);
@@ -39,6 +52,14 @@ contract Migrator is IMigrator {
         pe = IPeronio(peronioV2Address).quoteIn(usdc);
     }
 
+    /**
+     * Migrate the given number of PE tokens from the old contract to the new one
+     *
+     * @param amount  The number of PE tokens to withdraw from the old contract
+     * @return usdc  The number of USDC tokens withdrawn from the old contract
+     * @return pe  The number of PE tokens minted on the new contract
+     * @custom:emit  Migrated
+     */
     function migrate(uint256 amount) external override returns (uint256 usdc, uint256 pe) {
         // Peronio V1 Contract Wrapper
         IPeronioV1 peronioV1 = IPeronioV1(peronioV1Address);
