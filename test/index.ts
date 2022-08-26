@@ -160,8 +160,8 @@ describe("Peronio", function () {
 
             // Amount of USDCs to mint, expected PE amount, and minimum PEs to receive
             const amount: BigNumber = BigNumber.from(1_000000);
-            const expectedPe: BigNumber = BigNumber.from(238_406705);
-            const minReceive: BigNumber = BigNumber.from(235_000000);
+            const expectedPe: BigNumber = BigNumber.from(229_239490);
+            const minReceive: BigNumber = BigNumber.from(200_000000);
 
             // Approve
             await usdcContract.approve(contract.address, amount);
@@ -184,7 +184,7 @@ describe("Peronio", function () {
 
             // Amount of PEs to withdraw, and expected USDC amount
             const amount: BigNumber = BigNumber.from(250_000000);
-            const quotedUSDC: BigNumber = BigNumber.from(1_000385);
+            const quotedUSDC: BigNumber = BigNumber.from(1_040389);
 
             // Approve
             await contract.approve(contract.address, amount);
@@ -221,7 +221,7 @@ describe("Peronio", function () {
             // Amount of USDCs to mint, expected PE amount, and minimum PEs to receive
             const amount: BigNumber = BigNumber.from(1_000000);
             const expectedPe: BigNumber = await contract.quoteIn(1_000000);
-            const minReceive: BigNumber = BigNumber.from(235_000000);
+            const minReceive: BigNumber = BigNumber.from(225_000000);
 
             // Approve
             await usdcContract.approve(contract.address, amount);
@@ -289,12 +289,12 @@ describe("Peronio", function () {
 
         it("should return a buyingPrice near PE/USDC 0.004 (+5%)", async function () {
             const buyingPrice: BigNumber = await contract.buyingPrice();
-            expect(buyingPrice).to.equal(BigNumber.from(4200));
+            expect(buyingPrice).to.equal(BigNumber.from(4366));
         });
 
         it("should return a collateralRatio near PE/USDC 0.004", async function () {
             const collateralRatio: BigNumber = await contract.collateralRatio();
-            expect(collateralRatio).to.equal(BigNumber.from(4000));
+            expect(collateralRatio).to.equal(BigNumber.from(4159));
         });
     });
 
@@ -458,7 +458,7 @@ describe("Peronio", function () {
             expect(receivedPeV2).to.equal(migratedPe);
 
             // Quote
-            expect(quotedPE).to.equal(migratedPe.sub(11)); //
+            expect(quotedPE).to.equal(migratedPe.sub(10)); //
             expect(quotedUSDC).to.equal(migratedUSDC);
         });
     });
