@@ -2,7 +2,7 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
 
 const deployMigrator: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
-    console.info("Deploying Peronio V1 Wrapper");
+    console.info("Deploying Migrator");
     const { deployer } = await hre.getNamedAccounts();
 
     const peronioV1Address = process.env.PERONIO_V1_ADDRESS;
@@ -12,7 +12,7 @@ const deployMigrator: DeployFunction = async (hre: HardhatRuntimeEnvironment) =>
         contract: "Migrator",
         from: deployer,
         log: true,
-        args: [peronioV1Address, peronioV2Address],
+        args: [peronioV1Address, peronioV2Address, process.env.USDC_ADDRESS || ""],
     });
 };
 
