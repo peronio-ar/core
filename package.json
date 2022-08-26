@@ -67,7 +67,8 @@
         "send": "hardhat send",
         "generate": "hardhat generate",
         "account": "hardhat account",
-        "typechain": "hardhat typechain"
+        "typechain": "hardhat typechain",
+        "postinstall": "yarn run typechain"
     },
     "dependencies": {
         "yarn": "^1.22.19"
