@@ -240,14 +240,14 @@ describe("Peronio", function () {
             expect(stakedValue).to.be.closeTo(BigNumber.from(100_000000), BigNumber.from(1_500000));
         });
 
-        it("should return a buyingPrice near PE/USDC 0.004 (+5%)", async function () {
+        it("should return a buyingPrice near PE/USDC 0.004 (+/- 5%)", async function () {
             const buyingPrice: BigNumber = await contract.buyingPrice();
-            expect(buyingPrice).to.equal(BigNumber.from(4366));
+            expect(buyingPrice).to.be.closeTo(BigNumber.from(4000), BigNumber.from(200));
         });
 
-        it("should return a collateralRatio near PE/USDC 0.004", async function () {
+        it("should return a collateralRatio near PE/USDC 0.004 (+/- 5%)", async function () {
             const collateralRatio: BigNumber = await contract.collateralRatio();
-            expect(collateralRatio).to.equal(BigNumber.from(4159));
+            expect(collateralRatio).to.be.closeTo(BigNumber.from(4000), BigNumber.from(200));
         });
     });
 
