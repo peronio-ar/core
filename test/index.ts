@@ -154,53 +154,6 @@ describe("Peronio", function () {
             await initializePeronio(usdcContract, contract, peronioInitializeParams);
         });
 
-        it("should mint USDC 1", async function () {
-            const peBalanceOld: BigNumber = await contract.balanceOf(accounts.deployer);
-            const usdcBalanceOld: BigNumber = await usdcContract.balanceOf(accounts.deployer);
-
-            // Amount of USDCs to mint, expected PE amount, and minimum PEs to receive
-            const amount: BigNumber = BigNumber.from(1_000000);
-            const expectedPe: BigNumber = BigNumber.from(229_239490);
-            const minReceive: BigNumber = BigNumber.from(200_000000);
-
-            // Approve
-            await usdcContract.approve(contract.address, amount);
-
-            // Mint
-            await contract.mint(accounts.deployer, amount, minReceive);
-
-            const peBalance: BigNumber = await contract.balanceOf(accounts.deployer);
-            const usdcBalance: BigNumber = await usdcContract.balanceOf(accounts.deployer);
-            const receivedPe: BigNumber = peBalance.sub(peBalanceOld);
-            const mintedUsdc: BigNumber = usdcBalanceOld.sub(usdcBalance);
-
-            expect(mintedUsdc).to.equal(amount);
-            expect(receivedPe).to.equal(expectedPe);
-        });
-
-        it("should withdraw PE 250", async function () {
-            const peBalanceOld: BigNumber = await contract.balanceOf(accounts.deployer);
-            const usdcBalanceOld: BigNumber = await usdcContract.balanceOf(accounts.deployer);
-
-            // Amount of PEs to withdraw, and expected USDC amount
-            const amount: BigNumber = BigNumber.from(250_000000);
-            const quotedUSDC: BigNumber = BigNumber.from(1_040389);
-
-            // Approve
-            await contract.approve(contract.address, amount);
-
-            // Withdraw
-            await contract.withdraw(accounts.deployer, amount);
-
-            const peBalance: BigNumber = await contract.balanceOf(accounts.deployer);
-            const usdcBalance: BigNumber = await usdcContract.balanceOf(accounts.deployer);
-            const withdrawnPe: BigNumber = peBalanceOld.sub(peBalance);
-            const receivedUsdc: BigNumber = usdcBalance.sub(usdcBalanceOld);
-
-            expect(withdrawnPe).to.equal(amount);
-            expect(receivedUsdc).to.equal(quotedUSDC);
-        });
-
         it("should revert on not enough received PE", async function () {
             const amount: BigNumber = BigNumber.from(1_000000);
 
