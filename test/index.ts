@@ -420,16 +420,10 @@ describe("Peronio", function () {
             await peronioV1.mint(accounts.deployer, BigNumber.from(1000_000000), "1");
         });
 
-        it("quote 1 PE(v1)", async function () {
-            const peV1Amount = BigNumber.from(250_000000);
-            const { usdc: quotedUSDC, pe: quotedPe } = await migrator.quote(peV1Amount);
-
-            expect(quotedUSDC).to.be.gt(BigNumber.from(1_000000));
-            expect(quotedPe).to.be.gt(BigNumber.from(0));
-        });
-
         it("migrate 1 PE(v1) to PE(v2)", async function () {
+            // Approve PE v1 for Migration contract
             const peV1Amount = BigNumber.from(250_000000);
+            await oldContract.approve(migrator.address, peV1Amount);
 
             // Save initial balance for future comparison
             const peV1BalanceOld: BigNumber = await oldContract.balanceOf(accounts.deployer);
@@ -437,29 +431,26 @@ describe("Peronio", function () {
 
             const { pe: quotedPE, usdc: quotedUSDC } = await migrator.quote(peV1Amount);
 
-            // Approve PE v1 for Migration contract
-            await oldContract.approve(migrator.address, peV1Amount);
-
             // Simulate migration to get return
             const { pe: migratedPe, usdc: migratedUSDC } = await migrator.callStatic.migrate(peV1Amount);
+
+            // Quote
+            expect(quotedPE).to.equal(migratedPe);
+            expect(quotedUSDC).to.equal(migratedUSDC);
+
             await migrator.migrate(peV1Amount);
 
             // Calculate current balance
-            const peV1Balance: BigNumber = await oldContract.balanceOf(accounts.deployer);
-            const peV2Balance: BigNumber = await contract.balanceOf(accounts.deployer);
+            const peV1BalanceNew: BigNumber = await oldContract.balanceOf(accounts.deployer);
+            const peV2BalanceNew: BigNumber = await contract.balanceOf(accounts.deployer);
 
             // Difference
-            const withdrawnPeV1: BigNumber = peV1BalanceOld.sub(peV1Balance);
-            const receivedPeV2: BigNumber = peV2Balance.sub(peV2BalanceOld);
+            const withdrawnPeV1: BigNumber = peV1BalanceOld.sub(peV1BalanceNew);
+            const receivedPeV2: BigNumber = peV2BalanceNew.sub(peV2BalanceOld);
 
-            // Withdraw proper amount
+            // Migrated proper amount
             expect(withdrawnPeV1).to.equal(peV1Amount);
-            // Received proper amount
             expect(receivedPeV2).to.equal(migratedPe);
-
-            // Quote
-            expect(quotedPE).to.equal(migratedPe.add(1421));
-            expect(quotedUSDC).to.equal(migratedUSDC.add(6));
         });
     });
 });
