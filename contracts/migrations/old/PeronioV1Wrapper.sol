@@ -29,7 +29,7 @@ library PeronioV1Wrapper {
         // --- Gas Saving -------------------------------------------------------------------------
         address _lpAddress = peronioContract.LP_ADDRESS();
 
-        (uint256 usdcReserves, uint256 maiReserves) = _getLpReserves(peronioContract);
+        (uint256 usdcReserves, uint256 maiReserves) = peronioContract.getLpReserves();
         uint256 lpTotalSupply = IERC20(_lpAddress).totalSupply();
 
         // deal with LP minting when changing its K
@@ -43,7 +43,7 @@ library PeronioV1Wrapper {
 
         // calculate LP values actually withdrawn
         uint256 lpAmount = IERC20Uniswap(_lpAddress).balanceOf(_lpAddress) +
-            mulDiv(pe, _stakedBalance(peronioContract), IERC20(address(peronioContract)).totalSupply());
+            mulDiv(pe, peronioContract.stakedBalance(), IERC20(address(peronioContract)).totalSupply());
 
         uint256 usdcAmount = mulDiv(usdcReserves, lpAmount, lpTotalSupply);
         uint256 maiAmount = mulDiv(maiReserves, lpAmount, lpTotalSupply);
@@ -71,29 +71,6 @@ library PeronioV1Wrapper {
         peronioContract.withdraw(to, peAmount);
 
         usdcTotal = IERC20(usdcAddress).balanceOf(to) - oldUsdcBalance;
-    }
-
-     * Return the number of LP USDC/MAI tokens on stake at QiDao's Farm
-     *
-     * @param peronioContract  Peronio contract interface
-     * @return lpAmount  Number of LP USDC/MAI token on stake
-     */
-    function _stakedBalance(IPeronioV1 peronioContract) internal view returns (uint256 lpAmount) {
-        lpAmount = IFarm(peronioContract.QIDAO_FARM_ADDRESS()).deposited(peronioContract.QIDAO_POOL_ID(), address(peronioContract));
-    }
-
-    /**
-     * Return the USDC and MAI token reserves present in QuickSwap
-     *
-     * @param peronioContract  Peronio contract interface
-     * @return usdcReserves  Number of USDC tokens in reserve
-     * @return maiReserves  Number of MAI tokens in reserve
-     */
-    function _getLpReserves(IPeronioV1 peronioContract) internal view returns (uint112 usdcReserves, uint112 maiReserves) {
-        uint112 reserve0;
-        uint112 reserve1;
-        (reserve0, reserve1, ) = IUniswapV2Pair(peronioContract.LP_ADDRESS()).getReserves();
-        (usdcReserves, maiReserves) = peronioContract.USDC_ADDRESS() < peronioContract.MAI_ADDRESS() ? (reserve0, reserve1) : (reserve1, reserve0);
     }
 
     function _getAmountOut(
