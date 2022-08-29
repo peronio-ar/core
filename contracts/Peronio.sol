@@ -142,7 +142,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
      * Initialize the PE token by providing collateral USDC tokens - initial conversion rate will be set at the given starting ratio
      *
      * @param usdcAmount  Number of collateral USDC tokens
-     * @param startingRatio  Initial minting ratio in PE tokens per USDC tokens minted
+     * @param startingRatio  Initial minting ratio in PE tokens per USDC tokens minted (including DECIMALS)
      * @custom:emit  Initialized
      */
     function initialize(uint256 usdcAmount, uint256 startingRatio) external override onlyRole(DEFAULT_ADMIN_ROLE) {
@@ -173,7 +173,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         usdcAmount = _stakedValue();
 
         // Mints exactly startingRatio for each collateral USDC token
-        _mint(sender, startingRatio * usdcAmount);
+        _mint(sender, mulDiv(usdcAmount, startingRatio, 10**DECIMALS));
 
         emit Initialized(sender, usdcAmount, startingRatio);
     }

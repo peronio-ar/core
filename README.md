@@ -129,17 +129,7 @@ Done in 12.65s.
 
 ### Typechain Declarations
 
-The last step is to generate the needed typechain declarations, you can do so simply by:
-
-```shell
-$ yarn typechain
-yarn run v1.22.19
-$ hardhat typechain
-Generating typings for: 52 artifacts in dir: typechain for target: ethers-v5
-Successfully generated 68 typings!
-Compiled 48 Solidity files successfully
-Done in 9.12s.
-```
+Typechain declarations are automatically generated after install
 
 ## Usage
 
