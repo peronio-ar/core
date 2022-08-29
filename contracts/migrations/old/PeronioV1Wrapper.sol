@@ -73,25 +73,6 @@ library PeronioV1Wrapper {
         usdcTotal = IERC20(usdcAddress).balanceOf(to) - oldUsdcBalance;
     }
 
-    /**
-     * Return the number of USDC and MAI tokens on stake at QiDao's Farm
-     *
-     * @param peronioContract  Peronio contract interface
-     * @return usdcAmount  Number of USDC tokens on stake
-     * @return maiAmount  Number of MAI tokens on stake
-     */
-    function _stakedTokens(IPeronioV1 peronioContract) private view returns (uint256 usdcAmount, uint256 maiAmount) {
-        uint256 lpAmount = peronioContract.stakedBalance();
-        address lpAddress = peronioContract.LP_ADDRESS();
-        uint256 lpTotalSupply = IERC20(lpAddress).totalSupply();
-
-        (uint256 usdcReserves, uint256 maiReserves) = peronioContract.getLpReserves();
-
-        usdcAmount = mulDiv(lpAmount, usdcReserves, lpTotalSupply);
-        maiAmount = mulDiv(lpAmount, maiReserves, lpTotalSupply);
-    }
-
-    /**
      * Return the number of LP USDC/MAI tokens on stake at QiDao's Farm
      *
      * @param peronioContract  Peronio contract interface
