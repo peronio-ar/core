@@ -263,27 +263,8 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         uint256 usdcAmount,
         uint256 minReceive
     ) external override nonReentrant returns (uint256 peAmount) {
-        // --- Gas Saving -------------------------------------------------------------------------
-        address sender = _msgSender();
+        peAmount = _mintPe(to, usdcAmount, minReceive, markupFee);
 
-        // Transfer USDC tokens as collateral to this contract
-        IERC20(usdcAddress).safeTransferFrom(sender, address(this), usdcAmount);
-
-        // Remember the previously staked balance
-        uint256 stakedAmount = _stakedBalance();
-
-        // Commit USDC tokens, and discount fees totalling the markup fee
-        uint256 lpAmount = mulDiv(_zapIn(usdcAmount), 10**DECIMALS - _totalMintFee(), 10**DECIMALS);
-
-        // Calculate the number of PE tokens as the proportion of liquidity provided
-        peAmount = mulDiv(lpAmount, totalSupply(), stakedAmount);
-
-        require(minReceive <= peAmount, "Minimum required not met");
-
-        // Actually mint the PE tokens
-        _mint(to, peAmount);
-
-        emit Minted(sender, usdcAmount, peAmount);
     }
 
     /**
@@ -428,7 +409,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         }
 
         // -- PERONIO -----------------------------------------------------------------------------
-        uint256 lpAmount = mulDiv(zapInLps, 10**DECIMALS - _totalMintFee(), 10**DECIMALS);
+        uint256 lpAmount = mulDiv(zapInLps, 10**DECIMALS - _totalMintFee(markupFee), 10**DECIMALS);
         pe = mulDiv(lpAmount, totalSupply(), _stakedBalance());
     }
 
@@ -532,10 +513,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
      *
      * @return totalFee  The total fee to apply on minting
      */
-    function _totalMintFee() internal view returns (uint256 totalFee) {
-        // --- Gas Saving -------------------------------------------------------------------------
-        uint256 _markupFee = markupFee;
-
+    function _totalMintFee(uint256 _markupFee) internal view returns (uint256 totalFee) {
         // Retrieve the deposit fee from QiDao's Farm (this is always expressed with 4 decimals, as "basic points")
         // Convert these "basic points" to `DECIMALS` precision
         (, , , , uint16 depositFeeBP) = IFarm(qiDaoFarmAddress).poolInfo(qiDaoPoolId);
@@ -545,6 +523,45 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         // (ie. the swapFee and the depositFee are included in the total markup fee, thus, we don't double charge for both the markup fee itself
         // and the swap and deposit fees)
         totalFee = max(_markupFee, swapFee + depositFee);
+    }
+
+    /**
+     * Actually mint PE tokens using the provided USDC tokens as collateral, applying the given markup fee
+     *
+     * @param to  The address to transfer the minted PE tokens to
+     * @param usdcAmount  Number of USDC tokens to use as collateral
+     * @param minReceive  The minimum number of PE tokens to mint
+     * @param _markupFee  The markup fee to apply
+     * @return peAmount  The number of PE tokens actually minted
+     * @custom:emit  Minted
+     */
+    function _mintPe(
+        address to,
+        uint256 usdcAmount,
+        uint256 minReceive,
+        uint256 _markupFee
+    ) internal returns (uint256 peAmount) {
+        // --- Gas Saving -------------------------------------------------------------------------
+        address sender = _msgSender();
+
+        // Transfer USDC tokens as collateral to this contract
+        IERC20(usdcAddress).safeTransferFrom(sender, address(this), usdcAmount);
+
+        // Remember the previously staked balance
+        uint256 stakedAmount = _stakedBalance();
+
+        // Commit USDC tokens, and discount fees totalling the markup fee
+        uint256 lpAmount = mulDiv(_zapIn(usdcAmount), 10**DECIMALS - _totalMintFee(_markupFee), 10**DECIMALS);
+
+        // Calculate the number of PE tokens as the proportion of liquidity provided
+        peAmount = mulDiv(lpAmount, totalSupply(), stakedAmount);
+
+        require(minReceive <= peAmount, "Minimum required not met");
+
+        // Actually mint the PE tokens
+        _mint(to, peAmount);
+
+        emit Minted(sender, usdcAmount, peAmount);
     }
 
     /**
