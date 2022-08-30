@@ -22,6 +22,7 @@ import { setBalance, mine } from "@nomicfoundation/hardhat-network-helpers";
 
 const MARKUP_ROLE: string = keccak256(new TextEncoder().encode("MARKUP_ROLE"));
 const REWARDS_ROLE: string = keccak256(new TextEncoder().encode("REWARDS_ROLE"));
+const MIGRATOR_ROLE: string = keccak256(new TextEncoder().encode("MIGRATOR_ROLE"));
 
 // --- Helpers ------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -115,6 +116,10 @@ describe("Peronio", function () {
 
         it("should return correct keccak256 REWARDS_ROLE", async function () {
             expect(await contract.REWARDS_ROLE()).to.equal(REWARDS_ROLE);
+        });
+
+        it("should return correct keccak256 MIGRATOR_ROLE", async function () {
+            expect(await contract.MIGRATOR_ROLE()).to.equal(MIGRATOR_ROLE);
         });
 
         it("should return correct usdcAddress", async function () {

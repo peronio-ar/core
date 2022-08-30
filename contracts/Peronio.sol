@@ -30,6 +30,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
     // Roles
     bytes32 public constant override MARKUP_ROLE = keccak256("MARKUP_ROLE");
     bytes32 public constant override REWARDS_ROLE = keccak256("REWARDS_ROLE");
+    bytes32 public constant override MIGRATOR_ROLE = keccak256("MIGRATOR_ROLE");
 
     // USDC Token Address
     address public immutable override usdcAddress;
@@ -108,6 +109,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         _setupRole(DEFAULT_ADMIN_ROLE, sender);
         _setupRole(MARKUP_ROLE, sender);
         _setupRole(REWARDS_ROLE, sender);
+        _setupRole(MIGRATOR_ROLE, sender);
     }
 
     // --- Decimals -------------------------------------------------------------------------------------------------------------------------------------------
