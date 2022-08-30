@@ -22,6 +22,7 @@ import { setBalance, mine } from "@nomicfoundation/hardhat-network-helpers";
 
 const MARKUP_ROLE: string = keccak256(new TextEncoder().encode("MARKUP_ROLE"));
 const REWARDS_ROLE: string = keccak256(new TextEncoder().encode("REWARDS_ROLE"));
+const MIGRATOR_ROLE: string = keccak256(new TextEncoder().encode("MIGRATOR_ROLE"));
 
 // --- Helpers ------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -115,6 +116,10 @@ describe("Peronio", function () {
 
         it("should return correct keccak256 REWARDS_ROLE", async function () {
             expect(await contract.REWARDS_ROLE()).to.equal(REWARDS_ROLE);
+        });
+
+        it("should return correct keccak256 MIGRATOR_ROLE", async function () {
+            expect(await contract.MIGRATOR_ROLE()).to.equal(MIGRATOR_ROLE);
         });
 
         it("should return correct usdcAddress", async function () {
@@ -322,6 +327,12 @@ describe("Peronio", function () {
                 `AccessControl: account ${accounts.tester.toLowerCase()} is missing role ${REWARDS_ROLE}`,
             );
         });
+
+        it("should revert when minForMigration as not MIGRATOR_ROLE", async function () {
+            expect(contract.connect(accounts.tester).mintForMigration(accounts.deployer, 1, 1)).to.be.revertedWith(
+                `AccessControl: account ${accounts.tester.toLowerCase()} is missing role ${MIGRATOR_ROLE}`,
+            );
+        });
     });
 
     describe("Auto Compounding + Rewards", () => {
@@ -367,6 +378,8 @@ describe("Peronio", function () {
             await initializePeronio(usdcContract, contract, peronioInitializeParams);
 
             migrator = await Migrator.deploy(peronioV1Address, contract.address);
+
+            await contract.grantRole(MIGRATOR_ROLE, migrator.address);
 
             // Mint Peronio V1 tokens
             await usdcContract.approve(peronioV1Address, BigNumber.from(1000_000000));

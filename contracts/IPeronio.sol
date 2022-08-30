@@ -73,6 +73,13 @@ interface IPeronio {
      */
     function REWARDS_ROLE() external view returns (bytes32 roleId); // solhint-disable-line func-name-mixedcase
 
+    /**
+     * Return the hash identifying the role responsible for migrating between versions
+     *
+     * @return roleId  The role hash in question
+     */
+    function MIGRATOR_ROLE() external view returns (bytes32 roleId); // solhint-disable-line func-name-mixedcase
+
     // --- Addresses - Automatic ------------------------------------------------------------------------------------------------------------------------------
 
     /**
@@ -234,6 +241,21 @@ interface IPeronio {
     function collateralRatio() external view returns (uint256 ratio);
 
     // --- State changers -------------------------------------------------------------------------------------------------------------------------------------
+
+    /**
+     * Mint PE tokens using the provided USDC tokens as collateral --- used by the migrators in order not to incur normal fees
+     *
+     * @param to  The address to transfer the minted PE tokens to
+     * @param usdcAmount  Number of USDC tokens to use as collateral
+     * @param minReceive  The minimum number of PE tokens to mint
+     * @return peAmount  The number of PE tokens actually minted
+     * @custom:emit  Minted
+     */
+    function mintForMigration(
+        address to,
+        uint256 usdcAmount,
+        uint256 minReceive
+    ) external returns (uint256 peAmount);
 
     /**
      * Mint PE tokens using the provided USDC tokens as collateral

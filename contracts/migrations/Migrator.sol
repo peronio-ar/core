@@ -122,8 +122,7 @@ contract Migrator is IMigrator {
             uint256 totalMintFee;
             {
                 (, , , , uint16 depositFeeBP) = IFarm(IPeronio(peronioV2Address).qiDaoFarmAddress()).poolInfo(IPeronio(peronioV2Address).qiDaoPoolId());
-                uint256 markupFee = IPeronio(peronioV2Address).markupFee();
-                totalMintFee = markupFee - min(markupFee, IPeronio(peronioV2Address).swapFee() + uint256(depositFeeBP) * 10**(decimals - 4));
+                totalMintFee = IPeronio(peronioV2Address).swapFee() + uint256(depositFeeBP) * 10**(decimals - 4);
             }
 
             lpAmountMint = mulDiv(
@@ -158,7 +157,7 @@ contract Migrator is IMigrator {
         // Calculate USDC to be received by Peronio V1
         usdc = peronioV1.withdrawV2(address(this), amount);
         // Calculate PE to be minted by Peronio V2
-        pe = peronioV2.mint(msg.sender, usdc, 1);
+        pe = peronioV2.mintForMigration(msg.sender, usdc, 1);
 
         // Emit Migrated event
         emit Migrated(block.timestamp, amount, usdc, pe);
