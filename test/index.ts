@@ -242,7 +242,7 @@ describe("Peronio", function () {
 
         it("should return a buyingPrice near PE/USDC 0.004 (+/- 5%)", async function () {
             const buyingPrice: BigNumber = await contract.buyingPrice();
-            expect(buyingPrice).to.be.closeTo(BigNumber.from(4000), BigNumber.from(200));
+            expect(buyingPrice).to.be.closeTo(BigNumber.from(4200), BigNumber.from(300));
         });
 
         it("should return a collateralRatio near PE/USDC 0.004 (+/- 5%)", async function () {
