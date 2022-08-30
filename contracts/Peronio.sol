@@ -19,7 +19,7 @@ import {IUniswapV2Pair} from "./uniswap/interfaces/IUniswapV2Pair.sol";
 import {IUniswapV2Router02} from "./uniswap/interfaces/IUniswapV2Router02.sol";
 
 // Needed for Babylonian square-root & combined-multiplication-and-division
-import {min, mulDiv, sqrt256} from "./Utils.sol";
+import {max, min, mulDiv, sqrt256} from "./Utils.sol";
 
 // Interface
 import {IPeronio} from "./IPeronio.sol";
@@ -542,7 +542,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         // Calculate total fee to apply
         // (ie. the swapFee and the depositFee are included in the total markup fee, thus, we don't double charge for both the markup fee itself
         // and the swap and deposit fees)
-        totalFee = _markupFee - min(_markupFee, swapFee + depositFee);
+        totalFee = max(_markupFee, swapFee + depositFee);
     }
 
     /**
