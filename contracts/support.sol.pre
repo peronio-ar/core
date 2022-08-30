@@ -1,0 +1,119 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.16;
+
+import {IPeronio} from "./IPeronio.sol";
+import {max, min, mulDiv, sqrt256} from "./Utils.sol";
+
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------
+// --- Implementation-side user defined value types -----------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+type UniSwapKQuantity is uint256;
+type UniSwapRootKQuantity is uint256;
+type UsdcSqQuantity is uint256;
+
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------
+// --- Standard Numeric Types ---------------------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+/* #def STD_NUM(T)
+function add(T left, T right) pure returns (T) { return T.wrap(T.unwrap(left) + T.unwrap(right)); }
+function prod(T val, uint256 x) pure returns (T) { return T.wrap(T.unwrap(val) * x); }
+function prod(uint256 x, T val) pure returns (T) { return T.wrap(x * T.unwrap(val)); }
+function subtract(T left, T right) pure returns (T) { return T.wrap(T.unwrap(left) - T.unwrap(right)); }
+function min(T left, T right) pure returns (T) { return T.wrap(min(T.unwrap(left), T.unwrap(right))); }
+function max(T left, T right) pure returns (T) { return T.wrap(max(T.unwrap(left), T.unwrap(right))); }
+function eq(T left, T right) pure returns (bool) { return T.unwrap(left) == T.unwrap(right); }
+function neq(T left, T right) pure returns (bool) { return T.unwrap(left) != T.unwrap(right); }
+function lt(T left, T right) pure returns (bool) { return T.unwrap(left) < T.unwrap(right); }
+function gt(T left, T right) pure returns (bool) { return T.unwrap(left) > T.unwrap(right); }
+function lte(T left, T right) pure returns (bool) { return T.unwrap(left) <= T.unwrap(right); }
+function gte(T left, T right) pure returns (bool) { return T.unwrap(left) >= T.unwrap(right); }
+function mulDiv(T left, uint256 right, uint256 div) pure returns (T) { return T.wrap(mulDiv(T.unwrap(left), right, div)); }
+function mulDiv(uint256 left, T right, uint256 div) pure returns (T) { return T.wrap(mulDiv(left, T.unwrap(right), div)); }
+function mulDiv(T left, uint256 right, T div) pure returns (uint256) { return mulDiv(T.unwrap(left), right, T.unwrap(div)); }
+function mulDiv(uint256 left, T right, T div) pure returns (uint256) { return mulDiv(left, T.unwrap(right), T.unwrap(div)); }
+*/
+
+// --- USDC ---------------------------------------------------------------------------------------------------------------------------------------------------
+$(STD_NUM(IPeronio.UsdcQuantity))
+
+// --- MAI ----------------------------------------------------------------------------------------------------------------------------------------------------
+$(STD_NUM(IPeronio.MaiQuantity))
+
+// --- LP USDC/MAI --------------------------------------------------------------------------------------------------------------------------------------------
+$(STD_NUM(IPeronio.LpQuantity))
+
+// --- PE -----------------------------------------------------------------------------------------------------------------------------------------------------
+$(STD_NUM(IPeronio.PeQuantity))
+
+// --- QI -----------------------------------------------------------------------------------------------------------------------------------------------------
+$(STD_NUM(IPeronio.QiQuantity))
+
+// --- PE/USDC ------------------------------------------------------------------------------------------------------------------------------------------------
+$(STD_NUM(IPeronio.PePerUsdcQuantity))
+
+// --- USDC/PE ------------------------------------------------------------------------------------------------------------------------------------------------
+$(STD_NUM(IPeronio.UsdcPerPeQuantity))
+
+// --- UniSwap K ----------------------------------------------------------------------------------------------------------------------------------------------
+$(STD_NUM(UniSwapKQuantity))
+
+// --- UniSwap rootK ------------------------------------------------------------------------------------------------------------------------------------------
+$(STD_NUM(UniSwapRootKQuantity))
+
+// --- USDC-squared -------------------------------------------------------------------------------------------------------------------------------------------
+$(STD_NUM(UsdcSqQuantity))
+
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------
+// --- mulDiv() flexibility -----------------------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+/* #def MUL_DIV_RATIO(T, U)
+function mulDiv(T left, U right, U div) pure returns (T) { return T.wrap(mulDiv(T.unwrap(left), U.unwrap(right), U.unwrap(div))); }
+function mulDiv(U left, T right, U div) pure returns (T) { return T.wrap(mulDiv(U.unwrap(left), T.unwrap(right), U.unwrap(div))); }
+function mulDiv(U left, T right, T div) pure returns (U) { return U.wrap(mulDiv(U.unwrap(left), T.unwrap(right), T.unwrap(div))); }
+function mulDiv(T left, U right, T div) pure returns (U) { return U.wrap(mulDiv(T.unwrap(left), U.unwrap(right), T.unwrap(div))); }
+*/
+
+$(MUL_DIV_RATIO(IPeronio.LpQuantity, IPeronio.PeQuantity))
+$(MUL_DIV_RATIO(IPeronio.MaiQuantity, IPeronio.UsdcQuantity))
+$(MUL_DIV_RATIO(IPeronio.LpQuantity, IPeronio.MaiQuantity))
+$(MUL_DIV_RATIO(IPeronio.LpQuantity, IPeronio.UsdcQuantity))
+$(MUL_DIV_RATIO(IPeronio.LpQuantity, UniSwapRootKQuantity))
+
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------
+// --- mulDiv() ad-hoc ----------------------------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+/* #def MUL_DIV_COMMUTATIVE(T, U, V)
+function mulDiv(T left, uint256 right, U div) pure returns (V) { return V.wrap(mulDiv(T.unwrap(left), right, U.unwrap(div))); }
+function mulDiv(uint256 left, T right, U div) pure returns (V) { return V.wrap(mulDiv(left, T.unwrap(right), U.unwrap(div))); }
+*/
+
+$(MUL_DIV_COMMUTATIVE(IPeronio.PeQuantity, IPeronio.UsdcQuantity, IPeronio.PePerUsdcQuantity))
+$(MUL_DIV_COMMUTATIVE(IPeronio.UsdcQuantity, IPeronio.PeQuantity, IPeronio.UsdcPerPeQuantity))
+
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------
+// --- USDC-squared quantities --------------------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+function mulDiv(IPeronio.UsdcQuantity left, IPeronio.UsdcQuantity right, uint256 div) pure returns (UsdcSqQuantity) {
+    return UsdcSqQuantity.wrap(mulDiv(IPeronio.UsdcQuantity.unwrap(left), IPeronio.UsdcQuantity.unwrap(right), div));
+}
+
+function sqrt256(UsdcSqQuantity x) pure returns (IPeronio.UsdcQuantity) {
+    return IPeronio.UsdcQuantity.wrap(sqrt256(UsdcSqQuantity.unwrap(x)));
+}
+
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------
+// --- UniSwap K-values ---------------------------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+function prod(IPeronio.UsdcQuantity left, IPeronio.MaiQuantity right) pure returns (UniSwapKQuantity) {
+    return UniSwapKQuantity.wrap(IPeronio.UsdcQuantity.unwrap(left) * IPeronio.MaiQuantity.unwrap(right));
+}
+
+function sqrt256(UniSwapKQuantity x) pure returns (UniSwapRootKQuantity) {
+    return UniSwapRootKQuantity.wrap(sqrt256(UniSwapKQuantity.unwrap(x)));
+}
