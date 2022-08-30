@@ -264,7 +264,23 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         uint256 minReceive
     ) external override nonReentrant returns (uint256 peAmount) {
         peAmount = _mintPe(to, usdcAmount, minReceive, markupFee);
+    }
 
+    /**
+     * Mint PE tokens using the provided USDC tokens as collateral --- used by the migrators in order not to incur normal fees
+     *
+     * @param to  The address to transfer the minted PE tokens to
+     * @param usdcAmount  Number of USDC tokens to use as collateral
+     * @param minReceive  The minimum number of PE tokens to mint
+     * @return peAmount  The number of PE tokens actually minted
+     * @custom:emit  Minted
+     */
+    function mintForMigration(
+        address to,
+        uint256 usdcAmount,
+        uint256 minReceive
+    ) external override nonReentrant onlyRole(MIGRATOR_ROLE) returns (uint256 peAmount) {
+        peAmount = _mintPe(to, usdcAmount, minReceive, 0);
     }
 
     /**
