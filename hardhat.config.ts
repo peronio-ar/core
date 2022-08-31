@@ -45,7 +45,7 @@ const config: HardhatUserConfig = {
                             constantOptimizer: true,
                             yul: true,
                             yulDetails: {
-                              stackAllocation: true,
+                                stackAllocation: true,
                             },
                         },
                     },
@@ -66,7 +66,7 @@ const config: HardhatUserConfig = {
                             constantOptimizer: true,
                             yul: true,
                             yulDetails: {
-                              stackAllocation: true,
+                                stackAllocation: true,
                             },
                         },
                     },
