@@ -2,16 +2,7 @@
 pragma solidity ^0.8.16;
 
 import {IPeronio} from "./IPeronio.sol";
-import {max, min, mulDiv, sqrt256} from "./Utils.sol";
-
-// ------------------------------------------------------------------------------------------------------------------------------------------------------------
-// --- Implementation-side user defined value types -----------------------------------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-type UniSwapKQuantity is uint256;
-type UniSwapRootKQuantity is uint256;
-type UsdcSqQuantity is uint256;
-type RatioWith4Decimals is uint256;
+import {max, min, mulDiv} from "./Utils.sol";
 
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------
 // --- Standard Numeric Types ---------------------------------------------------------------------------------------------------------------------------------
@@ -60,15 +51,6 @@ $(STD_NUM(IPeronio.UsdcPerPeQuantity))
 // --- 6-decimals ratio ---------------------------------------------------------------------------------------------------------------------------------------
 $(STD_NUM(IPeronio.RatioWith6Decimals))
 
-// --- UniSwap K ----------------------------------------------------------------------------------------------------------------------------------------------
-$(STD_NUM(UniSwapKQuantity))
-
-// --- UniSwap rootK ------------------------------------------------------------------------------------------------------------------------------------------
-$(STD_NUM(UniSwapRootKQuantity))
-
-// --- USDC-squared -------------------------------------------------------------------------------------------------------------------------------------------
-$(STD_NUM(UsdcSqQuantity))
-
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------
 // --- mulDiv() flexibility -----------------------------------------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -84,7 +66,6 @@ $(MUL_DIV_RATIO(IPeronio.LpQuantity, IPeronio.PeQuantity))
 $(MUL_DIV_RATIO(IPeronio.MaiQuantity, IPeronio.UsdcQuantity))
 $(MUL_DIV_RATIO(IPeronio.LpQuantity, IPeronio.MaiQuantity))
 $(MUL_DIV_RATIO(IPeronio.LpQuantity, IPeronio.UsdcQuantity))
-$(MUL_DIV_RATIO(IPeronio.LpQuantity, UniSwapRootKQuantity))
 $(MUL_DIV_RATIO(IPeronio.LpQuantity, IPeronio.RatioWith6Decimals))
 $(MUL_DIV_RATIO(IPeronio.UsdcPerPeQuantity, IPeronio.RatioWith6Decimals))
 
@@ -111,35 +92,3 @@ function mulDiv(U left, T right, IPeronio.RatioWith6Decimals div) pure returns (
 
 $(MUL_DIV_COMMUTATIVE2(IPeronio.UsdcQuantity, IPeronio.PePerUsdcQuantity, IPeronio.PeQuantity))
 $(MUL_DIV_COMMUTATIVE2(IPeronio.PeQuantity, IPeronio.UsdcPerPeQuantity, IPeronio.UsdcQuantity))
-
-// ------------------------------------------------------------------------------------------------------------------------------------------------------------
-// --- USDC-squared quantities --------------------------------------------------------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-function mulDiv(IPeronio.UsdcQuantity left, IPeronio.UsdcQuantity right, uint256 div) pure returns (UsdcSqQuantity) {
-    return UsdcSqQuantity.wrap(mulDiv(IPeronio.UsdcQuantity.unwrap(left), IPeronio.UsdcQuantity.unwrap(right), div));
-}
-
-function sqrt256(UsdcSqQuantity x) pure returns (IPeronio.UsdcQuantity) {
-    return IPeronio.UsdcQuantity.wrap(sqrt256(UsdcSqQuantity.unwrap(x)));
-}
-
-// ------------------------------------------------------------------------------------------------------------------------------------------------------------
-// --- UniSwap K-values ---------------------------------------------------------------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-function prod(IPeronio.UsdcQuantity left, IPeronio.MaiQuantity right) pure returns (UniSwapKQuantity) {
-    return UniSwapKQuantity.wrap(IPeronio.UsdcQuantity.unwrap(left) * IPeronio.MaiQuantity.unwrap(right));
-}
-
-function sqrt256(UniSwapKQuantity x) pure returns (UniSwapRootKQuantity) {
-    return UniSwapRootKQuantity.wrap(sqrt256(UniSwapKQuantity.unwrap(x)));
-}
-
-// ------------------------------------------------------------------------------------------------------------------------------------------------------------
-// --- Ratio conversion ---------------------------------------------------------------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-function ratio4to6(RatioWith4Decimals x) pure returns (IPeronio.RatioWith6Decimals) {
-    return IPeronio.RatioWith6Decimals.wrap(RatioWith4Decimals.unwrap(x) * 10**2);
-}

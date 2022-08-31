@@ -22,11 +22,10 @@ import {IUniswapV2Router02} from "./uniswap/interfaces/IUniswapV2Router02.sol";
 import {max, min, mulDiv, sqrt256} from "./Utils.sol";
 
 // Interface
-import {IPeronio} from "./IPeronio.sol";
+import "./IPeronio.sol";
 
 // User-defined value types --- implementation-specific
-import "./support.sol";
-
+import "./PeronioSupport.sol";
 
 contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, ReentrancyGuard {
     using SafeERC20 for IERC20;
@@ -56,6 +55,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
     // Constant number of significant decimals
     uint8 private constant DECIMALS = 6;
 
+    // Rational constant one
     RatioWith6Decimals private constant ONE = RatioWith6Decimals.wrap(10**DECIMALS);
 
     // Fees
