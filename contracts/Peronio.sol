@@ -587,7 +587,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         // Calculate the number of PE tokens as the proportion of liquidity provided
         peAmount = mulDiv(lpAmount, PeQuantity.wrap(totalSupply()), stakedAmount);
 
-        require(PeQuantity.unwrap(minReceive) <= PeQuantity.unwrap(peAmount), "Minimum required not met");
+        require(lte(minReceive, peAmount), "Minimum required not met");
 
         // Actually mint the PE tokens
         _mint(to, PeQuantity.unwrap(peAmount));
@@ -644,7 +644,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         (UsdcQuantity usdcReserves, ) = _getLpReserves();
         UsdcQuantity amountToSwap = _calculateSwapInAmount(usdcReserves, amount);
 
-        require(0 < UsdcQuantity.unwrap(amountToSwap), "Nothing to swap");
+        require(lt(UsdcQuantity.wrap(0), amountToSwap), "Nothing to swap");
 
         maiAmount = _swapTokens(amountToSwap);
         usdcAmount = subtract(amount, amountToSwap);
