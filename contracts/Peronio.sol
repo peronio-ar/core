@@ -31,9 +31,9 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
     using SafeERC20 for IERC20;
 
     // Roles
-    bytes32 public constant override MARKUP_ROLE = keccak256("MARKUP_ROLE");
-    bytes32 public constant override REWARDS_ROLE = keccak256("REWARDS_ROLE");
-    bytes32 public constant override MIGRATOR_ROLE = keccak256("MIGRATOR_ROLE");
+    RoleId public constant override MARKUP_ROLE = RoleId.wrap(keccak256("MARKUP_ROLE"));
+    RoleId public constant override REWARDS_ROLE = RoleId.wrap(keccak256("REWARDS_ROLE"));
+    RoleId public constant override MIGRATOR_ROLE = RoleId.wrap(keccak256("MIGRATOR_ROLE"));
 
     // USDC Token Address
     address public immutable override usdcAddress;
@@ -64,6 +64,42 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
 
     // Initialization can only be run once
     bool public override initialized;
+
+    /**
+     * Allow execution by the default admin only
+     *
+     */
+    modifier onlyAdminRole() {
+        _checkRole(DEFAULT_ADMIN_ROLE);
+        _;
+    }
+
+    /**
+     * Allow execution by the markup-setter only
+     *
+     */
+    modifier onlyMarkupRole() {
+        _checkRole(RoleId.unwrap(MARKUP_ROLE));
+        _;
+    }
+
+    /**
+     * Allow execution by the rewards-reaper only
+     *
+     */
+    modifier onlyRewardsRole() {
+        _checkRole(RoleId.unwrap(REWARDS_ROLE));
+        _;
+    }
+
+    /**
+     * Allow execution by the migrator only
+     *
+     */
+    modifier onlyMigratorRole() {
+        _checkRole(RoleId.unwrap(MIGRATOR_ROLE));
+        _;
+    }
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------
     // --- Public Interface -----------------------------------------------------------------------------------------------------------------------------------
@@ -113,9 +149,9 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
 
         // Grant roles
         _setupRole(DEFAULT_ADMIN_ROLE, sender);
-        _setupRole(MARKUP_ROLE, sender);
-        _setupRole(REWARDS_ROLE, sender);
-        _setupRole(MIGRATOR_ROLE, sender);
+        _setupRole(RoleId.unwrap(MARKUP_ROLE), sender);
+        _setupRole(RoleId.unwrap(REWARDS_ROLE), sender);
+        _setupRole(RoleId.unwrap(MIGRATOR_ROLE), sender);
     }
 
     // --- Decimals -------------------------------------------------------------------------------------------------------------------------------------------
@@ -138,7 +174,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
      * @return prevMarkupFee  Previous markup fee value
      * @custom:emit  MarkupFeeUpdated
      */
-    function setMarkupFee(RatioWith6Decimals newMarkupFee) external override onlyRole(MARKUP_ROLE) returns (RatioWith6Decimals prevMarkupFee) {
+    function setMarkupFee(RatioWith6Decimals newMarkupFee) external override onlyMarkupRole returns (RatioWith6Decimals prevMarkupFee) {
         (prevMarkupFee, markupFee) = (markupFee, newMarkupFee);
 
         emit MarkupFeeUpdated(_msgSender(), newMarkupFee);
@@ -153,7 +189,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
      * @param startingRatio  Initial minting ratio in PE tokens per USDC tokens minted (including DECIMALS)
      * @custom:emit  Initialized
      */
-    function initialize(UsdcQuantity usdcAmount, PePerUsdcQuantity startingRatio) external override onlyRole(DEFAULT_ADMIN_ROLE) {
+    function initialize(UsdcQuantity usdcAmount, PePerUsdcQuantity startingRatio) external override onlyAdminRole {
         // Prevent double initialization
         require(!initialized, "Contract already initialized");
         initialized = true;
@@ -285,7 +321,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         address to,
         UsdcQuantity usdcAmount,
         PeQuantity minReceive
-    ) external override nonReentrant onlyRole(MIGRATOR_ROLE) returns (PeQuantity peAmount) {
+    ) external override nonReentrant onlyMigratorRole returns (PeQuantity peAmount) {
         peAmount = _mintPe(to, usdcAmount, minReceive, RatioWith6Decimals.wrap(0));
     }
 
@@ -361,7 +397,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
      * @return lpAmount  The number of LP USDC/MAI tokens being put on stake
      * @custom:emit CompoundRewards
      */
-    function compoundRewards() external override onlyRole(REWARDS_ROLE) returns (UsdcQuantity usdcAmount, LpQuantity lpAmount) {
+    function compoundRewards() external override onlyRewardsRole returns (UsdcQuantity usdcAmount, LpQuantity lpAmount) {
         // Claim rewards from QiDao's Farm
         IFarm(qiDaoFarmAddress).deposit(qiDaoPoolId, 0);
 

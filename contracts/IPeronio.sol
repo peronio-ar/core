@@ -53,6 +53,12 @@ interface IPeronio {
      */
     type RatioWith6Decimals is uint256;
 
+    /**
+     * Type representing a role ID
+     *
+     */
+    type RoleId is bytes32;
+
     // --- Events ---------------------------------------------------------------------------------------------------------------------------------------------
 
     /**
@@ -115,21 +121,21 @@ interface IPeronio {
      *
      * @return roleId  The role hash in question
      */
-    function MARKUP_ROLE() external view returns (bytes32 roleId); // solhint-disable-line func-name-mixedcase
+    function MARKUP_ROLE() external view returns (RoleId roleId); // solhint-disable-line func-name-mixedcase
 
     /**
      * Return the hash identifying the role responsible for compounding rewards
      *
      * @return roleId  The role hash in question
      */
-    function REWARDS_ROLE() external view returns (bytes32 roleId); // solhint-disable-line func-name-mixedcase
+    function REWARDS_ROLE() external view returns (RoleId roleId); // solhint-disable-line func-name-mixedcase
 
     /**
      * Return the hash identifying the role responsible for migrating between versions
      *
      * @return roleId  The role hash in question
      */
-    function MIGRATOR_ROLE() external view returns (bytes32 roleId); // solhint-disable-line func-name-mixedcase
+    function MIGRATOR_ROLE() external view returns (RoleId roleId); // solhint-disable-line func-name-mixedcase
 
     // --- Addresses - Automatic ------------------------------------------------------------------------------------------------------------------------------
 
