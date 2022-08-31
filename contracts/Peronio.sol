@@ -498,10 +498,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         }
 
         // calculate LP values actually withdrawn
-        LpQuantity lpAmount = add(
-            LpQuantity.wrap(IERC20Uniswap(_lpAddress).balanceOf(_lpAddress)),
-            mulDiv(pe, _stakedBalance(), _totalSupply())
-        );
+        LpQuantity lpAmount = add(LpQuantity.wrap(IERC20Uniswap(_lpAddress).balanceOf(_lpAddress)), mulDiv(pe, _stakedBalance(), _totalSupply()));
 
         UsdcQuantity usdcAmount = mulDiv(usdcReserves, lpAmount, lpTotalSupply);
         MaiQuantity maiAmount = mulDiv(maiReserves, lpAmount, lpTotalSupply);
