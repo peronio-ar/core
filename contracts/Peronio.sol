@@ -268,7 +268,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
      * @return price  Collateralized price in USDC tokens per PE token
      */
     function usdcPrice() external view override returns (PePerUsdcQuantity price) {
-        price = mulDiv(ONE, PeQuantity.wrap(totalSupply()), _stakedValue());
+        price = mulDiv(ONE, _totalSupply(), _stakedValue());
     }
 
     /**
@@ -338,7 +338,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         address sender = _msgSender();
 
         // Calculate equivalent number of LP USDC/MAI tokens for the given burnt PE tokens
-        LpQuantity lpAmount = mulDiv(peAmount, _stakedBalance(), PeQuantity.wrap(totalSupply()));
+        LpQuantity lpAmount = mulDiv(peAmount, _stakedBalance(), _totalSupply());
 
         // Extract the given number of LP USDC/MAI tokens as USDC tokens
         usdcTotal = _zapOut(lpAmount);
@@ -365,7 +365,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         address sender = _msgSender();
 
         // Calculate equivalent number of LP USDC/MAI tokens for the given burnt PE tokens
-        lpAmount = mulDiv(peAmount, _stakedBalance(), PeQuantity.wrap(totalSupply()));
+        lpAmount = mulDiv(peAmount, _stakedBalance(), _totalSupply());
 
         // Get LP USDC/MAI tokens out of QiDao's Farm
         _unstakeLP(lpAmount);
@@ -470,7 +470,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
 
         // -- PERONIO -----------------------------------------------------------------------------
         LpQuantity lpAmount = mulDiv(zapInLps, subtract(ONE, _totalMintFee(markupFee)), ONE);
-        pe = mulDiv(lpAmount, PeQuantity.wrap(totalSupply()), _stakedBalance());
+        pe = mulDiv(lpAmount, _totalSupply(), _stakedBalance());
     }
 
     /**
@@ -500,7 +500,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         // calculate LP values actually withdrawn
         LpQuantity lpAmount = add(
             LpQuantity.wrap(IERC20Uniswap(_lpAddress).balanceOf(_lpAddress)),
-            mulDiv(pe, _stakedBalance(), PeQuantity.wrap(totalSupply()))
+            mulDiv(pe, _stakedBalance(), _totalSupply())
         );
 
         UsdcQuantity usdcAmount = mulDiv(usdcReserves, lpAmount, lpTotalSupply);
@@ -512,6 +512,15 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------
     // --- Private Interface ----------------------------------------------------------------------------------------------------------------------------------
     // --------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    /**
+     * Return the number of PE tokens in existence
+     *
+     * @return peAmount  Number of PE tokens in existence
+     */
+    function _totalSupply() internal view returns (PeQuantity peAmount) {
+        peAmount = PeQuantity.wrap(totalSupply());
+    }
 
     /**
      * Return the USDC and MAI token reserves present in QuickSwap
@@ -572,7 +581,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
      * @return ratio  Ratio of USDC tokens per PE token, with `_decimal` decimals
      */
     function _collateralRatio() internal view returns (UsdcPerPeQuantity ratio) {
-        ratio = mulDiv(ONE, _stakedValue(), PeQuantity.wrap(totalSupply()));
+        ratio = mulDiv(ONE, _stakedValue(), _totalSupply());
     }
 
     /**
@@ -621,7 +630,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         LpQuantity lpAmount = mulDiv(_zapIn(usdcAmount), subtract(ONE, _totalMintFee(_markupFee)), ONE);
 
         // Calculate the number of PE tokens as the proportion of liquidity provided
-        peAmount = mulDiv(lpAmount, PeQuantity.wrap(totalSupply()), stakedAmount);
+        peAmount = mulDiv(lpAmount, _totalSupply(), stakedAmount);
 
         require(lte(minReceive, peAmount), "Minimum required not met");
 
