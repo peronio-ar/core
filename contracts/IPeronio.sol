@@ -2,14 +2,53 @@
 pragma solidity ^0.8.16;
 
 interface IPeronio {
+    /**
+     * Type representing an USDC token quantity
+     *
+     */
     type UsdcQuantity is uint256;
+
+    /**
+     * Type representing a MAI token quantity
+     *
+     */
     type MaiQuantity is uint256;
+
+    /**
+     * Type representing an LP USDC/MAI token quantity
+     *
+     */
     type LpQuantity is uint256;
+
+    /**
+     * Type representing a PE token quantity
+     *
+     */
     type PeQuantity is uint256;
+
+    /**
+     * Type representing a QI token quantity
+     *
+     */
     type QiQuantity is uint256;
 
+    /**
+     * Type representing a ratio of PE/USD tokens (always represented using `DECIMALS` decimals)
+     *
+     */
     type PePerUsdcQuantity is uint256;
+
+    /**
+     * Type representing a ratio of USD/PE tokens (always represented using `DECIMALS` decimals)
+     *
+     */
     type UsdcPerPeQuantity is uint256;
+
+    /**
+     * Type representing an adimensional ratio, expressed with 6 decimals
+     *
+     */
+    type RatioWith6Decimals is uint256;
 
     // --- Events ---------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -20,7 +59,7 @@ interface IPeronio {
      * @param collateral  The number of USDC tokens used as collateral
      * @param startingRatio  The number of PE tokens per USDC token the vault is initialized with
      */
-    event Initialized(address owner, UsdcQuantity collateral, uint256 startingRatio);
+    event Initialized(address owner, UsdcQuantity collateral, PePerUsdcQuantity startingRatio);
 
     /**
      * Emitted upon minting PE tokens
@@ -55,7 +94,7 @@ interface IPeronio {
      * @param operator  Address of the one updating the markup fee
      * @param markupFee  New markup fee
      */
-    event MarkupFeeUpdated(address operator, uint256 markupFee);
+    event MarkupFeeUpdated(address operator, RatioWith6Decimals markupFee);
 
     /**
      * Emitted upon compounding rewards from QiDao's Farm back into the vault
@@ -147,14 +186,14 @@ interface IPeronio {
      *
      * @return  The markup fee to use
      */
-    function markupFee() external view returns (uint256);
+    function markupFee() external view returns (RatioWith6Decimals);
 
     /**
      * Return the swap fee the use, using `_decimals()` decimals implicitly
      *
      * @return  The swap fee to use
      */
-    function swapFee() external view returns (uint256);
+    function swapFee() external view returns (RatioWith6Decimals);
 
     // --- Status - Automatic ---------------------------------------------------------------------------------------------------------------------------------
 
@@ -183,7 +222,7 @@ interface IPeronio {
      * @return prevMarkupFee  Previous markup fee value
      * @custom:emit  MarkupFeeUpdated
      */
-    function setMarkupFee(uint256 newMarkupFee) external returns (uint256 prevMarkupFee);
+    function setMarkupFee(RatioWith6Decimals newMarkupFee) external returns (RatioWith6Decimals prevMarkupFee);
 
     // --- Initialization -------------------------------------------------------------------------------------------------------------------------------------
 
@@ -194,7 +233,7 @@ interface IPeronio {
      * @param startingRatio  Initial minting ratio in PE tokens per USDC tokens minted
      * @custom:emit  Initialized
      */
-    function initialize(UsdcQuantity usdcAmount, uint256 startingRatio) external;
+    function initialize(UsdcQuantity usdcAmount, PePerUsdcQuantity startingRatio) external;
 
     // --- State views ----------------------------------------------------------------------------------------------------------------------------------------
 

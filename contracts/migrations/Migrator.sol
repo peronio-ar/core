@@ -122,7 +122,7 @@ contract Migrator is IMigrator {
             uint256 totalMintFee;
             {
                 (, , , , uint16 depositFeeBP) = IFarm(IPeronio(peronioV2Address).qiDaoFarmAddress()).poolInfo(IPeronio(peronioV2Address).qiDaoPoolId());
-                totalMintFee = IPeronio(peronioV2Address).swapFee() + uint256(depositFeeBP) * 10**(decimals - 4);
+                totalMintFee = IPeronio.RatioWith6Decimals.unwrap(IPeronio(peronioV2Address).swapFee()) + uint256(depositFeeBP) * 10**(decimals - 4);
             }
 
             lpAmountMint = mulDiv(
