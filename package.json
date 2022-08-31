@@ -63,12 +63,8 @@
         "console": "hardhat console",
         "deploy": "hardhat deploy",
         "postdeploy": "hardhat run scripts/publish.ts --network matic",
-        "accounts": "hardhat accounts",
-        "balance": "hardhat balance",
-        "send": "hardhat send",
-        "generate": "hardhat generate",
-        "account": "hardhat account",
-        "typechain": "hardhat typechain"
+        "typechain": "yarn preprocess && hardhat typechain",
+        "preprocess": "find contracts -name '*.pre' | xargs -- bash -c 'yarn solpp -o \"${1%.pre}\" \"${1}\"; yarn prettier --write \"${1%.pre}\"' {}"
     },
     "dependencies": {
         "yarn": "^1.22.19"
