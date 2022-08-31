@@ -8,6 +8,7 @@ import "hardhat-gas-reporter";
 import "hardhat-deploy";
 
 import "./tasks/polygonscan";
+import "./tasks/preprocess";
 
 dotenv.config();
 
