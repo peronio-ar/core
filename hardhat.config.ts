@@ -8,6 +8,7 @@ import "hardhat-gas-reporter";
 import "hardhat-deploy";
 
 import "./tasks/polygonscan";
+import "./tasks/preprocess";
 
 dotenv.config();
 
@@ -34,7 +35,20 @@ const config: HardhatUserConfig = {
                 settings: {
                     optimizer: {
                         enabled: true,
-                        runs: 200,
+                        runs: 2000,
+                        details: {
+                            peephole: true,
+                            inliner: true,
+                            jumpdestRemover: true,
+                            orderLiterals: true,
+                            deduplicate: true,
+                            cse: true,
+                            constantOptimizer: true,
+                            yul: true,
+                            yulDetails: {
+                                stackAllocation: true,
+                            },
+                        },
                     },
                 },
             },
@@ -43,7 +57,19 @@ const config: HardhatUserConfig = {
                 settings: {
                     optimizer: {
                         enabled: true,
-                        runs: 200,
+                        runs: 2000,
+                        details: {
+                            peephole: true,
+                            jumpdestRemover: true,
+                            orderLiterals: true,
+                            deduplicate: true,
+                            cse: true,
+                            constantOptimizer: true,
+                            yul: true,
+                            yulDetails: {
+                                stackAllocation: true,
+                            },
+                        },
                     },
                 },
             },

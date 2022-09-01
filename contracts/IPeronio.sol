@@ -1,7 +1,64 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.16;
 
+// User-defined value types --- interface-specific
+import "./IPeronioSupport.sol";
+
 interface IPeronio {
+    /**
+     * Type representing an USDC token quantity
+     *
+     */
+    type UsdcQuantity is uint256;
+
+    /**
+     * Type representing a MAI token quantity
+     *
+     */
+    type MaiQuantity is uint256;
+
+    /**
+     * Type representing an LP USDC/MAI token quantity
+     *
+     */
+    type LpQuantity is uint256;
+
+    /**
+     * Type representing a PE token quantity
+     *
+     */
+    type PeQuantity is uint256;
+
+    /**
+     * Type representing a QI token quantity
+     *
+     */
+    type QiQuantity is uint256;
+
+    /**
+     * Type representing a ratio of PE/USD tokens (always represented using `DECIMALS` decimals)
+     *
+     */
+    type PePerUsdcQuantity is uint256;
+
+    /**
+     * Type representing a ratio of USD/PE tokens (always represented using `DECIMALS` decimals)
+     *
+     */
+    type UsdcPerPeQuantity is uint256;
+
+    /**
+     * Type representing an adimensional ratio, expressed with 6 decimals
+     *
+     */
+    type RatioWith6Decimals is uint256;
+
+    /**
+     * Type representing a role ID
+     *
+     */
+    type RoleId is bytes32;
+
     // --- Events ---------------------------------------------------------------------------------------------------------------------------------------------
 
     /**
@@ -11,7 +68,7 @@ interface IPeronio {
      * @param collateral  The number of USDC tokens used as collateral
      * @param startingRatio  The number of PE tokens per USDC token the vault is initialized with
      */
-    event Initialized(address owner, uint256 collateral, uint256 startingRatio);
+    event Initialized(address owner, UsdcQuantity collateral, PePerUsdcQuantity startingRatio);
 
     /**
      * Emitted upon minting PE tokens
@@ -20,7 +77,7 @@ interface IPeronio {
      * @param collateralAmount  The number of USDC tokens used as collateral in this minting
      * @param tokenAmount  Amount of PE tokens minted
      */
-    event Minted(address indexed to, uint256 collateralAmount, uint256 tokenAmount);
+    event Minted(address indexed to, UsdcQuantity collateralAmount, PeQuantity tokenAmount);
 
     /**
      * Emitted upon collateral withdrawal
@@ -29,7 +86,7 @@ interface IPeronio {
      * @param collateralAmount  The number of USDC tokens withdrawn
      * @param tokenAmount  The number of PE tokens burnt
      */
-    event Withdrawal(address indexed to, uint256 collateralAmount, uint256 tokenAmount);
+    event Withdrawal(address indexed to, UsdcQuantity collateralAmount, PeQuantity tokenAmount);
 
     /**
      * Emitted upon liquidity withdrawal
@@ -38,7 +95,7 @@ interface IPeronio {
      * @param lpAmount  The number of LP USDC/MAI tokens withdrawn
      * @param tokenAmount  The number of PE tokens burnt
      */
-    event LiquidityWithdrawal(address indexed to, uint256 lpAmount, uint256 tokenAmount);
+    event LiquidityWithdrawal(address indexed to, LpQuantity lpAmount, PeQuantity tokenAmount);
 
     /**
      * Emitted upon the markup fee being updated
@@ -46,7 +103,7 @@ interface IPeronio {
      * @param operator  Address of the one updating the markup fee
      * @param markupFee  New markup fee
      */
-    event MarkupFeeUpdated(address operator, uint256 markupFee);
+    event MarkupFeeUpdated(address operator, RatioWith6Decimals markupFee);
 
     /**
      * Emitted upon compounding rewards from QiDao's Farm back into the vault
@@ -55,7 +112,7 @@ interface IPeronio {
      * @param usdc  Equivalent number of USDC tokens
      * @param lp  Number of LP USDC/MAI tokens re-invested
      */
-    event CompoundRewards(uint256 qi, uint256 usdc, uint256 lp);
+    event CompoundRewards(QiQuantity qi, UsdcQuantity usdc, LpQuantity lp);
 
     // --- Roles - Automatic ----------------------------------------------------------------------------------------------------------------------------------
 
@@ -64,21 +121,21 @@ interface IPeronio {
      *
      * @return roleId  The role hash in question
      */
-    function MARKUP_ROLE() external view returns (bytes32 roleId); // solhint-disable-line func-name-mixedcase
+    function MARKUP_ROLE() external view returns (RoleId roleId); // solhint-disable-line func-name-mixedcase
 
     /**
      * Return the hash identifying the role responsible for compounding rewards
      *
      * @return roleId  The role hash in question
      */
-    function REWARDS_ROLE() external view returns (bytes32 roleId); // solhint-disable-line func-name-mixedcase
+    function REWARDS_ROLE() external view returns (RoleId roleId); // solhint-disable-line func-name-mixedcase
 
     /**
      * Return the hash identifying the role responsible for migrating between versions
      *
      * @return roleId  The role hash in question
      */
-    function MIGRATOR_ROLE() external view returns (bytes32 roleId); // solhint-disable-line func-name-mixedcase
+    function MIGRATOR_ROLE() external view returns (RoleId roleId); // solhint-disable-line func-name-mixedcase
 
     // --- Addresses - Automatic ------------------------------------------------------------------------------------------------------------------------------
 
@@ -138,14 +195,14 @@ interface IPeronio {
      *
      * @return  The markup fee to use
      */
-    function markupFee() external view returns (uint256);
+    function markupFee() external view returns (RatioWith6Decimals);
 
     /**
      * Return the swap fee the use, using `_decimals()` decimals implicitly
      *
      * @return  The swap fee to use
      */
-    function swapFee() external view returns (uint256);
+    function swapFee() external view returns (RatioWith6Decimals);
 
     // --- Status - Automatic ---------------------------------------------------------------------------------------------------------------------------------
 
@@ -174,7 +231,7 @@ interface IPeronio {
      * @return prevMarkupFee  Previous markup fee value
      * @custom:emit  MarkupFeeUpdated
      */
-    function setMarkupFee(uint256 newMarkupFee) external returns (uint256 prevMarkupFee);
+    function setMarkupFee(RatioWith6Decimals newMarkupFee) external returns (RatioWith6Decimals prevMarkupFee);
 
     // --- Initialization -------------------------------------------------------------------------------------------------------------------------------------
 
@@ -185,7 +242,7 @@ interface IPeronio {
      * @param startingRatio  Initial minting ratio in PE tokens per USDC tokens minted
      * @custom:emit  Initialized
      */
-    function initialize(uint256 usdcAmount, uint256 startingRatio) external;
+    function initialize(UsdcQuantity usdcAmount, PePerUsdcQuantity startingRatio) external;
 
     // --- State views ----------------------------------------------------------------------------------------------------------------------------------------
 
@@ -195,14 +252,14 @@ interface IPeronio {
      * @return usdcReserves  Number of USDC tokens in reserve
      * @return maiReserves  Number of MAI tokens in reserve
      */
-    function getLpReserves() external view returns (uint256 usdcReserves, uint256 maiReserves);
+    function getLpReserves() external view returns (UsdcQuantity usdcReserves, MaiQuantity maiReserves);
 
     /**
      * Return the number of LP USDC/MAI tokens on stake at QiDao's Farm
      *
      * @return lpAmount  Number of LP USDC/MAI token on stake
      */
-    function stakedBalance() external view returns (uint256 lpAmount);
+    function stakedBalance() external view returns (LpQuantity lpAmount);
 
     /**
      * Return the number of USDC and MAI tokens on stake at QiDao's Farm
@@ -210,35 +267,35 @@ interface IPeronio {
      * @return usdcAmount  Number of USDC tokens on stake
      * @return maiAmount  Number of MAI tokens on stake
      */
-    function stakedTokens() external view returns (uint256 usdcAmount, uint256 maiAmount);
+    function stakedTokens() external view returns (UsdcQuantity usdcAmount, MaiQuantity maiAmount);
 
     /**
      * Return the equivalent number of USDC tokens on stake at QiDao's Farm
      *
      * @return usdcAmount  Total equivalent number of USDC token on stake
      */
-    function stakedValue() external view returns (uint256 usdcAmount);
+    function stakedValue() external view returns (UsdcQuantity usdcAmount);
 
     /**
      * Return the _collateralized_ price in USDC tokens per PE token
      *
      * @return price  Collateralized price in USDC tokens per PE token
      */
-    function usdcPrice() external view returns (uint256 price);
+    function usdcPrice() external view returns (PePerUsdcQuantity price);
 
     /**
      * Return the effective _minting_ price in USDC tokens per PE token
      *
      * @return price  Minting price in USDC tokens per PE token
      */
-    function buyingPrice() external view returns (uint256 price);
+    function buyingPrice() external view returns (UsdcPerPeQuantity price);
 
     /**
      * Return the ratio of total number of USDC tokens per PE token
      *
      * @return ratio  Ratio of USDC tokens per PE token, with `_decimal` decimals
      */
-    function collateralRatio() external view returns (uint256 ratio);
+    function collateralRatio() external view returns (UsdcPerPeQuantity ratio);
 
     // --- State changers -------------------------------------------------------------------------------------------------------------------------------------
 
@@ -253,9 +310,9 @@ interface IPeronio {
      */
     function mintForMigration(
         address to,
-        uint256 usdcAmount,
-        uint256 minReceive
-    ) external returns (uint256 peAmount);
+        UsdcQuantity usdcAmount,
+        PeQuantity minReceive
+    ) external returns (PeQuantity peAmount);
 
     /**
      * Mint PE tokens using the provided USDC tokens as collateral
@@ -268,9 +325,9 @@ interface IPeronio {
      */
     function mint(
         address to,
-        uint256 usdcAmount,
-        uint256 minReceive
-    ) external returns (uint256 peAmount);
+        UsdcQuantity usdcAmount,
+        PeQuantity minReceive
+    ) external returns (PeQuantity peAmount);
 
     /**
      * Extract the given number of PE tokens as USDC tokens
@@ -280,7 +337,7 @@ interface IPeronio {
      * @return usdcTotal  Number of USDC tokens extracted
      * @custom:emit  Withdrawal
      */
-    function withdraw(address to, uint256 peAmount) external returns (uint256 usdcTotal);
+    function withdraw(address to, PeQuantity peAmount) external returns (UsdcQuantity usdcTotal);
 
     /**
      * Extract the given number of PE tokens as LP USDC/MAI tokens
@@ -290,7 +347,7 @@ interface IPeronio {
      * @return lpAmount  Number of LP USDC/MAI tokens extracted
      * @custom:emit LiquidityWithdrawal
      */
-    function withdrawLiquidity(address to, uint256 peAmount) external returns (uint256 lpAmount);
+    function withdrawLiquidity(address to, PeQuantity peAmount) external returns (LpQuantity lpAmount);
 
     // --- Rewards --------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -299,7 +356,7 @@ interface IPeronio {
      *
      * @return qiAmount  Number of QI tokens accrued
      */
-    function getPendingRewardsAmount() external view returns (uint256 qiAmount);
+    function getPendingRewardsAmount() external view returns (QiQuantity qiAmount);
 
     /**
      * Claim QiDao's QI token rewards, and re-invest them in the QuickSwap liquidity pool and QiDao's Farm
@@ -308,7 +365,7 @@ interface IPeronio {
      * @return lpAmount  The number of LP USDC/MAI tokens being put on stake
      * @custom:emit CompoundRewards
      */
-    function compoundRewards() external returns (uint256 usdcAmount, uint256 lpAmount);
+    function compoundRewards() external returns (UsdcQuantity usdcAmount, LpQuantity lpAmount);
 
     // --- Quotes ---------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -318,7 +375,7 @@ interface IPeronio {
      * @param usdc  Number of USDC tokens to quote for
      * @return pe  Number of PE tokens quoted for the given number of USDC tokens
      */
-    function quoteIn(uint256 usdc) external view returns (uint256 pe);
+    function quoteIn(UsdcQuantity usdc) external view returns (PeQuantity pe);
 
     /**
      * Retrieve the expected number of USDC tokens corresponding to the given number of PE tokens for withdrawal.
@@ -326,5 +383,5 @@ interface IPeronio {
      * @param pe  Number of PE tokens to quote for
      * @return usdc  Number of USDC tokens quoted for the given number of PE tokens
      */
-    function quoteOut(uint256 pe) external view returns (uint256 usdc);
+    function quoteOut(PeQuantity pe) external view returns (UsdcQuantity usdc);
 }

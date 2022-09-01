@@ -50,6 +50,7 @@
         "prettier-plugin-sh": "^0.12.8",
         "prettier-plugin-solidity": "^1.0.0-beta.20",
         "solhint": "^3.3.7",
+        "solpp": "^0.11.5",
         "ts-node": "^10.9.1",
         "typechain": "^8.1.0",
         "typescript": "^4.8.2",
@@ -62,12 +63,8 @@
         "console": "hardhat console",
         "deploy": "hardhat deploy",
         "postdeploy": "hardhat run scripts/publish.ts --network matic",
-        "accounts": "hardhat accounts",
-        "balance": "hardhat balance",
-        "send": "hardhat send",
-        "generate": "hardhat generate",
-        "account": "hardhat account",
-        "typechain": "hardhat typechain"
+        "typechain": "yarn preprocess && hardhat typechain",
+        "preprocess": "hardhat preprocess"
     },
     "dependencies": {
         "yarn": "^1.22.19"
