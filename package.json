@@ -64,7 +64,8 @@
         "deploy": "hardhat deploy",
         "postdeploy": "hardhat run scripts/publish.ts --network matic",
         "typechain": "yarn preprocess && hardhat typechain",
-        "preprocess": "hardhat preprocess"
+        "preprocess": "hardhat preprocess",
+        "prettier": "prettier --write '**.ts'"
     },
     "dependencies": {
         "yarn": "^1.22.19"
