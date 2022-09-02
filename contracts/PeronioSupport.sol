@@ -23,15 +23,15 @@ function add(UniSwapKQuantity left, UniSwapKQuantity right) pure returns (UniSwa
     return UniSwapKQuantity.wrap(UniSwapKQuantity.unwrap(left) + UniSwapKQuantity.unwrap(right));
 }
 
-function prod(UniSwapKQuantity val, uint256 x) pure returns (UniSwapKQuantity) {
+function mul(UniSwapKQuantity val, uint256 x) pure returns (UniSwapKQuantity) {
     return UniSwapKQuantity.wrap(UniSwapKQuantity.unwrap(val) * x);
 }
 
-function prod(uint256 x, UniSwapKQuantity val) pure returns (UniSwapKQuantity) {
+function mul(uint256 x, UniSwapKQuantity val) pure returns (UniSwapKQuantity) {
     return UniSwapKQuantity.wrap(x * UniSwapKQuantity.unwrap(val));
 }
 
-function subtract(UniSwapKQuantity left, UniSwapKQuantity right) pure returns (UniSwapKQuantity) {
+function sub(UniSwapKQuantity left, UniSwapKQuantity right) pure returns (UniSwapKQuantity) {
     return UniSwapKQuantity.wrap(UniSwapKQuantity.unwrap(left) - UniSwapKQuantity.unwrap(right));
 }
 
@@ -104,15 +104,15 @@ function add(UniSwapRootKQuantity left, UniSwapRootKQuantity right) pure returns
     return UniSwapRootKQuantity.wrap(UniSwapRootKQuantity.unwrap(left) + UniSwapRootKQuantity.unwrap(right));
 }
 
-function prod(UniSwapRootKQuantity val, uint256 x) pure returns (UniSwapRootKQuantity) {
+function mul(UniSwapRootKQuantity val, uint256 x) pure returns (UniSwapRootKQuantity) {
     return UniSwapRootKQuantity.wrap(UniSwapRootKQuantity.unwrap(val) * x);
 }
 
-function prod(uint256 x, UniSwapRootKQuantity val) pure returns (UniSwapRootKQuantity) {
+function mul(uint256 x, UniSwapRootKQuantity val) pure returns (UniSwapRootKQuantity) {
     return UniSwapRootKQuantity.wrap(x * UniSwapRootKQuantity.unwrap(val));
 }
 
-function subtract(UniSwapRootKQuantity left, UniSwapRootKQuantity right) pure returns (UniSwapRootKQuantity) {
+function sub(UniSwapRootKQuantity left, UniSwapRootKQuantity right) pure returns (UniSwapRootKQuantity) {
     return UniSwapRootKQuantity.wrap(UniSwapRootKQuantity.unwrap(left) - UniSwapRootKQuantity.unwrap(right));
 }
 
@@ -185,15 +185,15 @@ function add(UsdcSqQuantity left, UsdcSqQuantity right) pure returns (UsdcSqQuan
     return UsdcSqQuantity.wrap(UsdcSqQuantity.unwrap(left) + UsdcSqQuantity.unwrap(right));
 }
 
-function prod(UsdcSqQuantity val, uint256 x) pure returns (UsdcSqQuantity) {
+function mul(UsdcSqQuantity val, uint256 x) pure returns (UsdcSqQuantity) {
     return UsdcSqQuantity.wrap(UsdcSqQuantity.unwrap(val) * x);
 }
 
-function prod(uint256 x, UsdcSqQuantity val) pure returns (UsdcSqQuantity) {
+function mul(uint256 x, UsdcSqQuantity val) pure returns (UsdcSqQuantity) {
     return UsdcSqQuantity.wrap(x * UsdcSqQuantity.unwrap(val));
 }
 
-function subtract(UsdcSqQuantity left, UsdcSqQuantity right) pure returns (UsdcSqQuantity) {
+function sub(UsdcSqQuantity left, UsdcSqQuantity right) pure returns (UsdcSqQuantity) {
     return UsdcSqQuantity.wrap(UsdcSqQuantity.unwrap(left) - UsdcSqQuantity.unwrap(right));
 }
 
@@ -317,7 +317,7 @@ function sqrt256(UsdcSqQuantity x) pure returns (IPeronio.UsdcQuantity) {
 // --- UniSwap K-values ---------------------------------------------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-function prod(IPeronio.UsdcQuantity left, IPeronio.MaiQuantity right) pure returns (UniSwapKQuantity) {
+function mul(IPeronio.UsdcQuantity left, IPeronio.MaiQuantity right) pure returns (UniSwapKQuantity) {
     return UniSwapKQuantity.wrap(IPeronio.UsdcQuantity.unwrap(left) * IPeronio.MaiQuantity.unwrap(right));
 }
 

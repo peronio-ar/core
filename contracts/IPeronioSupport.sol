@@ -14,16 +14,16 @@ function add(IPeronio.UsdcQuantity left, IPeronio.UsdcQuantity right) pure retur
     return IPeronio.UsdcQuantity.wrap(IPeronio.UsdcQuantity.unwrap(left) + IPeronio.UsdcQuantity.unwrap(right));
 }
 
-function prod(IPeronio.UsdcQuantity val, uint256 x) pure returns (IPeronio.UsdcQuantity) {
+function sub(IPeronio.UsdcQuantity left, IPeronio.UsdcQuantity right) pure returns (IPeronio.UsdcQuantity) {
+    return IPeronio.UsdcQuantity.wrap(IPeronio.UsdcQuantity.unwrap(left) - IPeronio.UsdcQuantity.unwrap(right));
+}
+
+function mul(IPeronio.UsdcQuantity val, uint256 x) pure returns (IPeronio.UsdcQuantity) {
     return IPeronio.UsdcQuantity.wrap(IPeronio.UsdcQuantity.unwrap(val) * x);
 }
 
-function prod(uint256 x, IPeronio.UsdcQuantity val) pure returns (IPeronio.UsdcQuantity) {
+function mul(uint256 x, IPeronio.UsdcQuantity val) pure returns (IPeronio.UsdcQuantity) {
     return IPeronio.UsdcQuantity.wrap(x * IPeronio.UsdcQuantity.unwrap(val));
-}
-
-function subtract(IPeronio.UsdcQuantity left, IPeronio.UsdcQuantity right) pure returns (IPeronio.UsdcQuantity) {
-    return IPeronio.UsdcQuantity.wrap(IPeronio.UsdcQuantity.unwrap(left) - IPeronio.UsdcQuantity.unwrap(right));
 }
 
 function min(IPeronio.UsdcQuantity left, IPeronio.UsdcQuantity right) pure returns (IPeronio.UsdcQuantity) {
@@ -95,16 +95,16 @@ function add(IPeronio.MaiQuantity left, IPeronio.MaiQuantity right) pure returns
     return IPeronio.MaiQuantity.wrap(IPeronio.MaiQuantity.unwrap(left) + IPeronio.MaiQuantity.unwrap(right));
 }
 
-function prod(IPeronio.MaiQuantity val, uint256 x) pure returns (IPeronio.MaiQuantity) {
+function sub(IPeronio.MaiQuantity left, IPeronio.MaiQuantity right) pure returns (IPeronio.MaiQuantity) {
+    return IPeronio.MaiQuantity.wrap(IPeronio.MaiQuantity.unwrap(left) - IPeronio.MaiQuantity.unwrap(right));
+}
+
+function mul(IPeronio.MaiQuantity val, uint256 x) pure returns (IPeronio.MaiQuantity) {
     return IPeronio.MaiQuantity.wrap(IPeronio.MaiQuantity.unwrap(val) * x);
 }
 
-function prod(uint256 x, IPeronio.MaiQuantity val) pure returns (IPeronio.MaiQuantity) {
+function mul(uint256 x, IPeronio.MaiQuantity val) pure returns (IPeronio.MaiQuantity) {
     return IPeronio.MaiQuantity.wrap(x * IPeronio.MaiQuantity.unwrap(val));
-}
-
-function subtract(IPeronio.MaiQuantity left, IPeronio.MaiQuantity right) pure returns (IPeronio.MaiQuantity) {
-    return IPeronio.MaiQuantity.wrap(IPeronio.MaiQuantity.unwrap(left) - IPeronio.MaiQuantity.unwrap(right));
 }
 
 function min(IPeronio.MaiQuantity left, IPeronio.MaiQuantity right) pure returns (IPeronio.MaiQuantity) {
@@ -176,16 +176,16 @@ function add(IPeronio.LpQuantity left, IPeronio.LpQuantity right) pure returns (
     return IPeronio.LpQuantity.wrap(IPeronio.LpQuantity.unwrap(left) + IPeronio.LpQuantity.unwrap(right));
 }
 
-function prod(IPeronio.LpQuantity val, uint256 x) pure returns (IPeronio.LpQuantity) {
+function sub(IPeronio.LpQuantity left, IPeronio.LpQuantity right) pure returns (IPeronio.LpQuantity) {
+    return IPeronio.LpQuantity.wrap(IPeronio.LpQuantity.unwrap(left) - IPeronio.LpQuantity.unwrap(right));
+}
+
+function mul(IPeronio.LpQuantity val, uint256 x) pure returns (IPeronio.LpQuantity) {
     return IPeronio.LpQuantity.wrap(IPeronio.LpQuantity.unwrap(val) * x);
 }
 
-function prod(uint256 x, IPeronio.LpQuantity val) pure returns (IPeronio.LpQuantity) {
+function mul(uint256 x, IPeronio.LpQuantity val) pure returns (IPeronio.LpQuantity) {
     return IPeronio.LpQuantity.wrap(x * IPeronio.LpQuantity.unwrap(val));
-}
-
-function subtract(IPeronio.LpQuantity left, IPeronio.LpQuantity right) pure returns (IPeronio.LpQuantity) {
-    return IPeronio.LpQuantity.wrap(IPeronio.LpQuantity.unwrap(left) - IPeronio.LpQuantity.unwrap(right));
 }
 
 function min(IPeronio.LpQuantity left, IPeronio.LpQuantity right) pure returns (IPeronio.LpQuantity) {
@@ -257,16 +257,16 @@ function add(IPeronio.PeQuantity left, IPeronio.PeQuantity right) pure returns (
     return IPeronio.PeQuantity.wrap(IPeronio.PeQuantity.unwrap(left) + IPeronio.PeQuantity.unwrap(right));
 }
 
-function prod(IPeronio.PeQuantity val, uint256 x) pure returns (IPeronio.PeQuantity) {
+function sub(IPeronio.PeQuantity left, IPeronio.PeQuantity right) pure returns (IPeronio.PeQuantity) {
+    return IPeronio.PeQuantity.wrap(IPeronio.PeQuantity.unwrap(left) - IPeronio.PeQuantity.unwrap(right));
+}
+
+function mul(IPeronio.PeQuantity val, uint256 x) pure returns (IPeronio.PeQuantity) {
     return IPeronio.PeQuantity.wrap(IPeronio.PeQuantity.unwrap(val) * x);
 }
 
-function prod(uint256 x, IPeronio.PeQuantity val) pure returns (IPeronio.PeQuantity) {
+function mul(uint256 x, IPeronio.PeQuantity val) pure returns (IPeronio.PeQuantity) {
     return IPeronio.PeQuantity.wrap(x * IPeronio.PeQuantity.unwrap(val));
-}
-
-function subtract(IPeronio.PeQuantity left, IPeronio.PeQuantity right) pure returns (IPeronio.PeQuantity) {
-    return IPeronio.PeQuantity.wrap(IPeronio.PeQuantity.unwrap(left) - IPeronio.PeQuantity.unwrap(right));
 }
 
 function min(IPeronio.PeQuantity left, IPeronio.PeQuantity right) pure returns (IPeronio.PeQuantity) {
@@ -338,16 +338,16 @@ function add(IPeronio.QiQuantity left, IPeronio.QiQuantity right) pure returns (
     return IPeronio.QiQuantity.wrap(IPeronio.QiQuantity.unwrap(left) + IPeronio.QiQuantity.unwrap(right));
 }
 
-function prod(IPeronio.QiQuantity val, uint256 x) pure returns (IPeronio.QiQuantity) {
+function sub(IPeronio.QiQuantity left, IPeronio.QiQuantity right) pure returns (IPeronio.QiQuantity) {
+    return IPeronio.QiQuantity.wrap(IPeronio.QiQuantity.unwrap(left) - IPeronio.QiQuantity.unwrap(right));
+}
+
+function mul(IPeronio.QiQuantity val, uint256 x) pure returns (IPeronio.QiQuantity) {
     return IPeronio.QiQuantity.wrap(IPeronio.QiQuantity.unwrap(val) * x);
 }
 
-function prod(uint256 x, IPeronio.QiQuantity val) pure returns (IPeronio.QiQuantity) {
+function mul(uint256 x, IPeronio.QiQuantity val) pure returns (IPeronio.QiQuantity) {
     return IPeronio.QiQuantity.wrap(x * IPeronio.QiQuantity.unwrap(val));
-}
-
-function subtract(IPeronio.QiQuantity left, IPeronio.QiQuantity right) pure returns (IPeronio.QiQuantity) {
-    return IPeronio.QiQuantity.wrap(IPeronio.QiQuantity.unwrap(left) - IPeronio.QiQuantity.unwrap(right));
 }
 
 function min(IPeronio.QiQuantity left, IPeronio.QiQuantity right) pure returns (IPeronio.QiQuantity) {
@@ -419,16 +419,16 @@ function add(IPeronio.PePerUsdcQuantity left, IPeronio.PePerUsdcQuantity right) 
     return IPeronio.PePerUsdcQuantity.wrap(IPeronio.PePerUsdcQuantity.unwrap(left) + IPeronio.PePerUsdcQuantity.unwrap(right));
 }
 
-function prod(IPeronio.PePerUsdcQuantity val, uint256 x) pure returns (IPeronio.PePerUsdcQuantity) {
+function sub(IPeronio.PePerUsdcQuantity left, IPeronio.PePerUsdcQuantity right) pure returns (IPeronio.PePerUsdcQuantity) {
+    return IPeronio.PePerUsdcQuantity.wrap(IPeronio.PePerUsdcQuantity.unwrap(left) - IPeronio.PePerUsdcQuantity.unwrap(right));
+}
+
+function mul(IPeronio.PePerUsdcQuantity val, uint256 x) pure returns (IPeronio.PePerUsdcQuantity) {
     return IPeronio.PePerUsdcQuantity.wrap(IPeronio.PePerUsdcQuantity.unwrap(val) * x);
 }
 
-function prod(uint256 x, IPeronio.PePerUsdcQuantity val) pure returns (IPeronio.PePerUsdcQuantity) {
+function mul(uint256 x, IPeronio.PePerUsdcQuantity val) pure returns (IPeronio.PePerUsdcQuantity) {
     return IPeronio.PePerUsdcQuantity.wrap(x * IPeronio.PePerUsdcQuantity.unwrap(val));
-}
-
-function subtract(IPeronio.PePerUsdcQuantity left, IPeronio.PePerUsdcQuantity right) pure returns (IPeronio.PePerUsdcQuantity) {
-    return IPeronio.PePerUsdcQuantity.wrap(IPeronio.PePerUsdcQuantity.unwrap(left) - IPeronio.PePerUsdcQuantity.unwrap(right));
 }
 
 function min(IPeronio.PePerUsdcQuantity left, IPeronio.PePerUsdcQuantity right) pure returns (IPeronio.PePerUsdcQuantity) {
@@ -500,16 +500,16 @@ function add(IPeronio.UsdcPerPeQuantity left, IPeronio.UsdcPerPeQuantity right) 
     return IPeronio.UsdcPerPeQuantity.wrap(IPeronio.UsdcPerPeQuantity.unwrap(left) + IPeronio.UsdcPerPeQuantity.unwrap(right));
 }
 
-function prod(IPeronio.UsdcPerPeQuantity val, uint256 x) pure returns (IPeronio.UsdcPerPeQuantity) {
+function sub(IPeronio.UsdcPerPeQuantity left, IPeronio.UsdcPerPeQuantity right) pure returns (IPeronio.UsdcPerPeQuantity) {
+    return IPeronio.UsdcPerPeQuantity.wrap(IPeronio.UsdcPerPeQuantity.unwrap(left) - IPeronio.UsdcPerPeQuantity.unwrap(right));
+}
+
+function mul(IPeronio.UsdcPerPeQuantity val, uint256 x) pure returns (IPeronio.UsdcPerPeQuantity) {
     return IPeronio.UsdcPerPeQuantity.wrap(IPeronio.UsdcPerPeQuantity.unwrap(val) * x);
 }
 
-function prod(uint256 x, IPeronio.UsdcPerPeQuantity val) pure returns (IPeronio.UsdcPerPeQuantity) {
+function mul(uint256 x, IPeronio.UsdcPerPeQuantity val) pure returns (IPeronio.UsdcPerPeQuantity) {
     return IPeronio.UsdcPerPeQuantity.wrap(x * IPeronio.UsdcPerPeQuantity.unwrap(val));
-}
-
-function subtract(IPeronio.UsdcPerPeQuantity left, IPeronio.UsdcPerPeQuantity right) pure returns (IPeronio.UsdcPerPeQuantity) {
-    return IPeronio.UsdcPerPeQuantity.wrap(IPeronio.UsdcPerPeQuantity.unwrap(left) - IPeronio.UsdcPerPeQuantity.unwrap(right));
 }
 
 function min(IPeronio.UsdcPerPeQuantity left, IPeronio.UsdcPerPeQuantity right) pure returns (IPeronio.UsdcPerPeQuantity) {
@@ -581,16 +581,16 @@ function add(IPeronio.RatioWith6Decimals left, IPeronio.RatioWith6Decimals right
     return IPeronio.RatioWith6Decimals.wrap(IPeronio.RatioWith6Decimals.unwrap(left) + IPeronio.RatioWith6Decimals.unwrap(right));
 }
 
-function prod(IPeronio.RatioWith6Decimals val, uint256 x) pure returns (IPeronio.RatioWith6Decimals) {
+function sub(IPeronio.RatioWith6Decimals left, IPeronio.RatioWith6Decimals right) pure returns (IPeronio.RatioWith6Decimals) {
+    return IPeronio.RatioWith6Decimals.wrap(IPeronio.RatioWith6Decimals.unwrap(left) - IPeronio.RatioWith6Decimals.unwrap(right));
+}
+
+function mul(IPeronio.RatioWith6Decimals val, uint256 x) pure returns (IPeronio.RatioWith6Decimals) {
     return IPeronio.RatioWith6Decimals.wrap(IPeronio.RatioWith6Decimals.unwrap(val) * x);
 }
 
-function prod(uint256 x, IPeronio.RatioWith6Decimals val) pure returns (IPeronio.RatioWith6Decimals) {
+function mul(uint256 x, IPeronio.RatioWith6Decimals val) pure returns (IPeronio.RatioWith6Decimals) {
     return IPeronio.RatioWith6Decimals.wrap(x * IPeronio.RatioWith6Decimals.unwrap(val));
-}
-
-function subtract(IPeronio.RatioWith6Decimals left, IPeronio.RatioWith6Decimals right) pure returns (IPeronio.RatioWith6Decimals) {
-    return IPeronio.RatioWith6Decimals.wrap(IPeronio.RatioWith6Decimals.unwrap(left) - IPeronio.RatioWith6Decimals.unwrap(right));
 }
 
 function min(IPeronio.RatioWith6Decimals left, IPeronio.RatioWith6Decimals right) pure returns (IPeronio.RatioWith6Decimals) {

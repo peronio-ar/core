@@ -10,9 +10,9 @@ import {max, min, mulDiv} from "./Utils.sol";
 
 /* #def STD_NUM(T)
 function add(T left, T right) pure returns (T) { return T.wrap(T.unwrap(left) + T.unwrap(right)); }
-function prod(T val, uint256 x) pure returns (T) { return T.wrap(T.unwrap(val) * x); }
-function prod(uint256 x, T val) pure returns (T) { return T.wrap(x * T.unwrap(val)); }
-function subtract(T left, T right) pure returns (T) { return T.wrap(T.unwrap(left) - T.unwrap(right)); }
+function sub(T left, T right) pure returns (T) { return T.wrap(T.unwrap(left) - T.unwrap(right)); }
+function mul(T val, uint256 x) pure returns (T) { return T.wrap(T.unwrap(val) * x); }
+function mul(uint256 x, T val) pure returns (T) { return T.wrap(x * T.unwrap(val)); }
 function min(T left, T right) pure returns (T) { return T.wrap(min(T.unwrap(left), T.unwrap(right))); }
 function max(T left, T right) pure returns (T) { return T.wrap(max(T.unwrap(left), T.unwrap(right))); }
 function eq(T left, T right) pure returns (bool) { return T.unwrap(left) == T.unwrap(right); }
