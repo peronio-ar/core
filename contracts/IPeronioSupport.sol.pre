@@ -7,8 +7,22 @@ import {max, min, mulDiv} from "./Utils.sol";
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------
 // --- Standard Numeric Types ---------------------------------------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------
+//
+// Standard Numeric Types (SNTs) can be operated with in the same manner as "normal" numeric types can.
+// This means that SNTs can:
+//   - be added together,
+//   - be subtracted from each other,
+//   - be multiplied by a scalar value (only uint256 in this implementation) - both on the left and on the right,
+//   - the minimum be calculated among them,
+//   - the maximum be calculated among them,
+//   - the "==", "!=", "<=", "<", ">", and ">=" relations established between them, and
+//   - the "mulDiv" operation applied to them so that:
+//     - all arguments are SNT instances,
+//     - an SNT instance is multiplied and divided by scalar quantities, yielding an SNT instance, and
+//     - a scalar quantity is multiplied by and divided by SNT instances, yielding a scalar quantity.
+//
 
-/* #def STD_NUM(T)
+/* #def STANDARD_NUMERIC_TYPE(T)
 function add(T left, T right) pure returns (T) { return T.wrap(T.unwrap(left) + T.unwrap(right)); }
 function sub(T left, T right) pure returns (T) { return T.wrap(T.unwrap(left) - T.unwrap(right)); }
 function mul(T val, uint256 x) pure returns (T) { return T.wrap(T.unwrap(val) * x); }
@@ -21,6 +35,7 @@ function lt(T left, T right) pure returns (bool) { return T.unwrap(left) < T.unw
 function gt(T left, T right) pure returns (bool) { return T.unwrap(left) > T.unwrap(right); }
 function lte(T left, T right) pure returns (bool) { return T.unwrap(left) <= T.unwrap(right); }
 function gte(T left, T right) pure returns (bool) { return T.unwrap(left) >= T.unwrap(right); }
+function mulDiv(T left, T right, T div) pure returns (T) { return T.wrap(mulDiv(T.unwrap(left), T.unwrap(right), T.unwrap(div))); }
 function mulDiv(T left, uint256 right, uint256 div) pure returns (T) { return T.wrap(mulDiv(T.unwrap(left), right, div)); }
 function mulDiv(uint256 left, T right, uint256 div) pure returns (T) { return T.wrap(mulDiv(left, T.unwrap(right), div)); }
 function mulDiv(T left, uint256 right, T div) pure returns (uint256) { return mulDiv(T.unwrap(left), right, T.unwrap(div)); }
@@ -28,52 +43,82 @@ function mulDiv(uint256 left, T right, T div) pure returns (uint256) { return mu
 */
 
 // --- USDC ---------------------------------------------------------------------------------------------------------------------------------------------------
-$(STD_NUM(IPeronio.UsdcQuantity))
+$(STANDARD_NUMERIC_TYPE(IPeronio.UsdcQuantity))
 
 // --- MAI ----------------------------------------------------------------------------------------------------------------------------------------------------
-$(STD_NUM(IPeronio.MaiQuantity))
+$(STANDARD_NUMERIC_TYPE(IPeronio.MaiQuantity))
 
 // --- LP USDC/MAI --------------------------------------------------------------------------------------------------------------------------------------------
-$(STD_NUM(IPeronio.LpQuantity))
+$(STANDARD_NUMERIC_TYPE(IPeronio.LpQuantity))
 
 // --- PE -----------------------------------------------------------------------------------------------------------------------------------------------------
-$(STD_NUM(IPeronio.PeQuantity))
+$(STANDARD_NUMERIC_TYPE(IPeronio.PeQuantity))
 
 // --- QI -----------------------------------------------------------------------------------------------------------------------------------------------------
-$(STD_NUM(IPeronio.QiQuantity))
+$(STANDARD_NUMERIC_TYPE(IPeronio.QiQuantity))
 
 // --- PE/USDC ------------------------------------------------------------------------------------------------------------------------------------------------
-$(STD_NUM(IPeronio.PePerUsdcQuantity))
+$(STANDARD_NUMERIC_TYPE(IPeronio.PePerUsdcQuantity))
 
 // --- USDC/PE ------------------------------------------------------------------------------------------------------------------------------------------------
-$(STD_NUM(IPeronio.UsdcPerPeQuantity))
+$(STANDARD_NUMERIC_TYPE(IPeronio.UsdcPerPeQuantity))
 
 // --- 6-decimals ratio ---------------------------------------------------------------------------------------------------------------------------------------
-$(STD_NUM(IPeronio.RatioWith6Decimals))
+$(STANDARD_NUMERIC_TYPE(IPeronio.RatioWith6Decimals))
 
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------
-// --- mulDiv() flexibility -----------------------------------------------------------------------------------------------------------------------------------
+// --- mulDiv() Identities ------------------------------------------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------
+//
+// The following are simple overloads that take care of generalizations upon the "mulDiv" cases referenced above.
+// In particular: when multiplying and dividing by one type, the other is returned.
+//
 
-/* #def MUL_DIV_RATIO(T, U)
+/* #def MUL_DIV_IDENTITY(T, U)
 function mulDiv(T left, U right, U div) pure returns (T) { return T.wrap(mulDiv(T.unwrap(left), U.unwrap(right), U.unwrap(div))); }
 function mulDiv(U left, T right, U div) pure returns (T) { return T.wrap(mulDiv(U.unwrap(left), T.unwrap(right), U.unwrap(div))); }
 function mulDiv(U left, T right, T div) pure returns (U) { return U.wrap(mulDiv(U.unwrap(left), T.unwrap(right), T.unwrap(div))); }
 function mulDiv(T left, U right, T div) pure returns (U) { return U.wrap(mulDiv(T.unwrap(left), U.unwrap(right), T.unwrap(div))); }
 */
 
-$(MUL_DIV_RATIO(IPeronio.LpQuantity, IPeronio.PeQuantity))
-$(MUL_DIV_RATIO(IPeronio.MaiQuantity, IPeronio.UsdcQuantity))
-$(MUL_DIV_RATIO(IPeronio.LpQuantity, IPeronio.MaiQuantity))
-$(MUL_DIV_RATIO(IPeronio.LpQuantity, IPeronio.UsdcQuantity))
-$(MUL_DIV_RATIO(IPeronio.LpQuantity, IPeronio.RatioWith6Decimals))
-$(MUL_DIV_RATIO(IPeronio.UsdcPerPeQuantity, IPeronio.RatioWith6Decimals))
+$(MUL_DIV_IDENTITY(IPeronio.UsdcQuantity, IPeronio.MaiQuantity))
+$(MUL_DIV_IDENTITY(IPeronio.UsdcQuantity, IPeronio.LpQuantity))
+$(MUL_DIV_IDENTITY(IPeronio.UsdcQuantity, IPeronio.PeQuantity))
+$(MUL_DIV_IDENTITY(IPeronio.UsdcQuantity, IPeronio.QiQuantity))
+$(MUL_DIV_IDENTITY(IPeronio.UsdcQuantity, IPeronio.PePerUsdcQuantity))
+$(MUL_DIV_IDENTITY(IPeronio.UsdcQuantity, IPeronio.UsdcPerPeQuantity))
+$(MUL_DIV_IDENTITY(IPeronio.UsdcQuantity, IPeronio.RatioWith6Decimals))
+$(MUL_DIV_IDENTITY(IPeronio.MaiQuantity, IPeronio.LpQuantity))
+$(MUL_DIV_IDENTITY(IPeronio.MaiQuantity, IPeronio.PeQuantity))
+$(MUL_DIV_IDENTITY(IPeronio.MaiQuantity, IPeronio.QiQuantity))
+$(MUL_DIV_IDENTITY(IPeronio.MaiQuantity, IPeronio.PePerUsdcQuantity))
+$(MUL_DIV_IDENTITY(IPeronio.MaiQuantity, IPeronio.UsdcPerPeQuantity))
+$(MUL_DIV_IDENTITY(IPeronio.MaiQuantity, IPeronio.RatioWith6Decimals))
+$(MUL_DIV_IDENTITY(IPeronio.LpQuantity, IPeronio.PeQuantity))
+$(MUL_DIV_IDENTITY(IPeronio.LpQuantity, IPeronio.QiQuantity))
+$(MUL_DIV_IDENTITY(IPeronio.LpQuantity, IPeronio.PePerUsdcQuantity))
+$(MUL_DIV_IDENTITY(IPeronio.LpQuantity, IPeronio.UsdcPerPeQuantity))
+$(MUL_DIV_IDENTITY(IPeronio.LpQuantity, IPeronio.RatioWith6Decimals))
+$(MUL_DIV_IDENTITY(IPeronio.PeQuantity, IPeronio.QiQuantity))
+$(MUL_DIV_IDENTITY(IPeronio.PeQuantity, IPeronio.PePerUsdcQuantity))
+$(MUL_DIV_IDENTITY(IPeronio.PeQuantity, IPeronio.UsdcPerPeQuantity))
+$(MUL_DIV_IDENTITY(IPeronio.PeQuantity, IPeronio.RatioWith6Decimals))
+$(MUL_DIV_IDENTITY(IPeronio.QiQuantity, IPeronio.PePerUsdcQuantity))
+$(MUL_DIV_IDENTITY(IPeronio.QiQuantity, IPeronio.UsdcPerPeQuantity))
+$(MUL_DIV_IDENTITY(IPeronio.QiQuantity, IPeronio.RatioWith6Decimals))
+$(MUL_DIV_IDENTITY(IPeronio.PePerUsdcQuantity, IPeronio.UsdcPerPeQuantity))
+$(MUL_DIV_IDENTITY(IPeronio.PePerUsdcQuantity, IPeronio.RatioWith6Decimals))
+$(MUL_DIV_IDENTITY(IPeronio.UsdcPerPeQuantity, IPeronio.RatioWith6Decimals))
 
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------
-// --- mulDiv() ad-hoc ----------------------------------------------------------------------------------------------------------------------------------------
+// --- mulDiv() Generators ----------------------------------------------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------
+//
+// The following are overloads that take PE and USDC quantities and produce their ratios (ie. PEs per USDC, and USDCs per PE).
+// Overloads are provided for adimensional quantities (ie. ratios) as well.
+//
 
-/* #def MUL_DIV_COMMUTATIVE(T, U, V)
+/* #def MUL_DIV_GENERATOR(T, U, V)
 function mulDiv(T left, uint256 right, U div) pure returns (V) { return V.wrap(mulDiv(T.unwrap(left), right, U.unwrap(div))); }
 function mulDiv(uint256 left, T right, U div) pure returns (V) { return V.wrap(mulDiv(left, T.unwrap(right), U.unwrap(div))); }
 function mulDiv(T left, IPeronio.RatioWith6Decimals right, U div) pure returns (V) { return V.wrap(mulDiv(T.unwrap(left), IPeronio.RatioWith6Decimals.unwrap(right), U.unwrap(div))); }
@@ -82,6 +127,14 @@ function mulDiv(IPeronio.RatioWith6Decimals left, T right, U div) pure returns (
 
 $(MUL_DIV_COMMUTATIVE(IPeronio.PeQuantity, IPeronio.UsdcQuantity, IPeronio.PePerUsdcQuantity))
 $(MUL_DIV_COMMUTATIVE(IPeronio.UsdcQuantity, IPeronio.PeQuantity, IPeronio.UsdcPerPeQuantity))
+
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------
+// --- mulDiv() Collapsers ----------------------------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------
+//
+// The following are overloads that take PEs per USDC, and USDCs per PE ratios, and produce their PE and USDC counterparts upon upon multiplying and dividing.
+// Overloads are provided for adimensional quantities (ie. ratios) as well.
+//
 
 /* #def MUL_DIV_COMMUTATIVE2(T, U, V)
 function mulDiv(T left, U right, uint256 div) pure returns (V) { return V.wrap(mulDiv(T.unwrap(left), U.unwrap(right), div)); }
