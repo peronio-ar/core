@@ -68,7 +68,7 @@
         "postdeploy": "hardhat run scripts/publish.ts --network matic",
         "typechain": "yarn preprocess && hardhat typechain",
         "preprocess": "hardhat preprocess",
-        "prettier": "prettier --write '**.ts'"
+        "format:fix": "prettier --write \"{,!(node_modules)/**/}*.{ts,js,json}\""
     },
     "dependencies": {
         "yarn": "^1.22.19"
@@ -144,5 +144,8 @@
         "printWidth": 160,
         "tabWidth": 4,
         "trailingComma": "all"
+    },
+    "hooks": {
+        "pre-push": "yarn format:fix"
     }
 }
