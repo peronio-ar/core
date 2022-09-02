@@ -146,7 +146,7 @@
     },
     "husky": {
         "hooks": {
-            "pre-commit": "yarn format:fix",
+            "pre-commit": "echo \"Husky hook\" && yarn format:fix",
             "pre-push": "yarn test"
         }
     }
