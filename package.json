@@ -146,6 +146,7 @@
         "trailingComma": "all"
     },
     "hooks": {
-        "pre-push": "yarn format:fix"
+        "pre-commit": "yarn format:fix",
+        "pre-push": "yarn test"
     }
 }
