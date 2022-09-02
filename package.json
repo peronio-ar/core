@@ -145,8 +145,10 @@
         "tabWidth": 4,
         "trailingComma": "all"
     },
-    "hooks": {
-        "pre-commit": "yarn format:fix",
-        "pre-push": "yarn test"
+    "husky": {
+        "hooks": {
+            "pre-commit": "yarn format:fix",
+            "pre-push": "yarn test"
+        }
     }
 }
