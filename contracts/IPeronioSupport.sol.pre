@@ -35,6 +35,7 @@ function lt(T left, T right) pure returns (bool) { return T.unwrap(left) < T.unw
 function gt(T left, T right) pure returns (bool) { return T.unwrap(left) > T.unwrap(right); }
 function lte(T left, T right) pure returns (bool) { return T.unwrap(left) <= T.unwrap(right); }
 function gte(T left, T right) pure returns (bool) { return T.unwrap(left) >= T.unwrap(right); }
+
 function mulDiv(T left, T right, T div) pure returns (T) { return T.wrap(mulDiv(T.unwrap(left), T.unwrap(right), T.unwrap(div))); }
 function mulDiv(T left, uint256 right, uint256 div) pure returns (T) { return T.wrap(mulDiv(T.unwrap(left), right, div)); }
 function mulDiv(uint256 left, T right, uint256 div) pure returns (T) { return T.wrap(mulDiv(left, T.unwrap(right), div)); }
