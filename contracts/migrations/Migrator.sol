@@ -3,7 +3,7 @@ pragma solidity ^0.8.16;
 
 import {PeronioV1Wrapper} from "./old/PeronioV1Wrapper.sol";
 import {IPeronioV1} from "./old/IPeronioV1.sol";
-import {IPeronio} from "../IPeronio.sol";
+import "../IPeronio.sol";
 
 import {min, mulDiv, sqrt256} from "../Utils.sol";
 import {IUniswapV2Pair} from "../uniswap/interfaces/IUniswapV2Pair.sol";
@@ -122,7 +122,7 @@ contract Migrator is IMigrator {
             uint256 totalMintFee;
             {
                 (, , , , uint16 depositFeeBP) = IFarm(IPeronio(peronioV2Address).qiDaoFarmAddress()).poolInfo(IPeronio(peronioV2Address).qiDaoPoolId());
-                totalMintFee = IPeronio.RatioWith6Decimals.unwrap(IPeronio(peronioV2Address).swapFee()) + uint256(depositFeeBP) * 10**(decimals - 4);
+                totalMintFee = RatioWith6Decimals.unwrap(IPeronio(peronioV2Address).swapFee()) + uint256(depositFeeBP) * 10**(decimals - 4);
             }
 
             lpAmountMint = mulDiv(
@@ -157,7 +157,7 @@ contract Migrator is IMigrator {
         // Calculate USDC to be received by Peronio V1
         usdc = peronioV1.withdrawV2(address(this), amount);
         // Calculate PE to be minted by Peronio V2
-        pe = IPeronio.PeQuantity.unwrap(peronioV2.mintForMigration(msg.sender, IPeronio.UsdcQuantity.wrap(usdc), IPeronio.PeQuantity.wrap(1)));
+        pe = PeQuantity.unwrap(peronioV2.mintForMigration(msg.sender, UsdcQuantity.wrap(usdc), PeQuantity.wrap(1)));
 
         // Emit Migrated event
         emit Migrated(block.timestamp, amount, usdc, pe);
