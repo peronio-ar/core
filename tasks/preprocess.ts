@@ -25,7 +25,7 @@ task("preprocess", "Run Pre-Processor").setAction(async () => {
 
     for (const fileName of preFiles) {
         let newFileName: string = fileName.slice(0, -4);
-        execSync(`yarn solpp -o "${newFileName}" "${fileName}"`);
+        execSync(`yarn solpp --no-flatten -o "${newFileName}" "${fileName}"`);
         execSync(`yarn prettier --write "${newFileName}"`);
     }
 });
