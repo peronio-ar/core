@@ -20,7 +20,7 @@ jobs:
             - name: Copies .env variable
               run: cp .env.example .env
             - name: Clear local cache
-              run: rm 
+              run: rm /github/home/.cache
             - uses: borales/actions-yarn@v3.0.0
               with:
                   cmd: install
