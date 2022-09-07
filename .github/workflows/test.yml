@@ -17,8 +17,6 @@ jobs:
             - uses: actions/setup-node@v3
               with:
                   node-version-file: '.nvmrc'
-            - name: Try with good Yarn
-              run: corepack prepare yarn@1.22.17 --activate
             - name: Copies .env variable
               run: cp .env.example .env
             - uses: borales/actions-yarn@v3.0.0
@@ -27,6 +25,5 @@ jobs:
             - uses: borales/actions-yarn@v3.0.0
               with:
                   cmd: typechain
-            - uses: borales/actions-yarn@v3.0.0
-              with:
-                  cmd: test
+            - name: Run unit tests
+              run: corepack prepare yarn@1.22.17 --activate && yarn test
