@@ -17,10 +17,8 @@ jobs:
             - uses: actions/setup-node@v3
               with:
                   node-version-file: '.nvmrc'
-            - name: Remove Yarn
-              run: npm uninstall -g yarn
             - name: Install specific Yarn version
-              run: npm install -g yarn@1.22.17
+              run: npm i -g --force yarn@1.22.17
             - name: Copies .env variable
               run: cp .env.example .env
             - uses: borales/actions-yarn@v3.0.0
