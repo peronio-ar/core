@@ -12,7 +12,7 @@ const deployMigrator: DeployFunction = async (hre: HardhatRuntimeEnvironment) =>
         contract: "Migrator",
         from: deployer,
         log: true,
-        args: [peronioV1Address, peronioV2Address, process.env.USDC_ADDRESS || ""],
+        args: [peronioV1Address, peronioV2Address],
     });
 };
 
