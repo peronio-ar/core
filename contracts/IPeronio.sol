@@ -4,61 +4,61 @@ pragma solidity ^0.8.16;
 // User-defined value types --- interface-specific
 import "./IPeronioSupport.sol";
 
+/**
+ * Type representing an USDC token quantity
+ *
+ */
+type UsdcQuantity is uint256;
+
+/**
+ * Type representing a MAI token quantity
+ *
+ */
+type MaiQuantity is uint256;
+
+/**
+ * Type representing an LP USDC/MAI token quantity
+ *
+ */
+type LpQuantity is uint256;
+
+/**
+ * Type representing a PE token quantity
+ *
+ */
+type PeQuantity is uint256;
+
+/**
+ * Type representing a QI token quantity
+ *
+ */
+type QiQuantity is uint256;
+
+/**
+ * Type representing a ratio of PE/USD tokens (always represented using `DECIMALS` decimals)
+ *
+ */
+type PePerUsdcQuantity is uint256;
+
+/**
+ * Type representing a ratio of USD/PE tokens (always represented using `DECIMALS` decimals)
+ *
+ */
+type UsdcPerPeQuantity is uint256;
+
+/**
+ * Type representing an adimensional ratio, expressed with 6 decimals
+ *
+ */
+type RatioWith6Decimals is uint256;
+
+/**
+ * Type representing a role ID
+ *
+ */
+type RoleId is bytes32;
+
 interface IPeronio {
-    /**
-     * Type representing an USDC token quantity
-     *
-     */
-    type UsdcQuantity is uint256;
-
-    /**
-     * Type representing a MAI token quantity
-     *
-     */
-    type MaiQuantity is uint256;
-
-    /**
-     * Type representing an LP USDC/MAI token quantity
-     *
-     */
-    type LpQuantity is uint256;
-
-    /**
-     * Type representing a PE token quantity
-     *
-     */
-    type PeQuantity is uint256;
-
-    /**
-     * Type representing a QI token quantity
-     *
-     */
-    type QiQuantity is uint256;
-
-    /**
-     * Type representing a ratio of PE/USD tokens (always represented using `DECIMALS` decimals)
-     *
-     */
-    type PePerUsdcQuantity is uint256;
-
-    /**
-     * Type representing a ratio of USD/PE tokens (always represented using `DECIMALS` decimals)
-     *
-     */
-    type UsdcPerPeQuantity is uint256;
-
-    /**
-     * Type representing an adimensional ratio, expressed with 6 decimals
-     *
-     */
-    type RatioWith6Decimals is uint256;
-
-    /**
-     * Type representing a role ID
-     *
-     */
-    type RoleId is bytes32;
-
     // --- Events ---------------------------------------------------------------------------------------------------------------------------------------------
 
     /**

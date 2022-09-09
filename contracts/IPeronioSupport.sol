@@ -2,1009 +2,1792 @@ pragma solidity ^0.8.16;
 
 // SPDX-License-Identifier: MIT
 
-import {IPeronio} from "./IPeronio.sol";
+import "./IPeronio.sol";
 import {max, min, mulDiv} from "./Utils.sol";
 
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------
 // --- Standard Numeric Types ---------------------------------------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------
+//
+// Standard Numeric Types (SNTs) can be operated with in the same manner as "normal" numeric types can.
+// This means that SNTs can:
+//   - be added together,
+//   - be subtracted from each other,
+//   - be multiplied by a scalar value (only uint256 in this implementation) - both on the left and on the right,
+//   - the minimum be calculated among them,
+//   - the maximum be calculated among them,
+//   - the "==", "!=", "<=", "<", ">", and ">=" relations established between them, and
+// The mulDiv() interactions will be taken care of later.
+//
 
 // --- USDC ---------------------------------------------------------------------------------------------------------------------------------------------------
-function add(IPeronio.UsdcQuantity left, IPeronio.UsdcQuantity right) pure returns (IPeronio.UsdcQuantity) {
-    return IPeronio.UsdcQuantity.wrap(IPeronio.UsdcQuantity.unwrap(left) + IPeronio.UsdcQuantity.unwrap(right));
+function add(UsdcQuantity left, UsdcQuantity right) pure returns (UsdcQuantity) {
+    return UsdcQuantity.wrap(UsdcQuantity.unwrap(left) + UsdcQuantity.unwrap(right));
 }
 
-function prod(IPeronio.UsdcQuantity val, uint256 x) pure returns (IPeronio.UsdcQuantity) {
-    return IPeronio.UsdcQuantity.wrap(IPeronio.UsdcQuantity.unwrap(val) * x);
+function sub(UsdcQuantity left, UsdcQuantity right) pure returns (UsdcQuantity) {
+    return UsdcQuantity.wrap(UsdcQuantity.unwrap(left) - UsdcQuantity.unwrap(right));
 }
 
-function prod(uint256 x, IPeronio.UsdcQuantity val) pure returns (IPeronio.UsdcQuantity) {
-    return IPeronio.UsdcQuantity.wrap(x * IPeronio.UsdcQuantity.unwrap(val));
+function mul(UsdcQuantity val, uint256 x) pure returns (UsdcQuantity) {
+    return UsdcQuantity.wrap(UsdcQuantity.unwrap(val) * x);
 }
 
-function subtract(IPeronio.UsdcQuantity left, IPeronio.UsdcQuantity right) pure returns (IPeronio.UsdcQuantity) {
-    return IPeronio.UsdcQuantity.wrap(IPeronio.UsdcQuantity.unwrap(left) - IPeronio.UsdcQuantity.unwrap(right));
+function mul(uint256 x, UsdcQuantity val) pure returns (UsdcQuantity) {
+    return UsdcQuantity.wrap(x * UsdcQuantity.unwrap(val));
 }
 
-function min(IPeronio.UsdcQuantity left, IPeronio.UsdcQuantity right) pure returns (IPeronio.UsdcQuantity) {
-    return IPeronio.UsdcQuantity.wrap(min(IPeronio.UsdcQuantity.unwrap(left), IPeronio.UsdcQuantity.unwrap(right)));
+function min(UsdcQuantity left, UsdcQuantity right) pure returns (UsdcQuantity) {
+    return UsdcQuantity.wrap(min(UsdcQuantity.unwrap(left), UsdcQuantity.unwrap(right)));
 }
 
-function max(IPeronio.UsdcQuantity left, IPeronio.UsdcQuantity right) pure returns (IPeronio.UsdcQuantity) {
-    return IPeronio.UsdcQuantity.wrap(max(IPeronio.UsdcQuantity.unwrap(left), IPeronio.UsdcQuantity.unwrap(right)));
+function max(UsdcQuantity left, UsdcQuantity right) pure returns (UsdcQuantity) {
+    return UsdcQuantity.wrap(max(UsdcQuantity.unwrap(left), UsdcQuantity.unwrap(right)));
 }
 
-function eq(IPeronio.UsdcQuantity left, IPeronio.UsdcQuantity right) pure returns (bool) {
-    return IPeronio.UsdcQuantity.unwrap(left) == IPeronio.UsdcQuantity.unwrap(right);
+function eq(UsdcQuantity left, UsdcQuantity right) pure returns (bool) {
+    return UsdcQuantity.unwrap(left) == UsdcQuantity.unwrap(right);
 }
 
-function neq(IPeronio.UsdcQuantity left, IPeronio.UsdcQuantity right) pure returns (bool) {
-    return IPeronio.UsdcQuantity.unwrap(left) != IPeronio.UsdcQuantity.unwrap(right);
+function neq(UsdcQuantity left, UsdcQuantity right) pure returns (bool) {
+    return UsdcQuantity.unwrap(left) != UsdcQuantity.unwrap(right);
 }
 
-function lt(IPeronio.UsdcQuantity left, IPeronio.UsdcQuantity right) pure returns (bool) {
-    return IPeronio.UsdcQuantity.unwrap(left) < IPeronio.UsdcQuantity.unwrap(right);
+function lt(UsdcQuantity left, UsdcQuantity right) pure returns (bool) {
+    return UsdcQuantity.unwrap(left) < UsdcQuantity.unwrap(right);
 }
 
-function gt(IPeronio.UsdcQuantity left, IPeronio.UsdcQuantity right) pure returns (bool) {
-    return IPeronio.UsdcQuantity.unwrap(left) > IPeronio.UsdcQuantity.unwrap(right);
+function gt(UsdcQuantity left, UsdcQuantity right) pure returns (bool) {
+    return UsdcQuantity.unwrap(left) > UsdcQuantity.unwrap(right);
 }
 
-function lte(IPeronio.UsdcQuantity left, IPeronio.UsdcQuantity right) pure returns (bool) {
-    return IPeronio.UsdcQuantity.unwrap(left) <= IPeronio.UsdcQuantity.unwrap(right);
+function lte(UsdcQuantity left, UsdcQuantity right) pure returns (bool) {
+    return UsdcQuantity.unwrap(left) <= UsdcQuantity.unwrap(right);
 }
 
-function gte(IPeronio.UsdcQuantity left, IPeronio.UsdcQuantity right) pure returns (bool) {
-    return IPeronio.UsdcQuantity.unwrap(left) >= IPeronio.UsdcQuantity.unwrap(right);
-}
-
-function mulDiv(
-    IPeronio.UsdcQuantity left,
-    uint256 right,
-    uint256 div
-) pure returns (IPeronio.UsdcQuantity) {
-    return IPeronio.UsdcQuantity.wrap(mulDiv(IPeronio.UsdcQuantity.unwrap(left), right, div));
-}
-
-function mulDiv(
-    uint256 left,
-    IPeronio.UsdcQuantity right,
-    uint256 div
-) pure returns (IPeronio.UsdcQuantity) {
-    return IPeronio.UsdcQuantity.wrap(mulDiv(left, IPeronio.UsdcQuantity.unwrap(right), div));
-}
-
-function mulDiv(
-    IPeronio.UsdcQuantity left,
-    uint256 right,
-    IPeronio.UsdcQuantity div
-) pure returns (uint256) {
-    return mulDiv(IPeronio.UsdcQuantity.unwrap(left), right, IPeronio.UsdcQuantity.unwrap(div));
-}
-
-function mulDiv(
-    uint256 left,
-    IPeronio.UsdcQuantity right,
-    IPeronio.UsdcQuantity div
-) pure returns (uint256) {
-    return mulDiv(left, IPeronio.UsdcQuantity.unwrap(right), IPeronio.UsdcQuantity.unwrap(div));
+function gte(UsdcQuantity left, UsdcQuantity right) pure returns (bool) {
+    return UsdcQuantity.unwrap(left) >= UsdcQuantity.unwrap(right);
 }
 
 // --- MAI ----------------------------------------------------------------------------------------------------------------------------------------------------
-function add(IPeronio.MaiQuantity left, IPeronio.MaiQuantity right) pure returns (IPeronio.MaiQuantity) {
-    return IPeronio.MaiQuantity.wrap(IPeronio.MaiQuantity.unwrap(left) + IPeronio.MaiQuantity.unwrap(right));
+function add(MaiQuantity left, MaiQuantity right) pure returns (MaiQuantity) {
+    return MaiQuantity.wrap(MaiQuantity.unwrap(left) + MaiQuantity.unwrap(right));
 }
 
-function prod(IPeronio.MaiQuantity val, uint256 x) pure returns (IPeronio.MaiQuantity) {
-    return IPeronio.MaiQuantity.wrap(IPeronio.MaiQuantity.unwrap(val) * x);
+function sub(MaiQuantity left, MaiQuantity right) pure returns (MaiQuantity) {
+    return MaiQuantity.wrap(MaiQuantity.unwrap(left) - MaiQuantity.unwrap(right));
 }
 
-function prod(uint256 x, IPeronio.MaiQuantity val) pure returns (IPeronio.MaiQuantity) {
-    return IPeronio.MaiQuantity.wrap(x * IPeronio.MaiQuantity.unwrap(val));
+function mul(MaiQuantity val, uint256 x) pure returns (MaiQuantity) {
+    return MaiQuantity.wrap(MaiQuantity.unwrap(val) * x);
 }
 
-function subtract(IPeronio.MaiQuantity left, IPeronio.MaiQuantity right) pure returns (IPeronio.MaiQuantity) {
-    return IPeronio.MaiQuantity.wrap(IPeronio.MaiQuantity.unwrap(left) - IPeronio.MaiQuantity.unwrap(right));
+function mul(uint256 x, MaiQuantity val) pure returns (MaiQuantity) {
+    return MaiQuantity.wrap(x * MaiQuantity.unwrap(val));
 }
 
-function min(IPeronio.MaiQuantity left, IPeronio.MaiQuantity right) pure returns (IPeronio.MaiQuantity) {
-    return IPeronio.MaiQuantity.wrap(min(IPeronio.MaiQuantity.unwrap(left), IPeronio.MaiQuantity.unwrap(right)));
+function min(MaiQuantity left, MaiQuantity right) pure returns (MaiQuantity) {
+    return MaiQuantity.wrap(min(MaiQuantity.unwrap(left), MaiQuantity.unwrap(right)));
 }
 
-function max(IPeronio.MaiQuantity left, IPeronio.MaiQuantity right) pure returns (IPeronio.MaiQuantity) {
-    return IPeronio.MaiQuantity.wrap(max(IPeronio.MaiQuantity.unwrap(left), IPeronio.MaiQuantity.unwrap(right)));
+function max(MaiQuantity left, MaiQuantity right) pure returns (MaiQuantity) {
+    return MaiQuantity.wrap(max(MaiQuantity.unwrap(left), MaiQuantity.unwrap(right)));
 }
 
-function eq(IPeronio.MaiQuantity left, IPeronio.MaiQuantity right) pure returns (bool) {
-    return IPeronio.MaiQuantity.unwrap(left) == IPeronio.MaiQuantity.unwrap(right);
+function eq(MaiQuantity left, MaiQuantity right) pure returns (bool) {
+    return MaiQuantity.unwrap(left) == MaiQuantity.unwrap(right);
 }
 
-function neq(IPeronio.MaiQuantity left, IPeronio.MaiQuantity right) pure returns (bool) {
-    return IPeronio.MaiQuantity.unwrap(left) != IPeronio.MaiQuantity.unwrap(right);
+function neq(MaiQuantity left, MaiQuantity right) pure returns (bool) {
+    return MaiQuantity.unwrap(left) != MaiQuantity.unwrap(right);
 }
 
-function lt(IPeronio.MaiQuantity left, IPeronio.MaiQuantity right) pure returns (bool) {
-    return IPeronio.MaiQuantity.unwrap(left) < IPeronio.MaiQuantity.unwrap(right);
+function lt(MaiQuantity left, MaiQuantity right) pure returns (bool) {
+    return MaiQuantity.unwrap(left) < MaiQuantity.unwrap(right);
 }
 
-function gt(IPeronio.MaiQuantity left, IPeronio.MaiQuantity right) pure returns (bool) {
-    return IPeronio.MaiQuantity.unwrap(left) > IPeronio.MaiQuantity.unwrap(right);
+function gt(MaiQuantity left, MaiQuantity right) pure returns (bool) {
+    return MaiQuantity.unwrap(left) > MaiQuantity.unwrap(right);
 }
 
-function lte(IPeronio.MaiQuantity left, IPeronio.MaiQuantity right) pure returns (bool) {
-    return IPeronio.MaiQuantity.unwrap(left) <= IPeronio.MaiQuantity.unwrap(right);
+function lte(MaiQuantity left, MaiQuantity right) pure returns (bool) {
+    return MaiQuantity.unwrap(left) <= MaiQuantity.unwrap(right);
 }
 
-function gte(IPeronio.MaiQuantity left, IPeronio.MaiQuantity right) pure returns (bool) {
-    return IPeronio.MaiQuantity.unwrap(left) >= IPeronio.MaiQuantity.unwrap(right);
-}
-
-function mulDiv(
-    IPeronio.MaiQuantity left,
-    uint256 right,
-    uint256 div
-) pure returns (IPeronio.MaiQuantity) {
-    return IPeronio.MaiQuantity.wrap(mulDiv(IPeronio.MaiQuantity.unwrap(left), right, div));
-}
-
-function mulDiv(
-    uint256 left,
-    IPeronio.MaiQuantity right,
-    uint256 div
-) pure returns (IPeronio.MaiQuantity) {
-    return IPeronio.MaiQuantity.wrap(mulDiv(left, IPeronio.MaiQuantity.unwrap(right), div));
-}
-
-function mulDiv(
-    IPeronio.MaiQuantity left,
-    uint256 right,
-    IPeronio.MaiQuantity div
-) pure returns (uint256) {
-    return mulDiv(IPeronio.MaiQuantity.unwrap(left), right, IPeronio.MaiQuantity.unwrap(div));
-}
-
-function mulDiv(
-    uint256 left,
-    IPeronio.MaiQuantity right,
-    IPeronio.MaiQuantity div
-) pure returns (uint256) {
-    return mulDiv(left, IPeronio.MaiQuantity.unwrap(right), IPeronio.MaiQuantity.unwrap(div));
+function gte(MaiQuantity left, MaiQuantity right) pure returns (bool) {
+    return MaiQuantity.unwrap(left) >= MaiQuantity.unwrap(right);
 }
 
 // --- LP USDC/MAI --------------------------------------------------------------------------------------------------------------------------------------------
-function add(IPeronio.LpQuantity left, IPeronio.LpQuantity right) pure returns (IPeronio.LpQuantity) {
-    return IPeronio.LpQuantity.wrap(IPeronio.LpQuantity.unwrap(left) + IPeronio.LpQuantity.unwrap(right));
+function add(LpQuantity left, LpQuantity right) pure returns (LpQuantity) {
+    return LpQuantity.wrap(LpQuantity.unwrap(left) + LpQuantity.unwrap(right));
 }
 
-function prod(IPeronio.LpQuantity val, uint256 x) pure returns (IPeronio.LpQuantity) {
-    return IPeronio.LpQuantity.wrap(IPeronio.LpQuantity.unwrap(val) * x);
+function sub(LpQuantity left, LpQuantity right) pure returns (LpQuantity) {
+    return LpQuantity.wrap(LpQuantity.unwrap(left) - LpQuantity.unwrap(right));
 }
 
-function prod(uint256 x, IPeronio.LpQuantity val) pure returns (IPeronio.LpQuantity) {
-    return IPeronio.LpQuantity.wrap(x * IPeronio.LpQuantity.unwrap(val));
+function mul(LpQuantity val, uint256 x) pure returns (LpQuantity) {
+    return LpQuantity.wrap(LpQuantity.unwrap(val) * x);
 }
 
-function subtract(IPeronio.LpQuantity left, IPeronio.LpQuantity right) pure returns (IPeronio.LpQuantity) {
-    return IPeronio.LpQuantity.wrap(IPeronio.LpQuantity.unwrap(left) - IPeronio.LpQuantity.unwrap(right));
+function mul(uint256 x, LpQuantity val) pure returns (LpQuantity) {
+    return LpQuantity.wrap(x * LpQuantity.unwrap(val));
 }
 
-function min(IPeronio.LpQuantity left, IPeronio.LpQuantity right) pure returns (IPeronio.LpQuantity) {
-    return IPeronio.LpQuantity.wrap(min(IPeronio.LpQuantity.unwrap(left), IPeronio.LpQuantity.unwrap(right)));
+function min(LpQuantity left, LpQuantity right) pure returns (LpQuantity) {
+    return LpQuantity.wrap(min(LpQuantity.unwrap(left), LpQuantity.unwrap(right)));
 }
 
-function max(IPeronio.LpQuantity left, IPeronio.LpQuantity right) pure returns (IPeronio.LpQuantity) {
-    return IPeronio.LpQuantity.wrap(max(IPeronio.LpQuantity.unwrap(left), IPeronio.LpQuantity.unwrap(right)));
+function max(LpQuantity left, LpQuantity right) pure returns (LpQuantity) {
+    return LpQuantity.wrap(max(LpQuantity.unwrap(left), LpQuantity.unwrap(right)));
 }
 
-function eq(IPeronio.LpQuantity left, IPeronio.LpQuantity right) pure returns (bool) {
-    return IPeronio.LpQuantity.unwrap(left) == IPeronio.LpQuantity.unwrap(right);
+function eq(LpQuantity left, LpQuantity right) pure returns (bool) {
+    return LpQuantity.unwrap(left) == LpQuantity.unwrap(right);
 }
 
-function neq(IPeronio.LpQuantity left, IPeronio.LpQuantity right) pure returns (bool) {
-    return IPeronio.LpQuantity.unwrap(left) != IPeronio.LpQuantity.unwrap(right);
+function neq(LpQuantity left, LpQuantity right) pure returns (bool) {
+    return LpQuantity.unwrap(left) != LpQuantity.unwrap(right);
 }
 
-function lt(IPeronio.LpQuantity left, IPeronio.LpQuantity right) pure returns (bool) {
-    return IPeronio.LpQuantity.unwrap(left) < IPeronio.LpQuantity.unwrap(right);
+function lt(LpQuantity left, LpQuantity right) pure returns (bool) {
+    return LpQuantity.unwrap(left) < LpQuantity.unwrap(right);
 }
 
-function gt(IPeronio.LpQuantity left, IPeronio.LpQuantity right) pure returns (bool) {
-    return IPeronio.LpQuantity.unwrap(left) > IPeronio.LpQuantity.unwrap(right);
+function gt(LpQuantity left, LpQuantity right) pure returns (bool) {
+    return LpQuantity.unwrap(left) > LpQuantity.unwrap(right);
 }
 
-function lte(IPeronio.LpQuantity left, IPeronio.LpQuantity right) pure returns (bool) {
-    return IPeronio.LpQuantity.unwrap(left) <= IPeronio.LpQuantity.unwrap(right);
+function lte(LpQuantity left, LpQuantity right) pure returns (bool) {
+    return LpQuantity.unwrap(left) <= LpQuantity.unwrap(right);
 }
 
-function gte(IPeronio.LpQuantity left, IPeronio.LpQuantity right) pure returns (bool) {
-    return IPeronio.LpQuantity.unwrap(left) >= IPeronio.LpQuantity.unwrap(right);
-}
-
-function mulDiv(
-    IPeronio.LpQuantity left,
-    uint256 right,
-    uint256 div
-) pure returns (IPeronio.LpQuantity) {
-    return IPeronio.LpQuantity.wrap(mulDiv(IPeronio.LpQuantity.unwrap(left), right, div));
-}
-
-function mulDiv(
-    uint256 left,
-    IPeronio.LpQuantity right,
-    uint256 div
-) pure returns (IPeronio.LpQuantity) {
-    return IPeronio.LpQuantity.wrap(mulDiv(left, IPeronio.LpQuantity.unwrap(right), div));
-}
-
-function mulDiv(
-    IPeronio.LpQuantity left,
-    uint256 right,
-    IPeronio.LpQuantity div
-) pure returns (uint256) {
-    return mulDiv(IPeronio.LpQuantity.unwrap(left), right, IPeronio.LpQuantity.unwrap(div));
-}
-
-function mulDiv(
-    uint256 left,
-    IPeronio.LpQuantity right,
-    IPeronio.LpQuantity div
-) pure returns (uint256) {
-    return mulDiv(left, IPeronio.LpQuantity.unwrap(right), IPeronio.LpQuantity.unwrap(div));
+function gte(LpQuantity left, LpQuantity right) pure returns (bool) {
+    return LpQuantity.unwrap(left) >= LpQuantity.unwrap(right);
 }
 
 // --- PE -----------------------------------------------------------------------------------------------------------------------------------------------------
-function add(IPeronio.PeQuantity left, IPeronio.PeQuantity right) pure returns (IPeronio.PeQuantity) {
-    return IPeronio.PeQuantity.wrap(IPeronio.PeQuantity.unwrap(left) + IPeronio.PeQuantity.unwrap(right));
+function add(PeQuantity left, PeQuantity right) pure returns (PeQuantity) {
+    return PeQuantity.wrap(PeQuantity.unwrap(left) + PeQuantity.unwrap(right));
 }
 
-function prod(IPeronio.PeQuantity val, uint256 x) pure returns (IPeronio.PeQuantity) {
-    return IPeronio.PeQuantity.wrap(IPeronio.PeQuantity.unwrap(val) * x);
+function sub(PeQuantity left, PeQuantity right) pure returns (PeQuantity) {
+    return PeQuantity.wrap(PeQuantity.unwrap(left) - PeQuantity.unwrap(right));
 }
 
-function prod(uint256 x, IPeronio.PeQuantity val) pure returns (IPeronio.PeQuantity) {
-    return IPeronio.PeQuantity.wrap(x * IPeronio.PeQuantity.unwrap(val));
+function mul(PeQuantity val, uint256 x) pure returns (PeQuantity) {
+    return PeQuantity.wrap(PeQuantity.unwrap(val) * x);
 }
 
-function subtract(IPeronio.PeQuantity left, IPeronio.PeQuantity right) pure returns (IPeronio.PeQuantity) {
-    return IPeronio.PeQuantity.wrap(IPeronio.PeQuantity.unwrap(left) - IPeronio.PeQuantity.unwrap(right));
+function mul(uint256 x, PeQuantity val) pure returns (PeQuantity) {
+    return PeQuantity.wrap(x * PeQuantity.unwrap(val));
 }
 
-function min(IPeronio.PeQuantity left, IPeronio.PeQuantity right) pure returns (IPeronio.PeQuantity) {
-    return IPeronio.PeQuantity.wrap(min(IPeronio.PeQuantity.unwrap(left), IPeronio.PeQuantity.unwrap(right)));
+function min(PeQuantity left, PeQuantity right) pure returns (PeQuantity) {
+    return PeQuantity.wrap(min(PeQuantity.unwrap(left), PeQuantity.unwrap(right)));
 }
 
-function max(IPeronio.PeQuantity left, IPeronio.PeQuantity right) pure returns (IPeronio.PeQuantity) {
-    return IPeronio.PeQuantity.wrap(max(IPeronio.PeQuantity.unwrap(left), IPeronio.PeQuantity.unwrap(right)));
+function max(PeQuantity left, PeQuantity right) pure returns (PeQuantity) {
+    return PeQuantity.wrap(max(PeQuantity.unwrap(left), PeQuantity.unwrap(right)));
 }
 
-function eq(IPeronio.PeQuantity left, IPeronio.PeQuantity right) pure returns (bool) {
-    return IPeronio.PeQuantity.unwrap(left) == IPeronio.PeQuantity.unwrap(right);
+function eq(PeQuantity left, PeQuantity right) pure returns (bool) {
+    return PeQuantity.unwrap(left) == PeQuantity.unwrap(right);
 }
 
-function neq(IPeronio.PeQuantity left, IPeronio.PeQuantity right) pure returns (bool) {
-    return IPeronio.PeQuantity.unwrap(left) != IPeronio.PeQuantity.unwrap(right);
+function neq(PeQuantity left, PeQuantity right) pure returns (bool) {
+    return PeQuantity.unwrap(left) != PeQuantity.unwrap(right);
 }
 
-function lt(IPeronio.PeQuantity left, IPeronio.PeQuantity right) pure returns (bool) {
-    return IPeronio.PeQuantity.unwrap(left) < IPeronio.PeQuantity.unwrap(right);
+function lt(PeQuantity left, PeQuantity right) pure returns (bool) {
+    return PeQuantity.unwrap(left) < PeQuantity.unwrap(right);
 }
 
-function gt(IPeronio.PeQuantity left, IPeronio.PeQuantity right) pure returns (bool) {
-    return IPeronio.PeQuantity.unwrap(left) > IPeronio.PeQuantity.unwrap(right);
+function gt(PeQuantity left, PeQuantity right) pure returns (bool) {
+    return PeQuantity.unwrap(left) > PeQuantity.unwrap(right);
 }
 
-function lte(IPeronio.PeQuantity left, IPeronio.PeQuantity right) pure returns (bool) {
-    return IPeronio.PeQuantity.unwrap(left) <= IPeronio.PeQuantity.unwrap(right);
+function lte(PeQuantity left, PeQuantity right) pure returns (bool) {
+    return PeQuantity.unwrap(left) <= PeQuantity.unwrap(right);
 }
 
-function gte(IPeronio.PeQuantity left, IPeronio.PeQuantity right) pure returns (bool) {
-    return IPeronio.PeQuantity.unwrap(left) >= IPeronio.PeQuantity.unwrap(right);
-}
-
-function mulDiv(
-    IPeronio.PeQuantity left,
-    uint256 right,
-    uint256 div
-) pure returns (IPeronio.PeQuantity) {
-    return IPeronio.PeQuantity.wrap(mulDiv(IPeronio.PeQuantity.unwrap(left), right, div));
-}
-
-function mulDiv(
-    uint256 left,
-    IPeronio.PeQuantity right,
-    uint256 div
-) pure returns (IPeronio.PeQuantity) {
-    return IPeronio.PeQuantity.wrap(mulDiv(left, IPeronio.PeQuantity.unwrap(right), div));
-}
-
-function mulDiv(
-    IPeronio.PeQuantity left,
-    uint256 right,
-    IPeronio.PeQuantity div
-) pure returns (uint256) {
-    return mulDiv(IPeronio.PeQuantity.unwrap(left), right, IPeronio.PeQuantity.unwrap(div));
-}
-
-function mulDiv(
-    uint256 left,
-    IPeronio.PeQuantity right,
-    IPeronio.PeQuantity div
-) pure returns (uint256) {
-    return mulDiv(left, IPeronio.PeQuantity.unwrap(right), IPeronio.PeQuantity.unwrap(div));
+function gte(PeQuantity left, PeQuantity right) pure returns (bool) {
+    return PeQuantity.unwrap(left) >= PeQuantity.unwrap(right);
 }
 
 // --- QI -----------------------------------------------------------------------------------------------------------------------------------------------------
-function add(IPeronio.QiQuantity left, IPeronio.QiQuantity right) pure returns (IPeronio.QiQuantity) {
-    return IPeronio.QiQuantity.wrap(IPeronio.QiQuantity.unwrap(left) + IPeronio.QiQuantity.unwrap(right));
+function add(QiQuantity left, QiQuantity right) pure returns (QiQuantity) {
+    return QiQuantity.wrap(QiQuantity.unwrap(left) + QiQuantity.unwrap(right));
 }
 
-function prod(IPeronio.QiQuantity val, uint256 x) pure returns (IPeronio.QiQuantity) {
-    return IPeronio.QiQuantity.wrap(IPeronio.QiQuantity.unwrap(val) * x);
+function sub(QiQuantity left, QiQuantity right) pure returns (QiQuantity) {
+    return QiQuantity.wrap(QiQuantity.unwrap(left) - QiQuantity.unwrap(right));
 }
 
-function prod(uint256 x, IPeronio.QiQuantity val) pure returns (IPeronio.QiQuantity) {
-    return IPeronio.QiQuantity.wrap(x * IPeronio.QiQuantity.unwrap(val));
+function mul(QiQuantity val, uint256 x) pure returns (QiQuantity) {
+    return QiQuantity.wrap(QiQuantity.unwrap(val) * x);
 }
 
-function subtract(IPeronio.QiQuantity left, IPeronio.QiQuantity right) pure returns (IPeronio.QiQuantity) {
-    return IPeronio.QiQuantity.wrap(IPeronio.QiQuantity.unwrap(left) - IPeronio.QiQuantity.unwrap(right));
+function mul(uint256 x, QiQuantity val) pure returns (QiQuantity) {
+    return QiQuantity.wrap(x * QiQuantity.unwrap(val));
 }
 
-function min(IPeronio.QiQuantity left, IPeronio.QiQuantity right) pure returns (IPeronio.QiQuantity) {
-    return IPeronio.QiQuantity.wrap(min(IPeronio.QiQuantity.unwrap(left), IPeronio.QiQuantity.unwrap(right)));
+function min(QiQuantity left, QiQuantity right) pure returns (QiQuantity) {
+    return QiQuantity.wrap(min(QiQuantity.unwrap(left), QiQuantity.unwrap(right)));
 }
 
-function max(IPeronio.QiQuantity left, IPeronio.QiQuantity right) pure returns (IPeronio.QiQuantity) {
-    return IPeronio.QiQuantity.wrap(max(IPeronio.QiQuantity.unwrap(left), IPeronio.QiQuantity.unwrap(right)));
+function max(QiQuantity left, QiQuantity right) pure returns (QiQuantity) {
+    return QiQuantity.wrap(max(QiQuantity.unwrap(left), QiQuantity.unwrap(right)));
 }
 
-function eq(IPeronio.QiQuantity left, IPeronio.QiQuantity right) pure returns (bool) {
-    return IPeronio.QiQuantity.unwrap(left) == IPeronio.QiQuantity.unwrap(right);
+function eq(QiQuantity left, QiQuantity right) pure returns (bool) {
+    return QiQuantity.unwrap(left) == QiQuantity.unwrap(right);
 }
 
-function neq(IPeronio.QiQuantity left, IPeronio.QiQuantity right) pure returns (bool) {
-    return IPeronio.QiQuantity.unwrap(left) != IPeronio.QiQuantity.unwrap(right);
+function neq(QiQuantity left, QiQuantity right) pure returns (bool) {
+    return QiQuantity.unwrap(left) != QiQuantity.unwrap(right);
 }
 
-function lt(IPeronio.QiQuantity left, IPeronio.QiQuantity right) pure returns (bool) {
-    return IPeronio.QiQuantity.unwrap(left) < IPeronio.QiQuantity.unwrap(right);
+function lt(QiQuantity left, QiQuantity right) pure returns (bool) {
+    return QiQuantity.unwrap(left) < QiQuantity.unwrap(right);
 }
 
-function gt(IPeronio.QiQuantity left, IPeronio.QiQuantity right) pure returns (bool) {
-    return IPeronio.QiQuantity.unwrap(left) > IPeronio.QiQuantity.unwrap(right);
+function gt(QiQuantity left, QiQuantity right) pure returns (bool) {
+    return QiQuantity.unwrap(left) > QiQuantity.unwrap(right);
 }
 
-function lte(IPeronio.QiQuantity left, IPeronio.QiQuantity right) pure returns (bool) {
-    return IPeronio.QiQuantity.unwrap(left) <= IPeronio.QiQuantity.unwrap(right);
+function lte(QiQuantity left, QiQuantity right) pure returns (bool) {
+    return QiQuantity.unwrap(left) <= QiQuantity.unwrap(right);
 }
 
-function gte(IPeronio.QiQuantity left, IPeronio.QiQuantity right) pure returns (bool) {
-    return IPeronio.QiQuantity.unwrap(left) >= IPeronio.QiQuantity.unwrap(right);
-}
-
-function mulDiv(
-    IPeronio.QiQuantity left,
-    uint256 right,
-    uint256 div
-) pure returns (IPeronio.QiQuantity) {
-    return IPeronio.QiQuantity.wrap(mulDiv(IPeronio.QiQuantity.unwrap(left), right, div));
-}
-
-function mulDiv(
-    uint256 left,
-    IPeronio.QiQuantity right,
-    uint256 div
-) pure returns (IPeronio.QiQuantity) {
-    return IPeronio.QiQuantity.wrap(mulDiv(left, IPeronio.QiQuantity.unwrap(right), div));
-}
-
-function mulDiv(
-    IPeronio.QiQuantity left,
-    uint256 right,
-    IPeronio.QiQuantity div
-) pure returns (uint256) {
-    return mulDiv(IPeronio.QiQuantity.unwrap(left), right, IPeronio.QiQuantity.unwrap(div));
-}
-
-function mulDiv(
-    uint256 left,
-    IPeronio.QiQuantity right,
-    IPeronio.QiQuantity div
-) pure returns (uint256) {
-    return mulDiv(left, IPeronio.QiQuantity.unwrap(right), IPeronio.QiQuantity.unwrap(div));
+function gte(QiQuantity left, QiQuantity right) pure returns (bool) {
+    return QiQuantity.unwrap(left) >= QiQuantity.unwrap(right);
 }
 
 // --- PE/USDC ------------------------------------------------------------------------------------------------------------------------------------------------
-function add(IPeronio.PePerUsdcQuantity left, IPeronio.PePerUsdcQuantity right) pure returns (IPeronio.PePerUsdcQuantity) {
-    return IPeronio.PePerUsdcQuantity.wrap(IPeronio.PePerUsdcQuantity.unwrap(left) + IPeronio.PePerUsdcQuantity.unwrap(right));
+function add(PePerUsdcQuantity left, PePerUsdcQuantity right) pure returns (PePerUsdcQuantity) {
+    return PePerUsdcQuantity.wrap(PePerUsdcQuantity.unwrap(left) + PePerUsdcQuantity.unwrap(right));
 }
 
-function prod(IPeronio.PePerUsdcQuantity val, uint256 x) pure returns (IPeronio.PePerUsdcQuantity) {
-    return IPeronio.PePerUsdcQuantity.wrap(IPeronio.PePerUsdcQuantity.unwrap(val) * x);
+function sub(PePerUsdcQuantity left, PePerUsdcQuantity right) pure returns (PePerUsdcQuantity) {
+    return PePerUsdcQuantity.wrap(PePerUsdcQuantity.unwrap(left) - PePerUsdcQuantity.unwrap(right));
 }
 
-function prod(uint256 x, IPeronio.PePerUsdcQuantity val) pure returns (IPeronio.PePerUsdcQuantity) {
-    return IPeronio.PePerUsdcQuantity.wrap(x * IPeronio.PePerUsdcQuantity.unwrap(val));
+function mul(PePerUsdcQuantity val, uint256 x) pure returns (PePerUsdcQuantity) {
+    return PePerUsdcQuantity.wrap(PePerUsdcQuantity.unwrap(val) * x);
 }
 
-function subtract(IPeronio.PePerUsdcQuantity left, IPeronio.PePerUsdcQuantity right) pure returns (IPeronio.PePerUsdcQuantity) {
-    return IPeronio.PePerUsdcQuantity.wrap(IPeronio.PePerUsdcQuantity.unwrap(left) - IPeronio.PePerUsdcQuantity.unwrap(right));
+function mul(uint256 x, PePerUsdcQuantity val) pure returns (PePerUsdcQuantity) {
+    return PePerUsdcQuantity.wrap(x * PePerUsdcQuantity.unwrap(val));
 }
 
-function min(IPeronio.PePerUsdcQuantity left, IPeronio.PePerUsdcQuantity right) pure returns (IPeronio.PePerUsdcQuantity) {
-    return IPeronio.PePerUsdcQuantity.wrap(min(IPeronio.PePerUsdcQuantity.unwrap(left), IPeronio.PePerUsdcQuantity.unwrap(right)));
+function min(PePerUsdcQuantity left, PePerUsdcQuantity right) pure returns (PePerUsdcQuantity) {
+    return PePerUsdcQuantity.wrap(min(PePerUsdcQuantity.unwrap(left), PePerUsdcQuantity.unwrap(right)));
 }
 
-function max(IPeronio.PePerUsdcQuantity left, IPeronio.PePerUsdcQuantity right) pure returns (IPeronio.PePerUsdcQuantity) {
-    return IPeronio.PePerUsdcQuantity.wrap(max(IPeronio.PePerUsdcQuantity.unwrap(left), IPeronio.PePerUsdcQuantity.unwrap(right)));
+function max(PePerUsdcQuantity left, PePerUsdcQuantity right) pure returns (PePerUsdcQuantity) {
+    return PePerUsdcQuantity.wrap(max(PePerUsdcQuantity.unwrap(left), PePerUsdcQuantity.unwrap(right)));
 }
 
-function eq(IPeronio.PePerUsdcQuantity left, IPeronio.PePerUsdcQuantity right) pure returns (bool) {
-    return IPeronio.PePerUsdcQuantity.unwrap(left) == IPeronio.PePerUsdcQuantity.unwrap(right);
+function eq(PePerUsdcQuantity left, PePerUsdcQuantity right) pure returns (bool) {
+    return PePerUsdcQuantity.unwrap(left) == PePerUsdcQuantity.unwrap(right);
 }
 
-function neq(IPeronio.PePerUsdcQuantity left, IPeronio.PePerUsdcQuantity right) pure returns (bool) {
-    return IPeronio.PePerUsdcQuantity.unwrap(left) != IPeronio.PePerUsdcQuantity.unwrap(right);
+function neq(PePerUsdcQuantity left, PePerUsdcQuantity right) pure returns (bool) {
+    return PePerUsdcQuantity.unwrap(left) != PePerUsdcQuantity.unwrap(right);
 }
 
-function lt(IPeronio.PePerUsdcQuantity left, IPeronio.PePerUsdcQuantity right) pure returns (bool) {
-    return IPeronio.PePerUsdcQuantity.unwrap(left) < IPeronio.PePerUsdcQuantity.unwrap(right);
+function lt(PePerUsdcQuantity left, PePerUsdcQuantity right) pure returns (bool) {
+    return PePerUsdcQuantity.unwrap(left) < PePerUsdcQuantity.unwrap(right);
 }
 
-function gt(IPeronio.PePerUsdcQuantity left, IPeronio.PePerUsdcQuantity right) pure returns (bool) {
-    return IPeronio.PePerUsdcQuantity.unwrap(left) > IPeronio.PePerUsdcQuantity.unwrap(right);
+function gt(PePerUsdcQuantity left, PePerUsdcQuantity right) pure returns (bool) {
+    return PePerUsdcQuantity.unwrap(left) > PePerUsdcQuantity.unwrap(right);
 }
 
-function lte(IPeronio.PePerUsdcQuantity left, IPeronio.PePerUsdcQuantity right) pure returns (bool) {
-    return IPeronio.PePerUsdcQuantity.unwrap(left) <= IPeronio.PePerUsdcQuantity.unwrap(right);
+function lte(PePerUsdcQuantity left, PePerUsdcQuantity right) pure returns (bool) {
+    return PePerUsdcQuantity.unwrap(left) <= PePerUsdcQuantity.unwrap(right);
 }
 
-function gte(IPeronio.PePerUsdcQuantity left, IPeronio.PePerUsdcQuantity right) pure returns (bool) {
-    return IPeronio.PePerUsdcQuantity.unwrap(left) >= IPeronio.PePerUsdcQuantity.unwrap(right);
-}
-
-function mulDiv(
-    IPeronio.PePerUsdcQuantity left,
-    uint256 right,
-    uint256 div
-) pure returns (IPeronio.PePerUsdcQuantity) {
-    return IPeronio.PePerUsdcQuantity.wrap(mulDiv(IPeronio.PePerUsdcQuantity.unwrap(left), right, div));
-}
-
-function mulDiv(
-    uint256 left,
-    IPeronio.PePerUsdcQuantity right,
-    uint256 div
-) pure returns (IPeronio.PePerUsdcQuantity) {
-    return IPeronio.PePerUsdcQuantity.wrap(mulDiv(left, IPeronio.PePerUsdcQuantity.unwrap(right), div));
-}
-
-function mulDiv(
-    IPeronio.PePerUsdcQuantity left,
-    uint256 right,
-    IPeronio.PePerUsdcQuantity div
-) pure returns (uint256) {
-    return mulDiv(IPeronio.PePerUsdcQuantity.unwrap(left), right, IPeronio.PePerUsdcQuantity.unwrap(div));
-}
-
-function mulDiv(
-    uint256 left,
-    IPeronio.PePerUsdcQuantity right,
-    IPeronio.PePerUsdcQuantity div
-) pure returns (uint256) {
-    return mulDiv(left, IPeronio.PePerUsdcQuantity.unwrap(right), IPeronio.PePerUsdcQuantity.unwrap(div));
+function gte(PePerUsdcQuantity left, PePerUsdcQuantity right) pure returns (bool) {
+    return PePerUsdcQuantity.unwrap(left) >= PePerUsdcQuantity.unwrap(right);
 }
 
 // --- USDC/PE ------------------------------------------------------------------------------------------------------------------------------------------------
-function add(IPeronio.UsdcPerPeQuantity left, IPeronio.UsdcPerPeQuantity right) pure returns (IPeronio.UsdcPerPeQuantity) {
-    return IPeronio.UsdcPerPeQuantity.wrap(IPeronio.UsdcPerPeQuantity.unwrap(left) + IPeronio.UsdcPerPeQuantity.unwrap(right));
+function add(UsdcPerPeQuantity left, UsdcPerPeQuantity right) pure returns (UsdcPerPeQuantity) {
+    return UsdcPerPeQuantity.wrap(UsdcPerPeQuantity.unwrap(left) + UsdcPerPeQuantity.unwrap(right));
 }
 
-function prod(IPeronio.UsdcPerPeQuantity val, uint256 x) pure returns (IPeronio.UsdcPerPeQuantity) {
-    return IPeronio.UsdcPerPeQuantity.wrap(IPeronio.UsdcPerPeQuantity.unwrap(val) * x);
+function sub(UsdcPerPeQuantity left, UsdcPerPeQuantity right) pure returns (UsdcPerPeQuantity) {
+    return UsdcPerPeQuantity.wrap(UsdcPerPeQuantity.unwrap(left) - UsdcPerPeQuantity.unwrap(right));
 }
 
-function prod(uint256 x, IPeronio.UsdcPerPeQuantity val) pure returns (IPeronio.UsdcPerPeQuantity) {
-    return IPeronio.UsdcPerPeQuantity.wrap(x * IPeronio.UsdcPerPeQuantity.unwrap(val));
+function mul(UsdcPerPeQuantity val, uint256 x) pure returns (UsdcPerPeQuantity) {
+    return UsdcPerPeQuantity.wrap(UsdcPerPeQuantity.unwrap(val) * x);
 }
 
-function subtract(IPeronio.UsdcPerPeQuantity left, IPeronio.UsdcPerPeQuantity right) pure returns (IPeronio.UsdcPerPeQuantity) {
-    return IPeronio.UsdcPerPeQuantity.wrap(IPeronio.UsdcPerPeQuantity.unwrap(left) - IPeronio.UsdcPerPeQuantity.unwrap(right));
+function mul(uint256 x, UsdcPerPeQuantity val) pure returns (UsdcPerPeQuantity) {
+    return UsdcPerPeQuantity.wrap(x * UsdcPerPeQuantity.unwrap(val));
 }
 
-function min(IPeronio.UsdcPerPeQuantity left, IPeronio.UsdcPerPeQuantity right) pure returns (IPeronio.UsdcPerPeQuantity) {
-    return IPeronio.UsdcPerPeQuantity.wrap(min(IPeronio.UsdcPerPeQuantity.unwrap(left), IPeronio.UsdcPerPeQuantity.unwrap(right)));
+function min(UsdcPerPeQuantity left, UsdcPerPeQuantity right) pure returns (UsdcPerPeQuantity) {
+    return UsdcPerPeQuantity.wrap(min(UsdcPerPeQuantity.unwrap(left), UsdcPerPeQuantity.unwrap(right)));
 }
 
-function max(IPeronio.UsdcPerPeQuantity left, IPeronio.UsdcPerPeQuantity right) pure returns (IPeronio.UsdcPerPeQuantity) {
-    return IPeronio.UsdcPerPeQuantity.wrap(max(IPeronio.UsdcPerPeQuantity.unwrap(left), IPeronio.UsdcPerPeQuantity.unwrap(right)));
+function max(UsdcPerPeQuantity left, UsdcPerPeQuantity right) pure returns (UsdcPerPeQuantity) {
+    return UsdcPerPeQuantity.wrap(max(UsdcPerPeQuantity.unwrap(left), UsdcPerPeQuantity.unwrap(right)));
 }
 
-function eq(IPeronio.UsdcPerPeQuantity left, IPeronio.UsdcPerPeQuantity right) pure returns (bool) {
-    return IPeronio.UsdcPerPeQuantity.unwrap(left) == IPeronio.UsdcPerPeQuantity.unwrap(right);
+function eq(UsdcPerPeQuantity left, UsdcPerPeQuantity right) pure returns (bool) {
+    return UsdcPerPeQuantity.unwrap(left) == UsdcPerPeQuantity.unwrap(right);
 }
 
-function neq(IPeronio.UsdcPerPeQuantity left, IPeronio.UsdcPerPeQuantity right) pure returns (bool) {
-    return IPeronio.UsdcPerPeQuantity.unwrap(left) != IPeronio.UsdcPerPeQuantity.unwrap(right);
+function neq(UsdcPerPeQuantity left, UsdcPerPeQuantity right) pure returns (bool) {
+    return UsdcPerPeQuantity.unwrap(left) != UsdcPerPeQuantity.unwrap(right);
 }
 
-function lt(IPeronio.UsdcPerPeQuantity left, IPeronio.UsdcPerPeQuantity right) pure returns (bool) {
-    return IPeronio.UsdcPerPeQuantity.unwrap(left) < IPeronio.UsdcPerPeQuantity.unwrap(right);
+function lt(UsdcPerPeQuantity left, UsdcPerPeQuantity right) pure returns (bool) {
+    return UsdcPerPeQuantity.unwrap(left) < UsdcPerPeQuantity.unwrap(right);
 }
 
-function gt(IPeronio.UsdcPerPeQuantity left, IPeronio.UsdcPerPeQuantity right) pure returns (bool) {
-    return IPeronio.UsdcPerPeQuantity.unwrap(left) > IPeronio.UsdcPerPeQuantity.unwrap(right);
+function gt(UsdcPerPeQuantity left, UsdcPerPeQuantity right) pure returns (bool) {
+    return UsdcPerPeQuantity.unwrap(left) > UsdcPerPeQuantity.unwrap(right);
 }
 
-function lte(IPeronio.UsdcPerPeQuantity left, IPeronio.UsdcPerPeQuantity right) pure returns (bool) {
-    return IPeronio.UsdcPerPeQuantity.unwrap(left) <= IPeronio.UsdcPerPeQuantity.unwrap(right);
+function lte(UsdcPerPeQuantity left, UsdcPerPeQuantity right) pure returns (bool) {
+    return UsdcPerPeQuantity.unwrap(left) <= UsdcPerPeQuantity.unwrap(right);
 }
 
-function gte(IPeronio.UsdcPerPeQuantity left, IPeronio.UsdcPerPeQuantity right) pure returns (bool) {
-    return IPeronio.UsdcPerPeQuantity.unwrap(left) >= IPeronio.UsdcPerPeQuantity.unwrap(right);
-}
-
-function mulDiv(
-    IPeronio.UsdcPerPeQuantity left,
-    uint256 right,
-    uint256 div
-) pure returns (IPeronio.UsdcPerPeQuantity) {
-    return IPeronio.UsdcPerPeQuantity.wrap(mulDiv(IPeronio.UsdcPerPeQuantity.unwrap(left), right, div));
-}
-
-function mulDiv(
-    uint256 left,
-    IPeronio.UsdcPerPeQuantity right,
-    uint256 div
-) pure returns (IPeronio.UsdcPerPeQuantity) {
-    return IPeronio.UsdcPerPeQuantity.wrap(mulDiv(left, IPeronio.UsdcPerPeQuantity.unwrap(right), div));
-}
-
-function mulDiv(
-    IPeronio.UsdcPerPeQuantity left,
-    uint256 right,
-    IPeronio.UsdcPerPeQuantity div
-) pure returns (uint256) {
-    return mulDiv(IPeronio.UsdcPerPeQuantity.unwrap(left), right, IPeronio.UsdcPerPeQuantity.unwrap(div));
-}
-
-function mulDiv(
-    uint256 left,
-    IPeronio.UsdcPerPeQuantity right,
-    IPeronio.UsdcPerPeQuantity div
-) pure returns (uint256) {
-    return mulDiv(left, IPeronio.UsdcPerPeQuantity.unwrap(right), IPeronio.UsdcPerPeQuantity.unwrap(div));
+function gte(UsdcPerPeQuantity left, UsdcPerPeQuantity right) pure returns (bool) {
+    return UsdcPerPeQuantity.unwrap(left) >= UsdcPerPeQuantity.unwrap(right);
 }
 
 // --- 6-decimals ratio ---------------------------------------------------------------------------------------------------------------------------------------
-function add(IPeronio.RatioWith6Decimals left, IPeronio.RatioWith6Decimals right) pure returns (IPeronio.RatioWith6Decimals) {
-    return IPeronio.RatioWith6Decimals.wrap(IPeronio.RatioWith6Decimals.unwrap(left) + IPeronio.RatioWith6Decimals.unwrap(right));
+function add(RatioWith6Decimals left, RatioWith6Decimals right) pure returns (RatioWith6Decimals) {
+    return RatioWith6Decimals.wrap(RatioWith6Decimals.unwrap(left) + RatioWith6Decimals.unwrap(right));
 }
 
-function prod(IPeronio.RatioWith6Decimals val, uint256 x) pure returns (IPeronio.RatioWith6Decimals) {
-    return IPeronio.RatioWith6Decimals.wrap(IPeronio.RatioWith6Decimals.unwrap(val) * x);
+function sub(RatioWith6Decimals left, RatioWith6Decimals right) pure returns (RatioWith6Decimals) {
+    return RatioWith6Decimals.wrap(RatioWith6Decimals.unwrap(left) - RatioWith6Decimals.unwrap(right));
 }
 
-function prod(uint256 x, IPeronio.RatioWith6Decimals val) pure returns (IPeronio.RatioWith6Decimals) {
-    return IPeronio.RatioWith6Decimals.wrap(x * IPeronio.RatioWith6Decimals.unwrap(val));
+function mul(RatioWith6Decimals val, uint256 x) pure returns (RatioWith6Decimals) {
+    return RatioWith6Decimals.wrap(RatioWith6Decimals.unwrap(val) * x);
 }
 
-function subtract(IPeronio.RatioWith6Decimals left, IPeronio.RatioWith6Decimals right) pure returns (IPeronio.RatioWith6Decimals) {
-    return IPeronio.RatioWith6Decimals.wrap(IPeronio.RatioWith6Decimals.unwrap(left) - IPeronio.RatioWith6Decimals.unwrap(right));
+function mul(uint256 x, RatioWith6Decimals val) pure returns (RatioWith6Decimals) {
+    return RatioWith6Decimals.wrap(x * RatioWith6Decimals.unwrap(val));
 }
 
-function min(IPeronio.RatioWith6Decimals left, IPeronio.RatioWith6Decimals right) pure returns (IPeronio.RatioWith6Decimals) {
-    return IPeronio.RatioWith6Decimals.wrap(min(IPeronio.RatioWith6Decimals.unwrap(left), IPeronio.RatioWith6Decimals.unwrap(right)));
+function min(RatioWith6Decimals left, RatioWith6Decimals right) pure returns (RatioWith6Decimals) {
+    return RatioWith6Decimals.wrap(min(RatioWith6Decimals.unwrap(left), RatioWith6Decimals.unwrap(right)));
 }
 
-function max(IPeronio.RatioWith6Decimals left, IPeronio.RatioWith6Decimals right) pure returns (IPeronio.RatioWith6Decimals) {
-    return IPeronio.RatioWith6Decimals.wrap(max(IPeronio.RatioWith6Decimals.unwrap(left), IPeronio.RatioWith6Decimals.unwrap(right)));
+function max(RatioWith6Decimals left, RatioWith6Decimals right) pure returns (RatioWith6Decimals) {
+    return RatioWith6Decimals.wrap(max(RatioWith6Decimals.unwrap(left), RatioWith6Decimals.unwrap(right)));
 }
 
-function eq(IPeronio.RatioWith6Decimals left, IPeronio.RatioWith6Decimals right) pure returns (bool) {
-    return IPeronio.RatioWith6Decimals.unwrap(left) == IPeronio.RatioWith6Decimals.unwrap(right);
+function eq(RatioWith6Decimals left, RatioWith6Decimals right) pure returns (bool) {
+    return RatioWith6Decimals.unwrap(left) == RatioWith6Decimals.unwrap(right);
 }
 
-function neq(IPeronio.RatioWith6Decimals left, IPeronio.RatioWith6Decimals right) pure returns (bool) {
-    return IPeronio.RatioWith6Decimals.unwrap(left) != IPeronio.RatioWith6Decimals.unwrap(right);
+function neq(RatioWith6Decimals left, RatioWith6Decimals right) pure returns (bool) {
+    return RatioWith6Decimals.unwrap(left) != RatioWith6Decimals.unwrap(right);
 }
 
-function lt(IPeronio.RatioWith6Decimals left, IPeronio.RatioWith6Decimals right) pure returns (bool) {
-    return IPeronio.RatioWith6Decimals.unwrap(left) < IPeronio.RatioWith6Decimals.unwrap(right);
+function lt(RatioWith6Decimals left, RatioWith6Decimals right) pure returns (bool) {
+    return RatioWith6Decimals.unwrap(left) < RatioWith6Decimals.unwrap(right);
 }
 
-function gt(IPeronio.RatioWith6Decimals left, IPeronio.RatioWith6Decimals right) pure returns (bool) {
-    return IPeronio.RatioWith6Decimals.unwrap(left) > IPeronio.RatioWith6Decimals.unwrap(right);
+function gt(RatioWith6Decimals left, RatioWith6Decimals right) pure returns (bool) {
+    return RatioWith6Decimals.unwrap(left) > RatioWith6Decimals.unwrap(right);
 }
 
-function lte(IPeronio.RatioWith6Decimals left, IPeronio.RatioWith6Decimals right) pure returns (bool) {
-    return IPeronio.RatioWith6Decimals.unwrap(left) <= IPeronio.RatioWith6Decimals.unwrap(right);
+function lte(RatioWith6Decimals left, RatioWith6Decimals right) pure returns (bool) {
+    return RatioWith6Decimals.unwrap(left) <= RatioWith6Decimals.unwrap(right);
 }
 
-function gte(IPeronio.RatioWith6Decimals left, IPeronio.RatioWith6Decimals right) pure returns (bool) {
-    return IPeronio.RatioWith6Decimals.unwrap(left) >= IPeronio.RatioWith6Decimals.unwrap(right);
+function gte(RatioWith6Decimals left, RatioWith6Decimals right) pure returns (bool) {
+    return RatioWith6Decimals.unwrap(left) >= RatioWith6Decimals.unwrap(right);
+}
+
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------
+// --- MulDiv Interactions ------------------------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+function mulDiv(
+    LpQuantity left,
+    LpQuantity right,
+    LpQuantity div
+) pure returns (LpQuantity) {
+    return LpQuantity.wrap(mulDiv(LpQuantity.unwrap(left), LpQuantity.unwrap(right), LpQuantity.unwrap(div)));
 }
 
 function mulDiv(
-    IPeronio.RatioWith6Decimals left,
+    LpQuantity left,
+    MaiQuantity right,
+    LpQuantity div
+) pure returns (MaiQuantity) {
+    return MaiQuantity.wrap(mulDiv(LpQuantity.unwrap(left), MaiQuantity.unwrap(right), LpQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    LpQuantity left,
+    MaiQuantity right,
+    MaiQuantity div
+) pure returns (LpQuantity) {
+    return LpQuantity.wrap(mulDiv(LpQuantity.unwrap(left), MaiQuantity.unwrap(right), MaiQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    LpQuantity left,
+    PePerUsdcQuantity right,
+    LpQuantity div
+) pure returns (PePerUsdcQuantity) {
+    return PePerUsdcQuantity.wrap(mulDiv(LpQuantity.unwrap(left), PePerUsdcQuantity.unwrap(right), LpQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    LpQuantity left,
+    PePerUsdcQuantity right,
+    PePerUsdcQuantity div
+) pure returns (LpQuantity) {
+    return LpQuantity.wrap(mulDiv(LpQuantity.unwrap(left), PePerUsdcQuantity.unwrap(right), PePerUsdcQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    LpQuantity left,
+    PeQuantity right,
+    LpQuantity div
+) pure returns (PeQuantity) {
+    return PeQuantity.wrap(mulDiv(LpQuantity.unwrap(left), PeQuantity.unwrap(right), LpQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    LpQuantity left,
+    PeQuantity right,
+    PeQuantity div
+) pure returns (LpQuantity) {
+    return LpQuantity.wrap(mulDiv(LpQuantity.unwrap(left), PeQuantity.unwrap(right), PeQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    LpQuantity left,
+    QiQuantity right,
+    LpQuantity div
+) pure returns (QiQuantity) {
+    return QiQuantity.wrap(mulDiv(LpQuantity.unwrap(left), QiQuantity.unwrap(right), LpQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    LpQuantity left,
+    QiQuantity right,
+    QiQuantity div
+) pure returns (LpQuantity) {
+    return LpQuantity.wrap(mulDiv(LpQuantity.unwrap(left), QiQuantity.unwrap(right), QiQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    LpQuantity left,
+    RatioWith6Decimals right,
+    LpQuantity div
+) pure returns (RatioWith6Decimals) {
+    return RatioWith6Decimals.wrap(mulDiv(LpQuantity.unwrap(left), RatioWith6Decimals.unwrap(right), LpQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    LpQuantity left,
+    RatioWith6Decimals right,
+    RatioWith6Decimals div
+) pure returns (LpQuantity) {
+    return LpQuantity.wrap(mulDiv(LpQuantity.unwrap(left), RatioWith6Decimals.unwrap(right), RatioWith6Decimals.unwrap(div)));
+}
+
+function mulDiv(
+    LpQuantity left,
+    UsdcPerPeQuantity right,
+    LpQuantity div
+) pure returns (UsdcPerPeQuantity) {
+    return UsdcPerPeQuantity.wrap(mulDiv(LpQuantity.unwrap(left), UsdcPerPeQuantity.unwrap(right), LpQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    LpQuantity left,
+    UsdcPerPeQuantity right,
+    UsdcPerPeQuantity div
+) pure returns (LpQuantity) {
+    return LpQuantity.wrap(mulDiv(LpQuantity.unwrap(left), UsdcPerPeQuantity.unwrap(right), UsdcPerPeQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    LpQuantity left,
+    UsdcQuantity right,
+    LpQuantity div
+) pure returns (UsdcQuantity) {
+    return UsdcQuantity.wrap(mulDiv(LpQuantity.unwrap(left), UsdcQuantity.unwrap(right), LpQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    LpQuantity left,
+    UsdcQuantity right,
+    UsdcQuantity div
+) pure returns (LpQuantity) {
+    return LpQuantity.wrap(mulDiv(LpQuantity.unwrap(left), UsdcQuantity.unwrap(right), UsdcQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    LpQuantity left,
     uint256 right,
-    uint256 div
-) pure returns (IPeronio.RatioWith6Decimals) {
-    return IPeronio.RatioWith6Decimals.wrap(mulDiv(IPeronio.RatioWith6Decimals.unwrap(left), right, div));
-}
-
-function mulDiv(
-    uint256 left,
-    IPeronio.RatioWith6Decimals right,
-    uint256 div
-) pure returns (IPeronio.RatioWith6Decimals) {
-    return IPeronio.RatioWith6Decimals.wrap(mulDiv(left, IPeronio.RatioWith6Decimals.unwrap(right), div));
-}
-
-function mulDiv(
-    IPeronio.RatioWith6Decimals left,
-    uint256 right,
-    IPeronio.RatioWith6Decimals div
+    LpQuantity div
 ) pure returns (uint256) {
-    return mulDiv(IPeronio.RatioWith6Decimals.unwrap(left), right, IPeronio.RatioWith6Decimals.unwrap(div));
+    return mulDiv(LpQuantity.unwrap(left), right, LpQuantity.unwrap(div));
 }
 
 function mulDiv(
-    uint256 left,
-    IPeronio.RatioWith6Decimals right,
-    IPeronio.RatioWith6Decimals div
+    LpQuantity left,
+    uint256 right,
+    uint256 div
+) pure returns (LpQuantity) {
+    return LpQuantity.wrap(mulDiv(LpQuantity.unwrap(left), right, div));
+}
+
+function mulDiv(
+    MaiQuantity left,
+    LpQuantity right,
+    LpQuantity div
+) pure returns (MaiQuantity) {
+    return MaiQuantity.wrap(mulDiv(MaiQuantity.unwrap(left), LpQuantity.unwrap(right), LpQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    MaiQuantity left,
+    LpQuantity right,
+    MaiQuantity div
+) pure returns (LpQuantity) {
+    return LpQuantity.wrap(mulDiv(MaiQuantity.unwrap(left), LpQuantity.unwrap(right), MaiQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    MaiQuantity left,
+    MaiQuantity right,
+    MaiQuantity div
+) pure returns (MaiQuantity) {
+    return MaiQuantity.wrap(mulDiv(MaiQuantity.unwrap(left), MaiQuantity.unwrap(right), MaiQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    MaiQuantity left,
+    PePerUsdcQuantity right,
+    MaiQuantity div
+) pure returns (PePerUsdcQuantity) {
+    return PePerUsdcQuantity.wrap(mulDiv(MaiQuantity.unwrap(left), PePerUsdcQuantity.unwrap(right), MaiQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    MaiQuantity left,
+    PePerUsdcQuantity right,
+    PePerUsdcQuantity div
+) pure returns (MaiQuantity) {
+    return MaiQuantity.wrap(mulDiv(MaiQuantity.unwrap(left), PePerUsdcQuantity.unwrap(right), PePerUsdcQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    MaiQuantity left,
+    PeQuantity right,
+    MaiQuantity div
+) pure returns (PeQuantity) {
+    return PeQuantity.wrap(mulDiv(MaiQuantity.unwrap(left), PeQuantity.unwrap(right), MaiQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    MaiQuantity left,
+    PeQuantity right,
+    PeQuantity div
+) pure returns (MaiQuantity) {
+    return MaiQuantity.wrap(mulDiv(MaiQuantity.unwrap(left), PeQuantity.unwrap(right), PeQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    MaiQuantity left,
+    QiQuantity right,
+    MaiQuantity div
+) pure returns (QiQuantity) {
+    return QiQuantity.wrap(mulDiv(MaiQuantity.unwrap(left), QiQuantity.unwrap(right), MaiQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    MaiQuantity left,
+    QiQuantity right,
+    QiQuantity div
+) pure returns (MaiQuantity) {
+    return MaiQuantity.wrap(mulDiv(MaiQuantity.unwrap(left), QiQuantity.unwrap(right), QiQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    MaiQuantity left,
+    RatioWith6Decimals right,
+    MaiQuantity div
+) pure returns (RatioWith6Decimals) {
+    return RatioWith6Decimals.wrap(mulDiv(MaiQuantity.unwrap(left), RatioWith6Decimals.unwrap(right), MaiQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    MaiQuantity left,
+    RatioWith6Decimals right,
+    RatioWith6Decimals div
+) pure returns (MaiQuantity) {
+    return MaiQuantity.wrap(mulDiv(MaiQuantity.unwrap(left), RatioWith6Decimals.unwrap(right), RatioWith6Decimals.unwrap(div)));
+}
+
+function mulDiv(
+    MaiQuantity left,
+    UsdcPerPeQuantity right,
+    MaiQuantity div
+) pure returns (UsdcPerPeQuantity) {
+    return UsdcPerPeQuantity.wrap(mulDiv(MaiQuantity.unwrap(left), UsdcPerPeQuantity.unwrap(right), MaiQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    MaiQuantity left,
+    UsdcPerPeQuantity right,
+    UsdcPerPeQuantity div
+) pure returns (MaiQuantity) {
+    return MaiQuantity.wrap(mulDiv(MaiQuantity.unwrap(left), UsdcPerPeQuantity.unwrap(right), UsdcPerPeQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    MaiQuantity left,
+    UsdcQuantity right,
+    MaiQuantity div
+) pure returns (UsdcQuantity) {
+    return UsdcQuantity.wrap(mulDiv(MaiQuantity.unwrap(left), UsdcQuantity.unwrap(right), MaiQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    MaiQuantity left,
+    UsdcQuantity right,
+    UsdcQuantity div
+) pure returns (MaiQuantity) {
+    return MaiQuantity.wrap(mulDiv(MaiQuantity.unwrap(left), UsdcQuantity.unwrap(right), UsdcQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    MaiQuantity left,
+    uint256 right,
+    MaiQuantity div
 ) pure returns (uint256) {
-    return mulDiv(left, IPeronio.RatioWith6Decimals.unwrap(right), IPeronio.RatioWith6Decimals.unwrap(div));
-}
-
-// ------------------------------------------------------------------------------------------------------------------------------------------------------------
-// --- mulDiv() flexibility -----------------------------------------------------------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-function mulDiv(
-    IPeronio.LpQuantity left,
-    IPeronio.PeQuantity right,
-    IPeronio.PeQuantity div
-) pure returns (IPeronio.LpQuantity) {
-    return IPeronio.LpQuantity.wrap(mulDiv(IPeronio.LpQuantity.unwrap(left), IPeronio.PeQuantity.unwrap(right), IPeronio.PeQuantity.unwrap(div)));
+    return mulDiv(MaiQuantity.unwrap(left), right, MaiQuantity.unwrap(div));
 }
 
 function mulDiv(
-    IPeronio.PeQuantity left,
-    IPeronio.LpQuantity right,
-    IPeronio.PeQuantity div
-) pure returns (IPeronio.LpQuantity) {
-    return IPeronio.LpQuantity.wrap(mulDiv(IPeronio.PeQuantity.unwrap(left), IPeronio.LpQuantity.unwrap(right), IPeronio.PeQuantity.unwrap(div)));
-}
-
-function mulDiv(
-    IPeronio.PeQuantity left,
-    IPeronio.LpQuantity right,
-    IPeronio.LpQuantity div
-) pure returns (IPeronio.PeQuantity) {
-    return IPeronio.PeQuantity.wrap(mulDiv(IPeronio.PeQuantity.unwrap(left), IPeronio.LpQuantity.unwrap(right), IPeronio.LpQuantity.unwrap(div)));
-}
-
-function mulDiv(
-    IPeronio.LpQuantity left,
-    IPeronio.PeQuantity right,
-    IPeronio.LpQuantity div
-) pure returns (IPeronio.PeQuantity) {
-    return IPeronio.PeQuantity.wrap(mulDiv(IPeronio.LpQuantity.unwrap(left), IPeronio.PeQuantity.unwrap(right), IPeronio.LpQuantity.unwrap(div)));
-}
-
-function mulDiv(
-    IPeronio.MaiQuantity left,
-    IPeronio.UsdcQuantity right,
-    IPeronio.UsdcQuantity div
-) pure returns (IPeronio.MaiQuantity) {
-    return IPeronio.MaiQuantity.wrap(mulDiv(IPeronio.MaiQuantity.unwrap(left), IPeronio.UsdcQuantity.unwrap(right), IPeronio.UsdcQuantity.unwrap(div)));
-}
-
-function mulDiv(
-    IPeronio.UsdcQuantity left,
-    IPeronio.MaiQuantity right,
-    IPeronio.UsdcQuantity div
-) pure returns (IPeronio.MaiQuantity) {
-    return IPeronio.MaiQuantity.wrap(mulDiv(IPeronio.UsdcQuantity.unwrap(left), IPeronio.MaiQuantity.unwrap(right), IPeronio.UsdcQuantity.unwrap(div)));
-}
-
-function mulDiv(
-    IPeronio.UsdcQuantity left,
-    IPeronio.MaiQuantity right,
-    IPeronio.MaiQuantity div
-) pure returns (IPeronio.UsdcQuantity) {
-    return IPeronio.UsdcQuantity.wrap(mulDiv(IPeronio.UsdcQuantity.unwrap(left), IPeronio.MaiQuantity.unwrap(right), IPeronio.MaiQuantity.unwrap(div)));
-}
-
-function mulDiv(
-    IPeronio.MaiQuantity left,
-    IPeronio.UsdcQuantity right,
-    IPeronio.MaiQuantity div
-) pure returns (IPeronio.UsdcQuantity) {
-    return IPeronio.UsdcQuantity.wrap(mulDiv(IPeronio.MaiQuantity.unwrap(left), IPeronio.UsdcQuantity.unwrap(right), IPeronio.MaiQuantity.unwrap(div)));
-}
-
-function mulDiv(
-    IPeronio.LpQuantity left,
-    IPeronio.MaiQuantity right,
-    IPeronio.MaiQuantity div
-) pure returns (IPeronio.LpQuantity) {
-    return IPeronio.LpQuantity.wrap(mulDiv(IPeronio.LpQuantity.unwrap(left), IPeronio.MaiQuantity.unwrap(right), IPeronio.MaiQuantity.unwrap(div)));
-}
-
-function mulDiv(
-    IPeronio.MaiQuantity left,
-    IPeronio.LpQuantity right,
-    IPeronio.MaiQuantity div
-) pure returns (IPeronio.LpQuantity) {
-    return IPeronio.LpQuantity.wrap(mulDiv(IPeronio.MaiQuantity.unwrap(left), IPeronio.LpQuantity.unwrap(right), IPeronio.MaiQuantity.unwrap(div)));
-}
-
-function mulDiv(
-    IPeronio.MaiQuantity left,
-    IPeronio.LpQuantity right,
-    IPeronio.LpQuantity div
-) pure returns (IPeronio.MaiQuantity) {
-    return IPeronio.MaiQuantity.wrap(mulDiv(IPeronio.MaiQuantity.unwrap(left), IPeronio.LpQuantity.unwrap(right), IPeronio.LpQuantity.unwrap(div)));
-}
-
-function mulDiv(
-    IPeronio.LpQuantity left,
-    IPeronio.MaiQuantity right,
-    IPeronio.LpQuantity div
-) pure returns (IPeronio.MaiQuantity) {
-    return IPeronio.MaiQuantity.wrap(mulDiv(IPeronio.LpQuantity.unwrap(left), IPeronio.MaiQuantity.unwrap(right), IPeronio.LpQuantity.unwrap(div)));
-}
-
-function mulDiv(
-    IPeronio.LpQuantity left,
-    IPeronio.UsdcQuantity right,
-    IPeronio.UsdcQuantity div
-) pure returns (IPeronio.LpQuantity) {
-    return IPeronio.LpQuantity.wrap(mulDiv(IPeronio.LpQuantity.unwrap(left), IPeronio.UsdcQuantity.unwrap(right), IPeronio.UsdcQuantity.unwrap(div)));
-}
-
-function mulDiv(
-    IPeronio.UsdcQuantity left,
-    IPeronio.LpQuantity right,
-    IPeronio.UsdcQuantity div
-) pure returns (IPeronio.LpQuantity) {
-    return IPeronio.LpQuantity.wrap(mulDiv(IPeronio.UsdcQuantity.unwrap(left), IPeronio.LpQuantity.unwrap(right), IPeronio.UsdcQuantity.unwrap(div)));
-}
-
-function mulDiv(
-    IPeronio.UsdcQuantity left,
-    IPeronio.LpQuantity right,
-    IPeronio.LpQuantity div
-) pure returns (IPeronio.UsdcQuantity) {
-    return IPeronio.UsdcQuantity.wrap(mulDiv(IPeronio.UsdcQuantity.unwrap(left), IPeronio.LpQuantity.unwrap(right), IPeronio.LpQuantity.unwrap(div)));
-}
-
-function mulDiv(
-    IPeronio.LpQuantity left,
-    IPeronio.UsdcQuantity right,
-    IPeronio.LpQuantity div
-) pure returns (IPeronio.UsdcQuantity) {
-    return IPeronio.UsdcQuantity.wrap(mulDiv(IPeronio.LpQuantity.unwrap(left), IPeronio.UsdcQuantity.unwrap(right), IPeronio.LpQuantity.unwrap(div)));
-}
-
-function mulDiv(
-    IPeronio.LpQuantity left,
-    IPeronio.RatioWith6Decimals right,
-    IPeronio.RatioWith6Decimals div
-) pure returns (IPeronio.LpQuantity) {
-    return
-        IPeronio.LpQuantity.wrap(mulDiv(IPeronio.LpQuantity.unwrap(left), IPeronio.RatioWith6Decimals.unwrap(right), IPeronio.RatioWith6Decimals.unwrap(div)));
-}
-
-function mulDiv(
-    IPeronio.RatioWith6Decimals left,
-    IPeronio.LpQuantity right,
-    IPeronio.RatioWith6Decimals div
-) pure returns (IPeronio.LpQuantity) {
-    return
-        IPeronio.LpQuantity.wrap(mulDiv(IPeronio.RatioWith6Decimals.unwrap(left), IPeronio.LpQuantity.unwrap(right), IPeronio.RatioWith6Decimals.unwrap(div)));
-}
-
-function mulDiv(
-    IPeronio.RatioWith6Decimals left,
-    IPeronio.LpQuantity right,
-    IPeronio.LpQuantity div
-) pure returns (IPeronio.RatioWith6Decimals) {
-    return
-        IPeronio.RatioWith6Decimals.wrap(mulDiv(IPeronio.RatioWith6Decimals.unwrap(left), IPeronio.LpQuantity.unwrap(right), IPeronio.LpQuantity.unwrap(div)));
-}
-
-function mulDiv(
-    IPeronio.LpQuantity left,
-    IPeronio.RatioWith6Decimals right,
-    IPeronio.LpQuantity div
-) pure returns (IPeronio.RatioWith6Decimals) {
-    return
-        IPeronio.RatioWith6Decimals.wrap(mulDiv(IPeronio.LpQuantity.unwrap(left), IPeronio.RatioWith6Decimals.unwrap(right), IPeronio.LpQuantity.unwrap(div)));
-}
-
-function mulDiv(
-    IPeronio.UsdcPerPeQuantity left,
-    IPeronio.RatioWith6Decimals right,
-    IPeronio.RatioWith6Decimals div
-) pure returns (IPeronio.UsdcPerPeQuantity) {
-    return
-        IPeronio.UsdcPerPeQuantity.wrap(
-            mulDiv(IPeronio.UsdcPerPeQuantity.unwrap(left), IPeronio.RatioWith6Decimals.unwrap(right), IPeronio.RatioWith6Decimals.unwrap(div))
-        );
-}
-
-function mulDiv(
-    IPeronio.RatioWith6Decimals left,
-    IPeronio.UsdcPerPeQuantity right,
-    IPeronio.RatioWith6Decimals div
-) pure returns (IPeronio.UsdcPerPeQuantity) {
-    return
-        IPeronio.UsdcPerPeQuantity.wrap(
-            mulDiv(IPeronio.RatioWith6Decimals.unwrap(left), IPeronio.UsdcPerPeQuantity.unwrap(right), IPeronio.RatioWith6Decimals.unwrap(div))
-        );
-}
-
-function mulDiv(
-    IPeronio.RatioWith6Decimals left,
-    IPeronio.UsdcPerPeQuantity right,
-    IPeronio.UsdcPerPeQuantity div
-) pure returns (IPeronio.RatioWith6Decimals) {
-    return
-        IPeronio.RatioWith6Decimals.wrap(
-            mulDiv(IPeronio.RatioWith6Decimals.unwrap(left), IPeronio.UsdcPerPeQuantity.unwrap(right), IPeronio.UsdcPerPeQuantity.unwrap(div))
-        );
-}
-
-function mulDiv(
-    IPeronio.UsdcPerPeQuantity left,
-    IPeronio.RatioWith6Decimals right,
-    IPeronio.UsdcPerPeQuantity div
-) pure returns (IPeronio.RatioWith6Decimals) {
-    return
-        IPeronio.RatioWith6Decimals.wrap(
-            mulDiv(IPeronio.UsdcPerPeQuantity.unwrap(left), IPeronio.RatioWith6Decimals.unwrap(right), IPeronio.UsdcPerPeQuantity.unwrap(div))
-        );
-}
-
-// ------------------------------------------------------------------------------------------------------------------------------------------------------------
-// --- mulDiv() ad-hoc ----------------------------------------------------------------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-function mulDiv(
-    IPeronio.PeQuantity left,
+    MaiQuantity left,
     uint256 right,
-    IPeronio.UsdcQuantity div
-) pure returns (IPeronio.PePerUsdcQuantity) {
-    return IPeronio.PePerUsdcQuantity.wrap(mulDiv(IPeronio.PeQuantity.unwrap(left), right, IPeronio.UsdcQuantity.unwrap(div)));
+    uint256 div
+) pure returns (MaiQuantity) {
+    return MaiQuantity.wrap(mulDiv(MaiQuantity.unwrap(left), right, div));
+}
+
+function mulDiv(
+    PePerUsdcQuantity left,
+    LpQuantity right,
+    LpQuantity div
+) pure returns (PePerUsdcQuantity) {
+    return PePerUsdcQuantity.wrap(mulDiv(PePerUsdcQuantity.unwrap(left), LpQuantity.unwrap(right), LpQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    PePerUsdcQuantity left,
+    LpQuantity right,
+    PePerUsdcQuantity div
+) pure returns (LpQuantity) {
+    return LpQuantity.wrap(mulDiv(PePerUsdcQuantity.unwrap(left), LpQuantity.unwrap(right), PePerUsdcQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    PePerUsdcQuantity left,
+    MaiQuantity right,
+    MaiQuantity div
+) pure returns (PePerUsdcQuantity) {
+    return PePerUsdcQuantity.wrap(mulDiv(PePerUsdcQuantity.unwrap(left), MaiQuantity.unwrap(right), MaiQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    PePerUsdcQuantity left,
+    MaiQuantity right,
+    PePerUsdcQuantity div
+) pure returns (MaiQuantity) {
+    return MaiQuantity.wrap(mulDiv(PePerUsdcQuantity.unwrap(left), MaiQuantity.unwrap(right), PePerUsdcQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    PePerUsdcQuantity left,
+    PePerUsdcQuantity right,
+    PePerUsdcQuantity div
+) pure returns (PePerUsdcQuantity) {
+    return PePerUsdcQuantity.wrap(mulDiv(PePerUsdcQuantity.unwrap(left), PePerUsdcQuantity.unwrap(right), PePerUsdcQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    PePerUsdcQuantity left,
+    PeQuantity right,
+    PePerUsdcQuantity div
+) pure returns (PeQuantity) {
+    return PeQuantity.wrap(mulDiv(PePerUsdcQuantity.unwrap(left), PeQuantity.unwrap(right), PePerUsdcQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    PePerUsdcQuantity left,
+    PeQuantity right,
+    PeQuantity div
+) pure returns (PePerUsdcQuantity) {
+    return PePerUsdcQuantity.wrap(mulDiv(PePerUsdcQuantity.unwrap(left), PeQuantity.unwrap(right), PeQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    PePerUsdcQuantity left,
+    QiQuantity right,
+    PePerUsdcQuantity div
+) pure returns (QiQuantity) {
+    return QiQuantity.wrap(mulDiv(PePerUsdcQuantity.unwrap(left), QiQuantity.unwrap(right), PePerUsdcQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    PePerUsdcQuantity left,
+    QiQuantity right,
+    QiQuantity div
+) pure returns (PePerUsdcQuantity) {
+    return PePerUsdcQuantity.wrap(mulDiv(PePerUsdcQuantity.unwrap(left), QiQuantity.unwrap(right), QiQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    PePerUsdcQuantity left,
+    RatioWith6Decimals right,
+    PePerUsdcQuantity div
+) pure returns (RatioWith6Decimals) {
+    return RatioWith6Decimals.wrap(mulDiv(PePerUsdcQuantity.unwrap(left), RatioWith6Decimals.unwrap(right), PePerUsdcQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    PePerUsdcQuantity left,
+    RatioWith6Decimals right,
+    RatioWith6Decimals div
+) pure returns (PePerUsdcQuantity) {
+    return PePerUsdcQuantity.wrap(mulDiv(PePerUsdcQuantity.unwrap(left), RatioWith6Decimals.unwrap(right), RatioWith6Decimals.unwrap(div)));
+}
+
+function mulDiv(
+    PePerUsdcQuantity left,
+    UsdcPerPeQuantity right,
+    PePerUsdcQuantity div
+) pure returns (UsdcPerPeQuantity) {
+    return UsdcPerPeQuantity.wrap(mulDiv(PePerUsdcQuantity.unwrap(left), UsdcPerPeQuantity.unwrap(right), PePerUsdcQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    PePerUsdcQuantity left,
+    UsdcPerPeQuantity right,
+    RatioWith6Decimals div
+) pure returns (RatioWith6Decimals) {
+    return RatioWith6Decimals.wrap(mulDiv(PePerUsdcQuantity.unwrap(left), UsdcPerPeQuantity.unwrap(right), RatioWith6Decimals.unwrap(div)));
+}
+
+function mulDiv(
+    PePerUsdcQuantity left,
+    UsdcPerPeQuantity right,
+    UsdcPerPeQuantity div
+) pure returns (PePerUsdcQuantity) {
+    return PePerUsdcQuantity.wrap(mulDiv(PePerUsdcQuantity.unwrap(left), UsdcPerPeQuantity.unwrap(right), UsdcPerPeQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    PePerUsdcQuantity left,
+    UsdcQuantity right,
+    PePerUsdcQuantity div
+) pure returns (UsdcQuantity) {
+    return UsdcQuantity.wrap(mulDiv(PePerUsdcQuantity.unwrap(left), UsdcQuantity.unwrap(right), PePerUsdcQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    PePerUsdcQuantity left,
+    UsdcQuantity right,
+    PeQuantity div
+) pure returns (RatioWith6Decimals) {
+    return RatioWith6Decimals.wrap(mulDiv(PePerUsdcQuantity.unwrap(left), UsdcQuantity.unwrap(right), PeQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    PePerUsdcQuantity left,
+    UsdcQuantity right,
+    RatioWith6Decimals div
+) pure returns (PeQuantity) {
+    return PeQuantity.wrap(mulDiv(PePerUsdcQuantity.unwrap(left), UsdcQuantity.unwrap(right), RatioWith6Decimals.unwrap(div)));
+}
+
+function mulDiv(
+    PePerUsdcQuantity left,
+    UsdcQuantity right,
+    UsdcQuantity div
+) pure returns (PePerUsdcQuantity) {
+    return PePerUsdcQuantity.wrap(mulDiv(PePerUsdcQuantity.unwrap(left), UsdcQuantity.unwrap(right), UsdcQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    PePerUsdcQuantity left,
+    uint256 right,
+    PePerUsdcQuantity div
+) pure returns (uint256) {
+    return mulDiv(PePerUsdcQuantity.unwrap(left), right, PePerUsdcQuantity.unwrap(div));
+}
+
+function mulDiv(
+    PePerUsdcQuantity left,
+    uint256 right,
+    uint256 div
+) pure returns (PePerUsdcQuantity) {
+    return PePerUsdcQuantity.wrap(mulDiv(PePerUsdcQuantity.unwrap(left), right, div));
+}
+
+function mulDiv(
+    PeQuantity left,
+    LpQuantity right,
+    LpQuantity div
+) pure returns (PeQuantity) {
+    return PeQuantity.wrap(mulDiv(PeQuantity.unwrap(left), LpQuantity.unwrap(right), LpQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    PeQuantity left,
+    LpQuantity right,
+    PeQuantity div
+) pure returns (LpQuantity) {
+    return LpQuantity.wrap(mulDiv(PeQuantity.unwrap(left), LpQuantity.unwrap(right), PeQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    PeQuantity left,
+    MaiQuantity right,
+    MaiQuantity div
+) pure returns (PeQuantity) {
+    return PeQuantity.wrap(mulDiv(PeQuantity.unwrap(left), MaiQuantity.unwrap(right), MaiQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    PeQuantity left,
+    MaiQuantity right,
+    PeQuantity div
+) pure returns (MaiQuantity) {
+    return MaiQuantity.wrap(mulDiv(PeQuantity.unwrap(left), MaiQuantity.unwrap(right), PeQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    PeQuantity left,
+    PePerUsdcQuantity right,
+    PePerUsdcQuantity div
+) pure returns (PeQuantity) {
+    return PeQuantity.wrap(mulDiv(PeQuantity.unwrap(left), PePerUsdcQuantity.unwrap(right), PePerUsdcQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    PeQuantity left,
+    PePerUsdcQuantity right,
+    PeQuantity div
+) pure returns (PePerUsdcQuantity) {
+    return PePerUsdcQuantity.wrap(mulDiv(PeQuantity.unwrap(left), PePerUsdcQuantity.unwrap(right), PeQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    PeQuantity left,
+    PeQuantity right,
+    PeQuantity div
+) pure returns (PeQuantity) {
+    return PeQuantity.wrap(mulDiv(PeQuantity.unwrap(left), PeQuantity.unwrap(right), PeQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    PeQuantity left,
+    QiQuantity right,
+    PeQuantity div
+) pure returns (QiQuantity) {
+    return QiQuantity.wrap(mulDiv(PeQuantity.unwrap(left), QiQuantity.unwrap(right), PeQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    PeQuantity left,
+    QiQuantity right,
+    QiQuantity div
+) pure returns (PeQuantity) {
+    return PeQuantity.wrap(mulDiv(PeQuantity.unwrap(left), QiQuantity.unwrap(right), QiQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    PeQuantity left,
+    RatioWith6Decimals right,
+    PePerUsdcQuantity div
+) pure returns (UsdcQuantity) {
+    return UsdcQuantity.wrap(mulDiv(PeQuantity.unwrap(left), RatioWith6Decimals.unwrap(right), PePerUsdcQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    PeQuantity left,
+    RatioWith6Decimals right,
+    PeQuantity div
+) pure returns (RatioWith6Decimals) {
+    return RatioWith6Decimals.wrap(mulDiv(PeQuantity.unwrap(left), RatioWith6Decimals.unwrap(right), PeQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    PeQuantity left,
+    RatioWith6Decimals right,
+    RatioWith6Decimals div
+) pure returns (PeQuantity) {
+    return PeQuantity.wrap(mulDiv(PeQuantity.unwrap(left), RatioWith6Decimals.unwrap(right), RatioWith6Decimals.unwrap(div)));
+}
+
+function mulDiv(
+    PeQuantity left,
+    RatioWith6Decimals right,
+    UsdcQuantity div
+) pure returns (PePerUsdcQuantity) {
+    return PePerUsdcQuantity.wrap(mulDiv(PeQuantity.unwrap(left), RatioWith6Decimals.unwrap(right), UsdcQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    PeQuantity left,
+    UsdcPerPeQuantity right,
+    PeQuantity div
+) pure returns (UsdcPerPeQuantity) {
+    return UsdcPerPeQuantity.wrap(mulDiv(PeQuantity.unwrap(left), UsdcPerPeQuantity.unwrap(right), PeQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    PeQuantity left,
+    UsdcPerPeQuantity right,
+    RatioWith6Decimals div
+) pure returns (UsdcQuantity) {
+    return UsdcQuantity.wrap(mulDiv(PeQuantity.unwrap(left), UsdcPerPeQuantity.unwrap(right), RatioWith6Decimals.unwrap(div)));
+}
+
+function mulDiv(
+    PeQuantity left,
+    UsdcPerPeQuantity right,
+    UsdcPerPeQuantity div
+) pure returns (PeQuantity) {
+    return PeQuantity.wrap(mulDiv(PeQuantity.unwrap(left), UsdcPerPeQuantity.unwrap(right), UsdcPerPeQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    PeQuantity left,
+    UsdcPerPeQuantity right,
+    UsdcQuantity div
+) pure returns (RatioWith6Decimals) {
+    return RatioWith6Decimals.wrap(mulDiv(PeQuantity.unwrap(left), UsdcPerPeQuantity.unwrap(right), UsdcQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    PeQuantity left,
+    UsdcQuantity right,
+    PeQuantity div
+) pure returns (UsdcQuantity) {
+    return UsdcQuantity.wrap(mulDiv(PeQuantity.unwrap(left), UsdcQuantity.unwrap(right), PeQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    PeQuantity left,
+    UsdcQuantity right,
+    UsdcQuantity div
+) pure returns (PeQuantity) {
+    return PeQuantity.wrap(mulDiv(PeQuantity.unwrap(left), UsdcQuantity.unwrap(right), UsdcQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    PeQuantity left,
+    uint256 right,
+    PeQuantity div
+) pure returns (uint256) {
+    return mulDiv(PeQuantity.unwrap(left), right, PeQuantity.unwrap(div));
+}
+
+function mulDiv(
+    PeQuantity left,
+    uint256 right,
+    uint256 div
+) pure returns (PeQuantity) {
+    return PeQuantity.wrap(mulDiv(PeQuantity.unwrap(left), right, div));
+}
+
+function mulDiv(
+    QiQuantity left,
+    LpQuantity right,
+    LpQuantity div
+) pure returns (QiQuantity) {
+    return QiQuantity.wrap(mulDiv(QiQuantity.unwrap(left), LpQuantity.unwrap(right), LpQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    QiQuantity left,
+    LpQuantity right,
+    QiQuantity div
+) pure returns (LpQuantity) {
+    return LpQuantity.wrap(mulDiv(QiQuantity.unwrap(left), LpQuantity.unwrap(right), QiQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    QiQuantity left,
+    MaiQuantity right,
+    MaiQuantity div
+) pure returns (QiQuantity) {
+    return QiQuantity.wrap(mulDiv(QiQuantity.unwrap(left), MaiQuantity.unwrap(right), MaiQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    QiQuantity left,
+    MaiQuantity right,
+    QiQuantity div
+) pure returns (MaiQuantity) {
+    return MaiQuantity.wrap(mulDiv(QiQuantity.unwrap(left), MaiQuantity.unwrap(right), QiQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    QiQuantity left,
+    PePerUsdcQuantity right,
+    PePerUsdcQuantity div
+) pure returns (QiQuantity) {
+    return QiQuantity.wrap(mulDiv(QiQuantity.unwrap(left), PePerUsdcQuantity.unwrap(right), PePerUsdcQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    QiQuantity left,
+    PePerUsdcQuantity right,
+    QiQuantity div
+) pure returns (PePerUsdcQuantity) {
+    return PePerUsdcQuantity.wrap(mulDiv(QiQuantity.unwrap(left), PePerUsdcQuantity.unwrap(right), QiQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    QiQuantity left,
+    PeQuantity right,
+    PeQuantity div
+) pure returns (QiQuantity) {
+    return QiQuantity.wrap(mulDiv(QiQuantity.unwrap(left), PeQuantity.unwrap(right), PeQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    QiQuantity left,
+    PeQuantity right,
+    QiQuantity div
+) pure returns (PeQuantity) {
+    return PeQuantity.wrap(mulDiv(QiQuantity.unwrap(left), PeQuantity.unwrap(right), QiQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    QiQuantity left,
+    QiQuantity right,
+    QiQuantity div
+) pure returns (QiQuantity) {
+    return QiQuantity.wrap(mulDiv(QiQuantity.unwrap(left), QiQuantity.unwrap(right), QiQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    QiQuantity left,
+    RatioWith6Decimals right,
+    QiQuantity div
+) pure returns (RatioWith6Decimals) {
+    return RatioWith6Decimals.wrap(mulDiv(QiQuantity.unwrap(left), RatioWith6Decimals.unwrap(right), QiQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    QiQuantity left,
+    RatioWith6Decimals right,
+    RatioWith6Decimals div
+) pure returns (QiQuantity) {
+    return QiQuantity.wrap(mulDiv(QiQuantity.unwrap(left), RatioWith6Decimals.unwrap(right), RatioWith6Decimals.unwrap(div)));
+}
+
+function mulDiv(
+    QiQuantity left,
+    UsdcPerPeQuantity right,
+    QiQuantity div
+) pure returns (UsdcPerPeQuantity) {
+    return UsdcPerPeQuantity.wrap(mulDiv(QiQuantity.unwrap(left), UsdcPerPeQuantity.unwrap(right), QiQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    QiQuantity left,
+    UsdcPerPeQuantity right,
+    UsdcPerPeQuantity div
+) pure returns (QiQuantity) {
+    return QiQuantity.wrap(mulDiv(QiQuantity.unwrap(left), UsdcPerPeQuantity.unwrap(right), UsdcPerPeQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    QiQuantity left,
+    UsdcQuantity right,
+    QiQuantity div
+) pure returns (UsdcQuantity) {
+    return UsdcQuantity.wrap(mulDiv(QiQuantity.unwrap(left), UsdcQuantity.unwrap(right), QiQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    QiQuantity left,
+    UsdcQuantity right,
+    UsdcQuantity div
+) pure returns (QiQuantity) {
+    return QiQuantity.wrap(mulDiv(QiQuantity.unwrap(left), UsdcQuantity.unwrap(right), UsdcQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    QiQuantity left,
+    uint256 right,
+    QiQuantity div
+) pure returns (uint256) {
+    return mulDiv(QiQuantity.unwrap(left), right, QiQuantity.unwrap(div));
+}
+
+function mulDiv(
+    QiQuantity left,
+    uint256 right,
+    uint256 div
+) pure returns (QiQuantity) {
+    return QiQuantity.wrap(mulDiv(QiQuantity.unwrap(left), right, div));
+}
+
+function mulDiv(
+    RatioWith6Decimals left,
+    LpQuantity right,
+    LpQuantity div
+) pure returns (RatioWith6Decimals) {
+    return RatioWith6Decimals.wrap(mulDiv(RatioWith6Decimals.unwrap(left), LpQuantity.unwrap(right), LpQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    RatioWith6Decimals left,
+    LpQuantity right,
+    RatioWith6Decimals div
+) pure returns (LpQuantity) {
+    return LpQuantity.wrap(mulDiv(RatioWith6Decimals.unwrap(left), LpQuantity.unwrap(right), RatioWith6Decimals.unwrap(div)));
+}
+
+function mulDiv(
+    RatioWith6Decimals left,
+    MaiQuantity right,
+    MaiQuantity div
+) pure returns (RatioWith6Decimals) {
+    return RatioWith6Decimals.wrap(mulDiv(RatioWith6Decimals.unwrap(left), MaiQuantity.unwrap(right), MaiQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    RatioWith6Decimals left,
+    MaiQuantity right,
+    RatioWith6Decimals div
+) pure returns (MaiQuantity) {
+    return MaiQuantity.wrap(mulDiv(RatioWith6Decimals.unwrap(left), MaiQuantity.unwrap(right), RatioWith6Decimals.unwrap(div)));
+}
+
+function mulDiv(
+    RatioWith6Decimals left,
+    PePerUsdcQuantity right,
+    PePerUsdcQuantity div
+) pure returns (RatioWith6Decimals) {
+    return RatioWith6Decimals.wrap(mulDiv(RatioWith6Decimals.unwrap(left), PePerUsdcQuantity.unwrap(right), PePerUsdcQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    RatioWith6Decimals left,
+    PePerUsdcQuantity right,
+    RatioWith6Decimals div
+) pure returns (PePerUsdcQuantity) {
+    return PePerUsdcQuantity.wrap(mulDiv(RatioWith6Decimals.unwrap(left), PePerUsdcQuantity.unwrap(right), RatioWith6Decimals.unwrap(div)));
+}
+
+function mulDiv(
+    RatioWith6Decimals left,
+    PeQuantity right,
+    PePerUsdcQuantity div
+) pure returns (UsdcQuantity) {
+    return UsdcQuantity.wrap(mulDiv(RatioWith6Decimals.unwrap(left), PeQuantity.unwrap(right), PePerUsdcQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    RatioWith6Decimals left,
+    PeQuantity right,
+    PeQuantity div
+) pure returns (RatioWith6Decimals) {
+    return RatioWith6Decimals.wrap(mulDiv(RatioWith6Decimals.unwrap(left), PeQuantity.unwrap(right), PeQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    RatioWith6Decimals left,
+    PeQuantity right,
+    RatioWith6Decimals div
+) pure returns (PeQuantity) {
+    return PeQuantity.wrap(mulDiv(RatioWith6Decimals.unwrap(left), PeQuantity.unwrap(right), RatioWith6Decimals.unwrap(div)));
+}
+
+function mulDiv(
+    RatioWith6Decimals left,
+    PeQuantity right,
+    UsdcQuantity div
+) pure returns (PePerUsdcQuantity) {
+    return PePerUsdcQuantity.wrap(mulDiv(RatioWith6Decimals.unwrap(left), PeQuantity.unwrap(right), UsdcQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    RatioWith6Decimals left,
+    QiQuantity right,
+    QiQuantity div
+) pure returns (RatioWith6Decimals) {
+    return RatioWith6Decimals.wrap(mulDiv(RatioWith6Decimals.unwrap(left), QiQuantity.unwrap(right), QiQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    RatioWith6Decimals left,
+    QiQuantity right,
+    RatioWith6Decimals div
+) pure returns (QiQuantity) {
+    return QiQuantity.wrap(mulDiv(RatioWith6Decimals.unwrap(left), QiQuantity.unwrap(right), RatioWith6Decimals.unwrap(div)));
+}
+
+function mulDiv(
+    RatioWith6Decimals left,
+    RatioWith6Decimals right,
+    PePerUsdcQuantity div
+) pure returns (UsdcPerPeQuantity) {
+    return UsdcPerPeQuantity.wrap(mulDiv(RatioWith6Decimals.unwrap(left), RatioWith6Decimals.unwrap(right), PePerUsdcQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    RatioWith6Decimals left,
+    RatioWith6Decimals right,
+    RatioWith6Decimals div
+) pure returns (RatioWith6Decimals) {
+    return RatioWith6Decimals.wrap(mulDiv(RatioWith6Decimals.unwrap(left), RatioWith6Decimals.unwrap(right), RatioWith6Decimals.unwrap(div)));
+}
+
+function mulDiv(
+    RatioWith6Decimals left,
+    RatioWith6Decimals right,
+    UsdcPerPeQuantity div
+) pure returns (PePerUsdcQuantity) {
+    return PePerUsdcQuantity.wrap(mulDiv(RatioWith6Decimals.unwrap(left), RatioWith6Decimals.unwrap(right), UsdcPerPeQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    RatioWith6Decimals left,
+    UsdcPerPeQuantity right,
+    RatioWith6Decimals div
+) pure returns (UsdcPerPeQuantity) {
+    return UsdcPerPeQuantity.wrap(mulDiv(RatioWith6Decimals.unwrap(left), UsdcPerPeQuantity.unwrap(right), RatioWith6Decimals.unwrap(div)));
+}
+
+function mulDiv(
+    RatioWith6Decimals left,
+    UsdcPerPeQuantity right,
+    UsdcPerPeQuantity div
+) pure returns (RatioWith6Decimals) {
+    return RatioWith6Decimals.wrap(mulDiv(RatioWith6Decimals.unwrap(left), UsdcPerPeQuantity.unwrap(right), UsdcPerPeQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    RatioWith6Decimals left,
+    UsdcQuantity right,
+    PeQuantity div
+) pure returns (UsdcPerPeQuantity) {
+    return UsdcPerPeQuantity.wrap(mulDiv(RatioWith6Decimals.unwrap(left), UsdcQuantity.unwrap(right), PeQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    RatioWith6Decimals left,
+    UsdcQuantity right,
+    RatioWith6Decimals div
+) pure returns (UsdcQuantity) {
+    return UsdcQuantity.wrap(mulDiv(RatioWith6Decimals.unwrap(left), UsdcQuantity.unwrap(right), RatioWith6Decimals.unwrap(div)));
+}
+
+function mulDiv(
+    RatioWith6Decimals left,
+    UsdcQuantity right,
+    UsdcPerPeQuantity div
+) pure returns (PeQuantity) {
+    return PeQuantity.wrap(mulDiv(RatioWith6Decimals.unwrap(left), UsdcQuantity.unwrap(right), UsdcPerPeQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    RatioWith6Decimals left,
+    UsdcQuantity right,
+    UsdcQuantity div
+) pure returns (RatioWith6Decimals) {
+    return RatioWith6Decimals.wrap(mulDiv(RatioWith6Decimals.unwrap(left), UsdcQuantity.unwrap(right), UsdcQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    RatioWith6Decimals left,
+    uint256 right,
+    RatioWith6Decimals div
+) pure returns (uint256) {
+    return mulDiv(RatioWith6Decimals.unwrap(left), right, RatioWith6Decimals.unwrap(div));
+}
+
+function mulDiv(
+    RatioWith6Decimals left,
+    uint256 right,
+    uint256 div
+) pure returns (RatioWith6Decimals) {
+    return RatioWith6Decimals.wrap(mulDiv(RatioWith6Decimals.unwrap(left), right, div));
+}
+
+function mulDiv(
+    UsdcPerPeQuantity left,
+    LpQuantity right,
+    LpQuantity div
+) pure returns (UsdcPerPeQuantity) {
+    return UsdcPerPeQuantity.wrap(mulDiv(UsdcPerPeQuantity.unwrap(left), LpQuantity.unwrap(right), LpQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    UsdcPerPeQuantity left,
+    LpQuantity right,
+    UsdcPerPeQuantity div
+) pure returns (LpQuantity) {
+    return LpQuantity.wrap(mulDiv(UsdcPerPeQuantity.unwrap(left), LpQuantity.unwrap(right), UsdcPerPeQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    UsdcPerPeQuantity left,
+    MaiQuantity right,
+    MaiQuantity div
+) pure returns (UsdcPerPeQuantity) {
+    return UsdcPerPeQuantity.wrap(mulDiv(UsdcPerPeQuantity.unwrap(left), MaiQuantity.unwrap(right), MaiQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    UsdcPerPeQuantity left,
+    MaiQuantity right,
+    UsdcPerPeQuantity div
+) pure returns (MaiQuantity) {
+    return MaiQuantity.wrap(mulDiv(UsdcPerPeQuantity.unwrap(left), MaiQuantity.unwrap(right), UsdcPerPeQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    UsdcPerPeQuantity left,
+    PePerUsdcQuantity right,
+    PePerUsdcQuantity div
+) pure returns (UsdcPerPeQuantity) {
+    return UsdcPerPeQuantity.wrap(mulDiv(UsdcPerPeQuantity.unwrap(left), PePerUsdcQuantity.unwrap(right), PePerUsdcQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    UsdcPerPeQuantity left,
+    PePerUsdcQuantity right,
+    RatioWith6Decimals div
+) pure returns (RatioWith6Decimals) {
+    return RatioWith6Decimals.wrap(mulDiv(UsdcPerPeQuantity.unwrap(left), PePerUsdcQuantity.unwrap(right), RatioWith6Decimals.unwrap(div)));
+}
+
+function mulDiv(
+    UsdcPerPeQuantity left,
+    PePerUsdcQuantity right,
+    UsdcPerPeQuantity div
+) pure returns (PePerUsdcQuantity) {
+    return PePerUsdcQuantity.wrap(mulDiv(UsdcPerPeQuantity.unwrap(left), PePerUsdcQuantity.unwrap(right), UsdcPerPeQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    UsdcPerPeQuantity left,
+    PeQuantity right,
+    PeQuantity div
+) pure returns (UsdcPerPeQuantity) {
+    return UsdcPerPeQuantity.wrap(mulDiv(UsdcPerPeQuantity.unwrap(left), PeQuantity.unwrap(right), PeQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    UsdcPerPeQuantity left,
+    PeQuantity right,
+    RatioWith6Decimals div
+) pure returns (UsdcQuantity) {
+    return UsdcQuantity.wrap(mulDiv(UsdcPerPeQuantity.unwrap(left), PeQuantity.unwrap(right), RatioWith6Decimals.unwrap(div)));
+}
+
+function mulDiv(
+    UsdcPerPeQuantity left,
+    PeQuantity right,
+    UsdcPerPeQuantity div
+) pure returns (PeQuantity) {
+    return PeQuantity.wrap(mulDiv(UsdcPerPeQuantity.unwrap(left), PeQuantity.unwrap(right), UsdcPerPeQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    UsdcPerPeQuantity left,
+    PeQuantity right,
+    UsdcQuantity div
+) pure returns (RatioWith6Decimals) {
+    return RatioWith6Decimals.wrap(mulDiv(UsdcPerPeQuantity.unwrap(left), PeQuantity.unwrap(right), UsdcQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    UsdcPerPeQuantity left,
+    QiQuantity right,
+    QiQuantity div
+) pure returns (UsdcPerPeQuantity) {
+    return UsdcPerPeQuantity.wrap(mulDiv(UsdcPerPeQuantity.unwrap(left), QiQuantity.unwrap(right), QiQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    UsdcPerPeQuantity left,
+    QiQuantity right,
+    UsdcPerPeQuantity div
+) pure returns (QiQuantity) {
+    return QiQuantity.wrap(mulDiv(UsdcPerPeQuantity.unwrap(left), QiQuantity.unwrap(right), UsdcPerPeQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    UsdcPerPeQuantity left,
+    RatioWith6Decimals right,
+    RatioWith6Decimals div
+) pure returns (UsdcPerPeQuantity) {
+    return UsdcPerPeQuantity.wrap(mulDiv(UsdcPerPeQuantity.unwrap(left), RatioWith6Decimals.unwrap(right), RatioWith6Decimals.unwrap(div)));
+}
+
+function mulDiv(
+    UsdcPerPeQuantity left,
+    RatioWith6Decimals right,
+    UsdcPerPeQuantity div
+) pure returns (RatioWith6Decimals) {
+    return RatioWith6Decimals.wrap(mulDiv(UsdcPerPeQuantity.unwrap(left), RatioWith6Decimals.unwrap(right), UsdcPerPeQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    UsdcPerPeQuantity left,
+    UsdcPerPeQuantity right,
+    UsdcPerPeQuantity div
+) pure returns (UsdcPerPeQuantity) {
+    return UsdcPerPeQuantity.wrap(mulDiv(UsdcPerPeQuantity.unwrap(left), UsdcPerPeQuantity.unwrap(right), UsdcPerPeQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    UsdcPerPeQuantity left,
+    UsdcQuantity right,
+    UsdcPerPeQuantity div
+) pure returns (UsdcQuantity) {
+    return UsdcQuantity.wrap(mulDiv(UsdcPerPeQuantity.unwrap(left), UsdcQuantity.unwrap(right), UsdcPerPeQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    UsdcPerPeQuantity left,
+    UsdcQuantity right,
+    UsdcQuantity div
+) pure returns (UsdcPerPeQuantity) {
+    return UsdcPerPeQuantity.wrap(mulDiv(UsdcPerPeQuantity.unwrap(left), UsdcQuantity.unwrap(right), UsdcQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    UsdcPerPeQuantity left,
+    uint256 right,
+    UsdcPerPeQuantity div
+) pure returns (uint256) {
+    return mulDiv(UsdcPerPeQuantity.unwrap(left), right, UsdcPerPeQuantity.unwrap(div));
+}
+
+function mulDiv(
+    UsdcPerPeQuantity left,
+    uint256 right,
+    uint256 div
+) pure returns (UsdcPerPeQuantity) {
+    return UsdcPerPeQuantity.wrap(mulDiv(UsdcPerPeQuantity.unwrap(left), right, div));
+}
+
+function mulDiv(
+    UsdcQuantity left,
+    LpQuantity right,
+    LpQuantity div
+) pure returns (UsdcQuantity) {
+    return UsdcQuantity.wrap(mulDiv(UsdcQuantity.unwrap(left), LpQuantity.unwrap(right), LpQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    UsdcQuantity left,
+    LpQuantity right,
+    UsdcQuantity div
+) pure returns (LpQuantity) {
+    return LpQuantity.wrap(mulDiv(UsdcQuantity.unwrap(left), LpQuantity.unwrap(right), UsdcQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    UsdcQuantity left,
+    MaiQuantity right,
+    MaiQuantity div
+) pure returns (UsdcQuantity) {
+    return UsdcQuantity.wrap(mulDiv(UsdcQuantity.unwrap(left), MaiQuantity.unwrap(right), MaiQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    UsdcQuantity left,
+    MaiQuantity right,
+    UsdcQuantity div
+) pure returns (MaiQuantity) {
+    return MaiQuantity.wrap(mulDiv(UsdcQuantity.unwrap(left), MaiQuantity.unwrap(right), UsdcQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    UsdcQuantity left,
+    PePerUsdcQuantity right,
+    PePerUsdcQuantity div
+) pure returns (UsdcQuantity) {
+    return UsdcQuantity.wrap(mulDiv(UsdcQuantity.unwrap(left), PePerUsdcQuantity.unwrap(right), PePerUsdcQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    UsdcQuantity left,
+    PePerUsdcQuantity right,
+    PeQuantity div
+) pure returns (RatioWith6Decimals) {
+    return RatioWith6Decimals.wrap(mulDiv(UsdcQuantity.unwrap(left), PePerUsdcQuantity.unwrap(right), PeQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    UsdcQuantity left,
+    PePerUsdcQuantity right,
+    RatioWith6Decimals div
+) pure returns (PeQuantity) {
+    return PeQuantity.wrap(mulDiv(UsdcQuantity.unwrap(left), PePerUsdcQuantity.unwrap(right), RatioWith6Decimals.unwrap(div)));
+}
+
+function mulDiv(
+    UsdcQuantity left,
+    PePerUsdcQuantity right,
+    UsdcQuantity div
+) pure returns (PePerUsdcQuantity) {
+    return PePerUsdcQuantity.wrap(mulDiv(UsdcQuantity.unwrap(left), PePerUsdcQuantity.unwrap(right), UsdcQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    UsdcQuantity left,
+    PeQuantity right,
+    PeQuantity div
+) pure returns (UsdcQuantity) {
+    return UsdcQuantity.wrap(mulDiv(UsdcQuantity.unwrap(left), PeQuantity.unwrap(right), PeQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    UsdcQuantity left,
+    PeQuantity right,
+    UsdcQuantity div
+) pure returns (PeQuantity) {
+    return PeQuantity.wrap(mulDiv(UsdcQuantity.unwrap(left), PeQuantity.unwrap(right), UsdcQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    UsdcQuantity left,
+    QiQuantity right,
+    QiQuantity div
+) pure returns (UsdcQuantity) {
+    return UsdcQuantity.wrap(mulDiv(UsdcQuantity.unwrap(left), QiQuantity.unwrap(right), QiQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    UsdcQuantity left,
+    QiQuantity right,
+    UsdcQuantity div
+) pure returns (QiQuantity) {
+    return QiQuantity.wrap(mulDiv(UsdcQuantity.unwrap(left), QiQuantity.unwrap(right), UsdcQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    UsdcQuantity left,
+    RatioWith6Decimals right,
+    PeQuantity div
+) pure returns (UsdcPerPeQuantity) {
+    return UsdcPerPeQuantity.wrap(mulDiv(UsdcQuantity.unwrap(left), RatioWith6Decimals.unwrap(right), PeQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    UsdcQuantity left,
+    RatioWith6Decimals right,
+    RatioWith6Decimals div
+) pure returns (UsdcQuantity) {
+    return UsdcQuantity.wrap(mulDiv(UsdcQuantity.unwrap(left), RatioWith6Decimals.unwrap(right), RatioWith6Decimals.unwrap(div)));
+}
+
+function mulDiv(
+    UsdcQuantity left,
+    RatioWith6Decimals right,
+    UsdcPerPeQuantity div
+) pure returns (PeQuantity) {
+    return PeQuantity.wrap(mulDiv(UsdcQuantity.unwrap(left), RatioWith6Decimals.unwrap(right), UsdcPerPeQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    UsdcQuantity left,
+    RatioWith6Decimals right,
+    UsdcQuantity div
+) pure returns (RatioWith6Decimals) {
+    return RatioWith6Decimals.wrap(mulDiv(UsdcQuantity.unwrap(left), RatioWith6Decimals.unwrap(right), UsdcQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    UsdcQuantity left,
+    UsdcPerPeQuantity right,
+    UsdcPerPeQuantity div
+) pure returns (UsdcQuantity) {
+    return UsdcQuantity.wrap(mulDiv(UsdcQuantity.unwrap(left), UsdcPerPeQuantity.unwrap(right), UsdcPerPeQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    UsdcQuantity left,
+    UsdcPerPeQuantity right,
+    UsdcQuantity div
+) pure returns (UsdcPerPeQuantity) {
+    return UsdcPerPeQuantity.wrap(mulDiv(UsdcQuantity.unwrap(left), UsdcPerPeQuantity.unwrap(right), UsdcQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    UsdcQuantity left,
+    UsdcQuantity right,
+    UsdcQuantity div
+) pure returns (UsdcQuantity) {
+    return UsdcQuantity.wrap(mulDiv(UsdcQuantity.unwrap(left), UsdcQuantity.unwrap(right), UsdcQuantity.unwrap(div)));
+}
+
+function mulDiv(
+    UsdcQuantity left,
+    uint256 right,
+    UsdcQuantity div
+) pure returns (uint256) {
+    return mulDiv(UsdcQuantity.unwrap(left), right, UsdcQuantity.unwrap(div));
+}
+
+function mulDiv(
+    UsdcQuantity left,
+    uint256 right,
+    uint256 div
+) pure returns (UsdcQuantity) {
+    return UsdcQuantity.wrap(mulDiv(UsdcQuantity.unwrap(left), right, div));
 }
 
 function mulDiv(
     uint256 left,
-    IPeronio.PeQuantity right,
-    IPeronio.UsdcQuantity div
-) pure returns (IPeronio.PePerUsdcQuantity) {
-    return IPeronio.PePerUsdcQuantity.wrap(mulDiv(left, IPeronio.PeQuantity.unwrap(right), IPeronio.UsdcQuantity.unwrap(div)));
-}
-
-function mulDiv(
-    IPeronio.PeQuantity left,
-    IPeronio.RatioWith6Decimals right,
-    IPeronio.UsdcQuantity div
-) pure returns (IPeronio.PePerUsdcQuantity) {
-    return
-        IPeronio.PePerUsdcQuantity.wrap(mulDiv(IPeronio.PeQuantity.unwrap(left), IPeronio.RatioWith6Decimals.unwrap(right), IPeronio.UsdcQuantity.unwrap(div)));
-}
-
-function mulDiv(
-    IPeronio.RatioWith6Decimals left,
-    IPeronio.PeQuantity right,
-    IPeronio.UsdcQuantity div
-) pure returns (IPeronio.PePerUsdcQuantity) {
-    return
-        IPeronio.PePerUsdcQuantity.wrap(mulDiv(IPeronio.RatioWith6Decimals.unwrap(left), IPeronio.PeQuantity.unwrap(right), IPeronio.UsdcQuantity.unwrap(div)));
-}
-
-function mulDiv(
-    IPeronio.UsdcQuantity left,
-    uint256 right,
-    IPeronio.PeQuantity div
-) pure returns (IPeronio.UsdcPerPeQuantity) {
-    return IPeronio.UsdcPerPeQuantity.wrap(mulDiv(IPeronio.UsdcQuantity.unwrap(left), right, IPeronio.PeQuantity.unwrap(div)));
+    LpQuantity right,
+    LpQuantity div
+) pure returns (uint256) {
+    return mulDiv(left, LpQuantity.unwrap(right), LpQuantity.unwrap(div));
 }
 
 function mulDiv(
     uint256 left,
-    IPeronio.UsdcQuantity right,
-    IPeronio.PeQuantity div
-) pure returns (IPeronio.UsdcPerPeQuantity) {
-    return IPeronio.UsdcPerPeQuantity.wrap(mulDiv(left, IPeronio.UsdcQuantity.unwrap(right), IPeronio.PeQuantity.unwrap(div)));
-}
-
-function mulDiv(
-    IPeronio.UsdcQuantity left,
-    IPeronio.RatioWith6Decimals right,
-    IPeronio.PeQuantity div
-) pure returns (IPeronio.UsdcPerPeQuantity) {
-    return
-        IPeronio.UsdcPerPeQuantity.wrap(mulDiv(IPeronio.UsdcQuantity.unwrap(left), IPeronio.RatioWith6Decimals.unwrap(right), IPeronio.PeQuantity.unwrap(div)));
-}
-
-function mulDiv(
-    IPeronio.RatioWith6Decimals left,
-    IPeronio.UsdcQuantity right,
-    IPeronio.PeQuantity div
-) pure returns (IPeronio.UsdcPerPeQuantity) {
-    return
-        IPeronio.UsdcPerPeQuantity.wrap(mulDiv(IPeronio.RatioWith6Decimals.unwrap(left), IPeronio.UsdcQuantity.unwrap(right), IPeronio.PeQuantity.unwrap(div)));
-}
-
-function mulDiv(
-    IPeronio.UsdcQuantity left,
-    IPeronio.PePerUsdcQuantity right,
+    LpQuantity right,
     uint256 div
-) pure returns (IPeronio.PeQuantity) {
-    return IPeronio.PeQuantity.wrap(mulDiv(IPeronio.UsdcQuantity.unwrap(left), IPeronio.PePerUsdcQuantity.unwrap(right), div));
+) pure returns (LpQuantity) {
+    return LpQuantity.wrap(mulDiv(left, LpQuantity.unwrap(right), div));
 }
 
 function mulDiv(
-    IPeronio.PePerUsdcQuantity left,
-    IPeronio.UsdcQuantity right,
+    uint256 left,
+    MaiQuantity right,
+    MaiQuantity div
+) pure returns (uint256) {
+    return mulDiv(left, MaiQuantity.unwrap(right), MaiQuantity.unwrap(div));
+}
+
+function mulDiv(
+    uint256 left,
+    MaiQuantity right,
     uint256 div
-) pure returns (IPeronio.PeQuantity) {
-    return IPeronio.PeQuantity.wrap(mulDiv(IPeronio.PePerUsdcQuantity.unwrap(left), IPeronio.UsdcQuantity.unwrap(right), div));
+) pure returns (MaiQuantity) {
+    return MaiQuantity.wrap(mulDiv(left, MaiQuantity.unwrap(right), div));
 }
 
 function mulDiv(
-    IPeronio.UsdcQuantity left,
-    IPeronio.PePerUsdcQuantity right,
-    IPeronio.RatioWith6Decimals div
-) pure returns (IPeronio.PeQuantity) {
-    return
-        IPeronio.PeQuantity.wrap(mulDiv(IPeronio.UsdcQuantity.unwrap(left), IPeronio.PePerUsdcQuantity.unwrap(right), IPeronio.RatioWith6Decimals.unwrap(div)));
+    uint256 left,
+    PePerUsdcQuantity right,
+    PePerUsdcQuantity div
+) pure returns (uint256) {
+    return mulDiv(left, PePerUsdcQuantity.unwrap(right), PePerUsdcQuantity.unwrap(div));
 }
 
 function mulDiv(
-    IPeronio.PePerUsdcQuantity left,
-    IPeronio.UsdcQuantity right,
-    IPeronio.RatioWith6Decimals div
-) pure returns (IPeronio.PeQuantity) {
-    return
-        IPeronio.PeQuantity.wrap(mulDiv(IPeronio.PePerUsdcQuantity.unwrap(left), IPeronio.UsdcQuantity.unwrap(right), IPeronio.RatioWith6Decimals.unwrap(div)));
-}
-
-function mulDiv(
-    IPeronio.PeQuantity left,
-    IPeronio.UsdcPerPeQuantity right,
+    uint256 left,
+    PePerUsdcQuantity right,
     uint256 div
-) pure returns (IPeronio.UsdcQuantity) {
-    return IPeronio.UsdcQuantity.wrap(mulDiv(IPeronio.PeQuantity.unwrap(left), IPeronio.UsdcPerPeQuantity.unwrap(right), div));
+) pure returns (PePerUsdcQuantity) {
+    return PePerUsdcQuantity.wrap(mulDiv(left, PePerUsdcQuantity.unwrap(right), div));
 }
 
 function mulDiv(
-    IPeronio.UsdcPerPeQuantity left,
-    IPeronio.PeQuantity right,
+    uint256 left,
+    PeQuantity right,
+    PeQuantity div
+) pure returns (uint256) {
+    return mulDiv(left, PeQuantity.unwrap(right), PeQuantity.unwrap(div));
+}
+
+function mulDiv(
+    uint256 left,
+    PeQuantity right,
     uint256 div
-) pure returns (IPeronio.UsdcQuantity) {
-    return IPeronio.UsdcQuantity.wrap(mulDiv(IPeronio.UsdcPerPeQuantity.unwrap(left), IPeronio.PeQuantity.unwrap(right), div));
+) pure returns (PeQuantity) {
+    return PeQuantity.wrap(mulDiv(left, PeQuantity.unwrap(right), div));
 }
 
 function mulDiv(
-    IPeronio.PeQuantity left,
-    IPeronio.UsdcPerPeQuantity right,
-    IPeronio.RatioWith6Decimals div
-) pure returns (IPeronio.UsdcQuantity) {
-    return
-        IPeronio.UsdcQuantity.wrap(mulDiv(IPeronio.PeQuantity.unwrap(left), IPeronio.UsdcPerPeQuantity.unwrap(right), IPeronio.RatioWith6Decimals.unwrap(div)));
+    uint256 left,
+    QiQuantity right,
+    QiQuantity div
+) pure returns (uint256) {
+    return mulDiv(left, QiQuantity.unwrap(right), QiQuantity.unwrap(div));
 }
 
 function mulDiv(
-    IPeronio.UsdcPerPeQuantity left,
-    IPeronio.PeQuantity right,
-    IPeronio.RatioWith6Decimals div
-) pure returns (IPeronio.UsdcQuantity) {
-    return
-        IPeronio.UsdcQuantity.wrap(mulDiv(IPeronio.UsdcPerPeQuantity.unwrap(left), IPeronio.PeQuantity.unwrap(right), IPeronio.RatioWith6Decimals.unwrap(div)));
+    uint256 left,
+    QiQuantity right,
+    uint256 div
+) pure returns (QiQuantity) {
+    return QiQuantity.wrap(mulDiv(left, QiQuantity.unwrap(right), div));
+}
+
+function mulDiv(
+    uint256 left,
+    RatioWith6Decimals right,
+    RatioWith6Decimals div
+) pure returns (uint256) {
+    return mulDiv(left, RatioWith6Decimals.unwrap(right), RatioWith6Decimals.unwrap(div));
+}
+
+function mulDiv(
+    uint256 left,
+    RatioWith6Decimals right,
+    uint256 div
+) pure returns (RatioWith6Decimals) {
+    return RatioWith6Decimals.wrap(mulDiv(left, RatioWith6Decimals.unwrap(right), div));
+}
+
+function mulDiv(
+    uint256 left,
+    UsdcPerPeQuantity right,
+    UsdcPerPeQuantity div
+) pure returns (uint256) {
+    return mulDiv(left, UsdcPerPeQuantity.unwrap(right), UsdcPerPeQuantity.unwrap(div));
+}
+
+function mulDiv(
+    uint256 left,
+    UsdcPerPeQuantity right,
+    uint256 div
+) pure returns (UsdcPerPeQuantity) {
+    return UsdcPerPeQuantity.wrap(mulDiv(left, UsdcPerPeQuantity.unwrap(right), div));
+}
+
+function mulDiv(
+    uint256 left,
+    UsdcQuantity right,
+    UsdcQuantity div
+) pure returns (uint256) {
+    return mulDiv(left, UsdcQuantity.unwrap(right), UsdcQuantity.unwrap(div));
+}
+
+function mulDiv(
+    uint256 left,
+    UsdcQuantity right,
+    uint256 div
+) pure returns (UsdcQuantity) {
+    return UsdcQuantity.wrap(mulDiv(left, UsdcQuantity.unwrap(right), div));
 }

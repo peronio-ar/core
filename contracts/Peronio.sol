@@ -413,6 +413,9 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
     }
 
     // --- Quotes ---------------------------------------------------------------------------------------------------------------------------------------------
+    //
+    // Quotes are created by inlining the calls to mint (for quoteIn) and withdraw (for quoteOut), and discarding state-changing statements
+    //
 
     /**
      * Retrieve the expected number of PE tokens corresponding to the given number of USDC tokens for minting.
@@ -436,15 +439,15 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
 
         // simulate LP state update
         usdcReserves = add(usdcReserves, usdcAmount);
-        maiReserves = subtract(maiReserves, maiAmount);
+        maiReserves = sub(maiReserves, maiAmount);
 
         // -- SWAP --------------------------------------------------------------------------------
 
         // calculate actual values swapped
         {
-            MaiQuantity amountMaiOptimal = mulDiv(subtract(usdc, usdcAmount), maiReserves, usdcReserves);
+            MaiQuantity amountMaiOptimal = mulDiv(sub(usdc, usdcAmount), maiReserves, usdcReserves);
             if (lte(amountMaiOptimal, maiAmount)) {
-                (usdcAmount, maiAmount) = (subtract(usdc, usdcAmount), amountMaiOptimal);
+                (usdcAmount, maiAmount) = (sub(usdc, usdcAmount), amountMaiOptimal);
             } else {
                 UsdcQuantity amountUsdcOptimal = mulDiv(maiAmount, usdcReserves, maiReserves);
                 (usdcAmount, maiAmount) = (amountUsdcOptimal, maiAmount);
@@ -453,10 +456,10 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
 
         // deal with LP minting when changing its K
         {
-            UniSwapRootKQuantity rootK = sqrt256(prod(usdcReserves, maiReserves));
+            UniSwapRootKQuantity rootK = sqrt256(mul(usdcReserves, maiReserves));
             UniSwapRootKQuantity rootKLast = sqrt256(UniSwapKQuantity.wrap(IUniswapV2Pair(_lpAddress).kLast()));
             if (lt(rootKLast, rootK)) {
-                lpTotalSupply = add(lpTotalSupply, mulDiv(lpTotalSupply, subtract(rootK, rootKLast), add(prod(rootK, 5), rootKLast)));
+                lpTotalSupply = add(lpTotalSupply, mulDiv(lpTotalSupply, sub(rootK, rootKLast), add(mul(rootK, 5), rootKLast)));
             }
         }
 
@@ -469,7 +472,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         }
 
         // -- PERONIO -----------------------------------------------------------------------------
-        LpQuantity lpAmount = mulDiv(zapInLps, subtract(ONE, _totalMintFee(markupFee)), ONE);
+        LpQuantity lpAmount = mulDiv(zapInLps, sub(ONE, _totalMintFee(markupFee)), ONE);
         pe = mulDiv(lpAmount, _totalSupply(), _stakedBalance());
     }
 
@@ -490,10 +493,10 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
 
         // deal with LP minting when changing its K
         {
-            UniSwapRootKQuantity rootK = sqrt256(prod(usdcReserves, maiReserves));
+            UniSwapRootKQuantity rootK = sqrt256(mul(usdcReserves, maiReserves));
             UniSwapRootKQuantity rootKLast = sqrt256(UniSwapKQuantity.wrap(IUniswapV2Pair(_lpAddress).kLast()));
             if (lt(rootKLast, rootK)) {
-                lpTotalSupply = add(lpTotalSupply, mulDiv(lpTotalSupply, subtract(rootK, rootKLast), add(prod(rootK, 5), rootKLast)));
+                lpTotalSupply = add(lpTotalSupply, mulDiv(lpTotalSupply, sub(rootK, rootKLast), add(mul(rootK, 5), rootKLast)));
             }
         }
 
@@ -503,7 +506,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         UsdcQuantity usdcAmount = mulDiv(usdcReserves, lpAmount, lpTotalSupply);
         MaiQuantity maiAmount = mulDiv(maiReserves, lpAmount, lpTotalSupply);
 
-        usdc = add(usdcAmount, _getAmountOut(maiAmount, subtract(maiReserves, maiAmount), subtract(usdcReserves, usdcAmount)));
+        usdc = add(usdcAmount, _getAmountOut(maiAmount, sub(maiReserves, maiAmount), sub(usdcReserves, usdcAmount)));
     }
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -624,7 +627,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         LpQuantity stakedAmount = _stakedBalance();
 
         // Commit USDC tokens, and discount fees totalling the markup fee
-        LpQuantity lpAmount = mulDiv(_zapIn(usdcAmount), subtract(ONE, _totalMintFee(_markupFee)), ONE);
+        LpQuantity lpAmount = mulDiv(_zapIn(usdcAmount), sub(ONE, _totalMintFee(_markupFee)), ONE);
 
         // Calculate the number of PE tokens as the proportion of liquidity provided
         peAmount = mulDiv(lpAmount, _totalSupply(), stakedAmount);
@@ -689,7 +692,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         require(lt(UsdcQuantity.wrap(0), amountToSwap), "Nothing to swap");
 
         maiAmount = _swapTokens(amountToSwap);
-        usdcAmount = subtract(amount, amountToSwap);
+        usdcAmount = sub(amount, amountToSwap);
     }
 
     /**
@@ -830,7 +833,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------
 
     function _calculateSwapInAmount(UsdcQuantity reserveIn, UsdcQuantity userIn) internal pure returns (UsdcQuantity amount) {
-        amount = subtract(sqrt256(mulDiv(add(prod(3988009, reserveIn), prod(3988000, userIn)), reserveIn, 3976036)), mulDiv(reserveIn, 1997, 1994));
+        amount = sub(sqrt256(mulDiv(add(mul(3988009, reserveIn), mul(3988000, userIn)), reserveIn, 3976036)), mulDiv(reserveIn, 1997, 1994));
     }
 
     function _getAmountOut(
