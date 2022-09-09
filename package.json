@@ -24,7 +24,7 @@
         "@typechain/hardhat": "^6.1.2",
         "@types/chai": "^4.3.3",
         "@types/mocha": "^9.1.1",
-        "@types/node": "^18.7.15",
+        "@types/node": "^18.7.16",
         "@typescript-eslint/eslint-plugin": "^5.36.2",
         "@typescript-eslint/parser": "^5.36.2",
         "async": "^3.2.4",
@@ -55,7 +55,7 @@
         "solpp": "^0.11.5",
         "ts-node": "^10.9.1",
         "typechain": "^8.1.0",
-        "typescript": "^4.8.2",
+        "typescript": "^4.8.3",
         "underscore": "1.13.4"
     },
     "scripts": {
