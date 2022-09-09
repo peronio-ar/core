@@ -413,6 +413,9 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
     }
 
     // --- Quotes ---------------------------------------------------------------------------------------------------------------------------------------------
+    //
+    // Quotes are created by inlining the calls to mint (for quoteIn) and withdraw (for quoteOut), and discarding state-changing statements
+    //
 
     /**
      * Retrieve the expected number of PE tokens corresponding to the given number of USDC tokens for minting.

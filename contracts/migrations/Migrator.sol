@@ -38,6 +38,8 @@ contract Migrator is IMigrator {
         IERC20(IPeronioV1(_peronioV1Address).USDC_ADDRESS()).approve(_peronioV2Address, type(uint256).max);
     }
 
+    // --- Migration Proper -----------------------------------------------------------------------------------------------------------------------------------
+
     /**
      * Migrate the given number of PE tokens from the old contract to the new one
      *
@@ -63,6 +65,11 @@ contract Migrator is IMigrator {
         // Emit Migrated event
         emit Migrated(block.timestamp, amount, usdc, pe);
     }
+
+    // --- Quote ----------------------------------------------------------------------------------------------------------------------------------------------
+    //
+    // Quote is created by inlining the call to migrate, and discarding state-changing statements
+    //
 
     /**
      * Retrieve the number of USDC tokens to withdraw from the old contract, and the number of OE tokens to mint on the new one
