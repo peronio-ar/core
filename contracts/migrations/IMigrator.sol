@@ -30,17 +30,6 @@ interface IMigrator {
      */
     function peronioV2Address() external view returns (address);
 
-    // --- Quotes ---------------------------------------------------------------------------------------------------------------------------------------------
-
-    /**
-     * Retrieve the number of USDC tokens to withdraw from the old contract, and the number of OE tokens to mint on the new one
-     *
-     * @param amount  The number of PE tokens to withdraw from the old contract
-     * @return usdc  The number of USDC tokens to withdraw from the old contract
-     * @return pe  The number of PE tokens to mint on the new contract
-     */
-    function quote(uint256 amount) external view returns (uint256 usdc, uint256 pe);
-
     // --- Migration Proper -----------------------------------------------------------------------------------------------------------------------------------
 
     /**
@@ -52,4 +41,15 @@ interface IMigrator {
      * @custom:emit  Migrated
      */
     function migrate(uint256 amount) external returns (uint256 usdc, uint256 pe);
+
+    // --- Quote ----------------------------------------------------------------------------------------------------------------------------------------------
+
+    /**
+     * Retrieve the number of USDC tokens to withdraw from the old contract, and the number of OE tokens to mint on the new one
+     *
+     * @param amount  The number of PE tokens to withdraw from the old contract
+     * @return usdc  The number of USDC tokens to withdraw from the old contract
+     * @return pe  The number of PE tokens to mint on the new contract
+     */
+    function quote(uint256 amount) external view returns (uint256 usdc, uint256 pe);
 }

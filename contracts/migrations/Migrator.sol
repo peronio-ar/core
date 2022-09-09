@@ -39,6 +39,32 @@ contract Migrator is IMigrator {
     }
 
     /**
+     * Migrate the given number of PE tokens from the old contract to the new one
+     *
+     * @param amount  The number of PE tokens to withdraw from the old contract
+     * @return usdc  The number of USDC tokens withdrawn from the old contract
+     * @return pe  The number of PE tokens minted on the new contract
+     * @custom:emit  Migrated
+     */
+    function migrate(uint256 amount) external override returns (uint256 usdc, uint256 pe) {
+        // Peronio V1 Contract Wrapper
+        IPeronioV1 peronioV1 = IPeronioV1(peronioV1Address);
+        // Peronio V2 Contract
+        IPeronio peronioV2 = IPeronio(peronioV2Address);
+
+        // Transfer PE V1 to this contract
+        IERC20(peronioV1Address).transferFrom(msg.sender, address(this), amount);
+
+        // Calculate USDC to be received by Peronio V1
+        usdc = peronioV1.withdrawV2(address(this), amount);
+        // Calculate PE to be minted by Peronio V2
+        pe = PeQuantity.unwrap(peronioV2.mintForMigration(msg.sender, UsdcQuantity.wrap(usdc), PeQuantity.wrap(1)));
+
+        // Emit Migrated event
+        emit Migrated(block.timestamp, amount, usdc, pe);
+    }
+
+    /**
      * Retrieve the number of USDC tokens to withdraw from the old contract, and the number of OE tokens to mint on the new one
      *
      * @param amount  The number of PE tokens to withdraw from the old contract
@@ -135,31 +161,5 @@ contract Migrator is IMigrator {
         uint256 stakedAmount = IFarm(IPeronio(peronioV2Address).qiDaoFarmAddress()).deposited(IPeronio(peronioV2Address).qiDaoPoolId(), peronioV2Address);
 
         pe = mulDiv(lpAmountMint, IERC20(peronioV2Address).totalSupply(), stakedAmount);
-    }
-
-    /**
-     * Migrate the given number of PE tokens from the old contract to the new one
-     *
-     * @param amount  The number of PE tokens to withdraw from the old contract
-     * @return usdc  The number of USDC tokens withdrawn from the old contract
-     * @return pe  The number of PE tokens minted on the new contract
-     * @custom:emit  Migrated
-     */
-    function migrate(uint256 amount) external override returns (uint256 usdc, uint256 pe) {
-        // Peronio V1 Contract Wrapper
-        IPeronioV1 peronioV1 = IPeronioV1(peronioV1Address);
-        // Peronio V2 Contract
-        IPeronio peronioV2 = IPeronio(peronioV2Address);
-
-        // Transfer PE V1 to this contract
-        IERC20(peronioV1Address).transferFrom(msg.sender, address(this), amount);
-
-        // Calculate USDC to be received by Peronio V1
-        usdc = peronioV1.withdrawV2(address(this), amount);
-        // Calculate PE to be minted by Peronio V2
-        pe = PeQuantity.unwrap(peronioV2.mintForMigration(msg.sender, UsdcQuantity.wrap(usdc), PeQuantity.wrap(1)));
-
-        // Emit Migrated event
-        emit Migrated(block.timestamp, amount, usdc, pe);
     }
 }
