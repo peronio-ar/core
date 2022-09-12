@@ -53,7 +53,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
     uint8 private constant DECIMALS = 6;
 
     // One-hour constant
-    uint256 private constant ONE_HOUR = 60 /* minutes */ * 60 /* seconds */;
+    uint256 private constant ONE_HOUR = 60 * 60; /* 60 minutes * 60 seconds */
 
     // Rational constant one
     RatioWith6Decimals private constant ONE = RatioWith6Decimals.wrap(10**DECIMALS);
