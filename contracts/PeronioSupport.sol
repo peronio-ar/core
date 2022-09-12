@@ -2,7 +2,7 @@ pragma solidity ^0.8.16;
 
 // SPDX-License-Identifier: MIT
 
-import "./IPeronio.sol";
+import "./IPeronioSupport.sol";
 import {max, min, mulDiv, sqrt256} from "./Utils.sol";
 
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------

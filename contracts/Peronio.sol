@@ -21,10 +21,7 @@ import {IUniswapV2Router02} from "./uniswap/interfaces/IUniswapV2Router02.sol";
 // Needed for Babylonian square-root & combined-multiplication-and-division
 import {max, min, mulDiv, sqrt256} from "./Utils.sol";
 
-// Interface
-import "./IPeronio.sol";
-
-// User-defined value types --- implementation-specific
+// Interface & support
 import "./PeronioSupport.sol";
 
 contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, ReentrancyGuard {
