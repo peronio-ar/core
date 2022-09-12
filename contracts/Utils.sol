@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.16;
+pragma solidity ^0.8.17;
 
 /**
  * Compute the maximum amongst the given quantities, returning the left one if equal

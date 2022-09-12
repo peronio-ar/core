@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.16;
+pragma solidity ^0.8.17;
 
 // OpenZeppelin imports
 import {AccessControl} from "@openzeppelin/contracts_latest/access/AccessControl.sol";

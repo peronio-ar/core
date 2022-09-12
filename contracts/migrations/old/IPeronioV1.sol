@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.16;
+pragma solidity ^0.8.17;
 
 interface IPeronioV1 {
     function USDC_ADDRESS() external view returns (address);

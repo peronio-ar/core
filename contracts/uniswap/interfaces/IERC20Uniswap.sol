@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
-pragma solidity ^0.8.16;
+pragma solidity ^0.8.17;
 
 interface IERC20Uniswap {
     event Approval(address indexed owner, address indexed spender, uint256 value);
