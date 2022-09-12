@@ -62,7 +62,6 @@ const config: HardhatUserConfig = {
             },
             mining: {
                 auto: true,
-                // interval: 1000,
             },
         },
         localhost: {
