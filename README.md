@@ -129,7 +129,7 @@ Done in 12.65s.
 
 ### Typechain Declarations
 
-Typechain declarations are automatically generated after install
+Typechain declarations are automatically generated after installation.
 
 ## Usage
 
@@ -139,7 +139,7 @@ It is important to have the local fork running for all the examples and tests to
 You can do this by simply:
 
 ```shell
-$ yarn chain &
+$ yarn chain
 [1] 55830
 yarn run v1.22.19
 $ hardhat node --network hardhat --no-deploy
@@ -217,22 +217,8 @@ Any funds sent to them on Mainnet or any other live network WILL BE LOST.
 
 > Note that you can **only have ONE instance of the chain fork running at any given time** (without fiddling around with the configurations, that is).
 
-Pay attention to the `&` character at the command line's end: this will run the `yarn chain` command in the background.
-If you want to see what background jobs your shell is maintaining, you can do:
-
-```shell
-$ jobs
-[1] + running yarn chain
-```
-
-And if you want to end the chain fork, you can simply do:
-
-```shell
-$ kill %N
-[N] + 55830 exit 1 yarn chain
-```
-
-Where `N` is the number in brackets (ie. `[N]`) the `jobs` command reported.
+Having said that, the tests (see below) will internally run this command and wait for the chain to come online automatically.
+You can always run the chain fork manually before running the tests (for debugging, for instance).
 
 ### Running the Tests
 
@@ -256,17 +242,24 @@ Deploying Peronio is as simple as:
 
 ```shell
 $ yarn deploy
-yarn run v1.22.19
+yarn run v1.22.17
 $ hardhat deploy
 Nothing to compile
 No need to generate any newer typings.
-eth_chainId (2)
-eth_chainId (4)
-eth_estimateGas
-eth_chainId
-eth_getTransactionCount
-deploying "Peronio"
-    ...
+-- Hardhat network
+Increase MATIC
+Swapping MATIC into USDC
+Deploying Peronio
+deploying "Peronio" (tx: 0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef)...: deployed at 0xFeDcBa9876543210fEdCbA9876543210FeDcBa98 with 7654321 gas
+Initializing Peronio
+Deploying Migrator
+deploying "Migrator" (tx: 0x23456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef01)...: deployed at 0x10FeDcBa9876543210fEdCbA9876543210FeDcBa with 9876543 gas
+Deploying Uniswap
+Deploying AutoCompound
+deploying "AutoCompounder" (tx: 0x456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123)...: deployed at 0x3210FeDcBa9876543210fEdCbA9876543210FeDc with 111098 gas
+Setting REWARD Role to AutoCompounder (0x3210FeDcBa9876543210fEdCbA9876543210FeDc)
+$ hardhat run scripts/publish.ts --network matic
+Done in 76.54s.
 ```
 
 > **Remember:** you _must_ have the chain fork running for this to work!
