@@ -15,11 +15,10 @@ dotenv.config();
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
 
-const gasPrice = parseFloat(process.env.GAS_PRICE || "1");
+const GAS_PRICE = parseFloat(process.env.GAS_PRICE || "1");
 
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY ?? "";
 const MAINNET_API_URL = process.env.MAINNET_API_URL ?? "";
-const MUMBAI_API_URL = process.env.MUMBAI_API_URL ?? "";
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY ?? "";
 const TESTER_PRIVATE_KEY = process.env.TESTER_PRIVATE_KEY ?? "";
@@ -31,7 +30,7 @@ const config: HardhatUserConfig = {
     solidity: {
         compilers: [
             {
-                version: "0.8.16",
+                version: "0.8.17",
                 settings: {
                     optimizer: {
                         enabled: true,
@@ -39,27 +38,6 @@ const config: HardhatUserConfig = {
                         details: {
                             peephole: true,
                             inliner: true,
-                            jumpdestRemover: true,
-                            orderLiterals: true,
-                            deduplicate: true,
-                            cse: true,
-                            constantOptimizer: true,
-                            yul: true,
-                            yulDetails: {
-                                stackAllocation: true,
-                            },
-                        },
-                    },
-                },
-            },
-            {
-                version: "0.6.12",
-                settings: {
-                    optimizer: {
-                        enabled: true,
-                        runs: 2000,
-                        details: {
-                            peephole: true,
                             jumpdestRemover: true,
                             orderLiterals: true,
                             deduplicate: true,
@@ -84,7 +62,6 @@ const config: HardhatUserConfig = {
             },
             mining: {
                 auto: true,
-                // interval: 1000,
             },
         },
         localhost: {
@@ -95,13 +72,7 @@ const config: HardhatUserConfig = {
         matic: {
             chainId: 137,
             url: MAINNET_API_URL,
-            gasPrice: gasPrice * 10 ** 9,
-            accounts: ACCOUNTS,
-        },
-        mumbai: {
-            chainId: 80001,
-            url: MUMBAI_API_URL,
-            gasPrice: gasPrice * 10 ** 9,
+            gasPrice: GAS_PRICE * 10 ** 9,
             accounts: ACCOUNTS,
         },
     },

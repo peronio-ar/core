@@ -1,8 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.16;
-
-// User-defined value types --- interface-specific
-import "./IPeronioSupport.sol";
+pragma solidity ^0.8.17;
 
 /**
  * Type representing an USDC token quantity

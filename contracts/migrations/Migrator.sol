@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.16;
+pragma solidity ^0.8.17;
 
 import {PeronioV1Wrapper} from "./old/PeronioV1Wrapper.sol";
 import {IPeronioV1} from "./old/IPeronioV1.sol";
