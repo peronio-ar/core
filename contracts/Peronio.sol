@@ -52,6 +52,9 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
     // Constant number of significant decimals
     uint8 private constant DECIMALS = 6;
 
+    // One-hour constant
+    uint256 private constant ONE_HOUR = 60 /* minutes */ * 60 /* seconds */;
+
     // Rational constant one
     RatioWith6Decimals private constant ONE = RatioWith6Decimals.wrap(10**DECIMALS);
 
@@ -719,7 +722,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
             1,
             1,
             address(this),
-            block.timestamp + 3600
+            block.timestamp + ONE_HOUR
         );
         lpAmount = LpQuantity.wrap(_lpAmount);
     }
@@ -739,7 +742,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
             1,
             1,
             address(this),
-            block.timestamp + 3600
+            block.timestamp + ONE_HOUR
         );
         (usdcAmount, maiAmount) = (UsdcQuantity.wrap(_usdcAmount), MaiQuantity.wrap(_maiAmount));
     }
@@ -822,7 +825,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         address[] memory path = new address[](2);
         (path[0], path[1]) = (fromAddress, toAddress);
 
-        swappedAmount = IUniswapV2Router02(quickSwapRouterAddress).swapExactTokensForTokens(amount, 1, path, address(this), block.timestamp + 3600)[1];
+        swappedAmount = IUniswapV2Router02(quickSwapRouterAddress).swapExactTokensForTokens(amount, 1, path, address(this), block.timestamp + ONE_HOUR)[1];
     }
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------
