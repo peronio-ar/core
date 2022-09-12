@@ -19,7 +19,6 @@ const gasPrice = parseFloat(process.env.GAS_PRICE || "1");
 
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY ?? "";
 const MAINNET_API_URL = process.env.MAINNET_API_URL ?? "";
-const MUMBAI_API_URL = process.env.MUMBAI_API_URL ?? "";
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY ?? "";
 const TESTER_PRIVATE_KEY = process.env.TESTER_PRIVATE_KEY ?? "";
@@ -74,12 +73,6 @@ const config: HardhatUserConfig = {
         matic: {
             chainId: 137,
             url: MAINNET_API_URL,
-            gasPrice: gasPrice * 10 ** 9,
-            accounts: ACCOUNTS,
-        },
-        mumbai: {
-            chainId: 80001,
-            url: MUMBAI_API_URL,
             gasPrice: gasPrice * 10 ** 9,
             accounts: ACCOUNTS,
         },
