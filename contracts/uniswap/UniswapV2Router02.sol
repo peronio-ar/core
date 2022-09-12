@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
-pragma solidity =0.6.12;
+pragma solidity ^0.8.16;
 
 import "./libraries/UniswapV2Library.sol";
-import "./libraries/SafeMath.sol";
 import "./libraries/TransferHelper.sol";
 import "./interfaces/IUniswapV2Router02.sol";
 import "./interfaces/IUniswapV2Factory.sol";
@@ -11,8 +10,6 @@ import "./interfaces/IERC20Uniswap.sol";
 import "./interfaces/IWETH.sol";
 
 contract UniswapV2Router02 is IUniswapV2Router02 {
-    using SafeMathUniswap for uint256;
-
     address public immutable override factory;
     address public immutable override WETH;
 
@@ -21,7 +18,7 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
         _;
     }
 
-    constructor(address _factory, address _WETH) public {
+    constructor(address _factory, address _WETH) {
         factory = _factory;
         WETH = _WETH;
     }
