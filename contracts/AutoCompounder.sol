@@ -7,6 +7,8 @@ import {Ownable} from "@openzeppelin/contracts_latest/access/Ownable.sol";
 contract AutoCompounder is Ownable {
     IPeronio internal peronio;
 
+    uint256 public constant MINIMUM_PERIOD = 12 * 60 * 60;
+
     uint256 public lastExecuted;
 
     constructor(address _peronio) {
@@ -14,9 +16,9 @@ contract AutoCompounder is Ownable {
     }
 
     function autoCompound() public onlyOwner {
-        require(12 * 60 * 60 < block.timestamp - lastExecuted, "autoCompound: Time not elapsed");
-        lastExecuted = block.timestamp;
+        require(MINIMUM_PERIOD < block.timestamp - lastExecuted, "autoCompound: Time not elapsed");
 
+        lastExecuted = block.timestamp;
         peronio.compoundRewards();
     }
 }
