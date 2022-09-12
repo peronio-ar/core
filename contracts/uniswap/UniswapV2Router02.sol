@@ -163,7 +163,7 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
         bytes32 s
     ) external virtual override returns (uint256 amountA, uint256 amountB) {
         address pair = UniswapV2Library.pairFor(factory, tokenA, tokenB);
-        uint256 value = approveMax ? uint256(-1) : liquidity;
+        uint256 value = approveMax ? type(uint256).max : liquidity;
         IUniswapV2Pair(pair).permit(msg.sender, address(this), value, deadline, v, r, s);
         (amountA, amountB) = removeLiquidity(tokenA, tokenB, liquidity, amountAMin, amountBMin, to, deadline);
     }
@@ -181,7 +181,7 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
         bytes32 s
     ) external virtual override returns (uint256 amountToken, uint256 amountETH) {
         address pair = UniswapV2Library.pairFor(factory, token, WETH);
-        uint256 value = approveMax ? uint256(-1) : liquidity;
+        uint256 value = approveMax ? type(uint256).max : liquidity;
         IUniswapV2Pair(pair).permit(msg.sender, address(this), value, deadline, v, r, s);
         (amountToken, amountETH) = removeLiquidityETH(token, liquidity, amountTokenMin, amountETHMin, to, deadline);
     }
@@ -214,7 +214,7 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
         bytes32 s
     ) external virtual override returns (uint256 amountETH) {
         address pair = UniswapV2Library.pairFor(factory, token, WETH);
-        uint256 value = approveMax ? uint256(-1) : liquidity;
+        uint256 value = approveMax ? type(uint256).max : liquidity;
         IUniswapV2Pair(pair).permit(msg.sender, address(this), value, deadline, v, r, s);
         amountETH = removeLiquidityETHSupportingFeeOnTransferTokens(token, liquidity, amountTokenMin, amountETHMin, to, deadline);
     }
