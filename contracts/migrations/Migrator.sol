@@ -126,7 +126,8 @@ contract Migrator is IMigrator {
             uint256 usdcAmount;
             uint256 maiAmount;
             {
-                uint256 usdcAmountToSwap = Math.sqrt(Math.mulDiv(3988009 * usdcReserves + 3988000 * usdc, usdcReserves, 3976036)) - Math.mulDiv(usdcReserves, 1997, 1994);
+                uint256 usdcAmountToSwap = Math.sqrt(Math.mulDiv(3988009 * usdcReserves + 3988000 * usdc, usdcReserves, 3976036)) -
+                    Math.mulDiv(usdcReserves, 1997, 1994);
                 uint256 maiAmountOut = Math.mulDiv(997 * usdcAmountToSwap, maiReserves, 997 * usdcAmountToSwap + 1000 * usdcReserves);
 
                 usdcReserves += usdcAmountToSwap;
