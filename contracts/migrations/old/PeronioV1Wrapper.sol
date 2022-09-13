@@ -14,8 +14,7 @@ import {IFarm} from "../../qidao/IFarm.sol";
 import {IUniswapV2Pair} from "../../uniswap/interfaces/IUniswapV2Pair.sol";
 import {IERC20Uniswap} from "../../uniswap/interfaces/IERC20Uniswap.sol";
 
-// mulDiv
-import {mulDiv, sqrt256} from "../../Utils.sol";
+import {Math} from "@openzeppelin/contracts_latest/utils/math/Math.sol";
 
 library PeronioV1Wrapper {
     /**
@@ -34,19 +33,19 @@ library PeronioV1Wrapper {
 
         // deal with LP minting when changing its K
         {
-            uint256 rootK = sqrt256(usdcReserves * maiReserves);
-            uint256 rootKLast = sqrt256(IUniswapV2Pair(_lpAddress).kLast());
+            uint256 rootK = Math.sqrt(usdcReserves * maiReserves);
+            uint256 rootKLast = Math.sqrt(IUniswapV2Pair(_lpAddress).kLast());
             if (rootKLast < rootK) {
-                lpTotalSupply += mulDiv(lpTotalSupply, rootK - rootKLast, (rootK * 5) + rootKLast);
+                lpTotalSupply += Math.mulDiv(lpTotalSupply, rootK - rootKLast, (rootK * 5) + rootKLast);
             }
         }
 
         // calculate LP values actually withdrawn
         uint256 lpAmount = IERC20Uniswap(_lpAddress).balanceOf(_lpAddress) +
-            mulDiv(pe, peronioContract.stakedBalance(), IERC20(address(peronioContract)).totalSupply());
+            Math.mulDiv(pe, peronioContract.stakedBalance(), IERC20(address(peronioContract)).totalSupply());
 
-        uint256 usdcAmount = mulDiv(usdcReserves, lpAmount, lpTotalSupply);
-        uint256 maiAmount = mulDiv(maiReserves, lpAmount, lpTotalSupply);
+        uint256 usdcAmount = Math.mulDiv(usdcReserves, lpAmount, lpTotalSupply);
+        uint256 maiAmount = Math.mulDiv(maiReserves, lpAmount, lpTotalSupply);
 
         usdc = usdcAmount + _getAmountOut(maiAmount, maiReserves - maiAmount, usdcReserves - usdcAmount);
     }
@@ -79,6 +78,6 @@ library PeronioV1Wrapper {
         uint256 reserveOut
     ) internal pure returns (uint256 amountOut) {
         uint256 amountInWithFee = amountIn * 997;
-        amountOut = mulDiv(amountInWithFee, reserveOut, reserveIn * 1000 + amountInWithFee);
+        amountOut = Math.mulDiv(amountInWithFee, reserveOut, reserveIn * 1000 + amountInWithFee);
     }
 }

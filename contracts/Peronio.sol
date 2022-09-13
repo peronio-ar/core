@@ -18,9 +18,6 @@ import {IERC20Uniswap} from "./uniswap/interfaces/IERC20Uniswap.sol";
 import {IUniswapV2Pair} from "./uniswap/interfaces/IUniswapV2Pair.sol";
 import {IUniswapV2Router02} from "./uniswap/interfaces/IUniswapV2Router02.sol";
 
-// Needed for Babylonian square-root & combined-multiplication-and-division
-import {max, min, mulDiv, sqrt256} from "./Utils.sol";
-
 // Interface & support
 import "./PeronioSupport.sol";
 
@@ -456,8 +453,8 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
 
         // deal with LP minting when changing its K
         {
-            UniSwapRootKQuantity rootK = sqrt256(mul(usdcReserves, maiReserves));
-            UniSwapRootKQuantity rootKLast = sqrt256(UniSwapKQuantity.wrap(IUniswapV2Pair(_lpAddress).kLast()));
+            UniSwapRootKQuantity rootK = sqrt(mul(usdcReserves, maiReserves));
+            UniSwapRootKQuantity rootKLast = sqrt(UniSwapKQuantity.wrap(IUniswapV2Pair(_lpAddress).kLast()));
             if (lt(rootKLast, rootK)) {
                 lpTotalSupply = add(lpTotalSupply, mulDiv(lpTotalSupply, sub(rootK, rootKLast), add(mul(rootK, 5), rootKLast)));
             }
@@ -493,8 +490,8 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
 
         // deal with LP minting when changing its K
         {
-            UniSwapRootKQuantity rootK = sqrt256(mul(usdcReserves, maiReserves));
-            UniSwapRootKQuantity rootKLast = sqrt256(UniSwapKQuantity.wrap(IUniswapV2Pair(_lpAddress).kLast()));
+            UniSwapRootKQuantity rootK = sqrt(mul(usdcReserves, maiReserves));
+            UniSwapRootKQuantity rootKLast = sqrt(UniSwapKQuantity.wrap(IUniswapV2Pair(_lpAddress).kLast()));
             if (lt(rootKLast, rootK)) {
                 lpTotalSupply = add(lpTotalSupply, mulDiv(lpTotalSupply, sub(rootK, rootKLast), add(mul(rootK, 5), rootKLast)));
             }
@@ -833,7 +830,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------
 
     function _calculateSwapInAmount(UsdcQuantity reserveIn, UsdcQuantity userIn) internal pure returns (UsdcQuantity amount) {
-        amount = sub(sqrt256(mulDiv(add(mul(3988009, reserveIn), mul(3988000, userIn)), reserveIn, 3976036)), mulDiv(reserveIn, 1997, 1994));
+        amount = sub(sqrt(mulDiv(add(mul(3988009, reserveIn), mul(3988000, userIn)), reserveIn, 3976036)), mulDiv(reserveIn, 1997, 1994));
     }
 
     function _getAmountOut(
@@ -842,7 +839,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         uint256 reserveOut
     ) internal pure returns (uint256 amountOut) {
         uint256 amountInWithFee = amountIn * 997;
-        amountOut = mulDiv(amountInWithFee, reserveOut, reserveIn * 1000 + amountInWithFee);
+        amountOut = Math.mulDiv(amountInWithFee, reserveOut, reserveIn * 1000 + amountInWithFee);
     }
 
     function _getAmountOut(
