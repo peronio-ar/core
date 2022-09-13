@@ -10,11 +10,12 @@ import {IUniswapV2Pair} from "../uniswap/interfaces/IUniswapV2Pair.sol";
 import {IFarm} from "../qidao/IFarm.sol";
 
 import {IERC20} from "@openzeppelin/contracts_latest/token/ERC20/IERC20.sol";
+import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 // Interface
 import {IMigrator} from "./IMigrator.sol";
 
-contract Migrator is IMigrator {
+contract Migrator is IMigrator, ERC165 {
     using PeronioV1Wrapper for IPeronioV1;
 
     // Peronio V1 Address
@@ -36,6 +37,16 @@ contract Migrator is IMigrator {
 
         // Unlimited USDC Approve to Peronio V2 contract
         IERC20(IPeronioV1(_peronioV1Address).USDC_ADDRESS()).approve(_peronioV2Address, type(uint256).max);
+    }
+
+    /**
+     * Implementation of the IERC165 interface
+     *
+     * @param interfaceId  Interface ID to check against
+     * @return  Whether the provided interface ID is supported
+     */
+    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
+        return interfaceId == type(IMigrator).interfaceId || super.supportsInterface(interfaceId);
     }
 
     // --- Migration Proper -----------------------------------------------------------------------------------------------------------------------------------
