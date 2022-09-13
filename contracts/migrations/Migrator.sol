@@ -5,7 +5,7 @@ import {PeronioV1Wrapper} from "./old/PeronioV1Wrapper.sol";
 import {IPeronioV1} from "./old/IPeronioV1.sol";
 import "../IPeronio.sol";
 
-import {min, mulDiv, sqrt256} from "../Utils.sol";
+import {Math} from "@openzeppelin/contracts_latest/utils/math/Math.sol";
 import {IUniswapV2Pair} from "../uniswap/interfaces/IUniswapV2Pair.sol";
 import {IFarm} from "../qidao/IFarm.sol";
 
@@ -90,8 +90,8 @@ contract Migrator is IMigrator {
         uint256 kLast = IUniswapV2Pair(IPeronioV1(peronioV1Address).LP_ADDRESS()).kLast();
 
         {
-            uint256 rootKLast = sqrt256(kLast);
-            uint256 rootK = sqrt256(usdcReserves * maiReserves);
+            uint256 rootKLast = Math.sqrt(kLast);
+            uint256 rootK = Math.sqrt(usdcReserves * maiReserves);
             if (rootKLast < rootK) {
                 lpTotalSupply += (lpTotalSupply * (rootK - rootKLast)) / (5 * rootK + rootKLast);
             }
@@ -105,8 +105,8 @@ contract Migrator is IMigrator {
                     (((amount * 10e8) / IERC20(peronioV1Address).totalSupply()) *
                         IFarm(IPeronioV1(peronioV1Address).QIDAO_FARM_ADDRESS()).deposited(IPeronioV1(peronioV1Address).QIDAO_POOL_ID(), peronioV1Address)) /
                     10e8;
-                usdcAmount = mulDiv(newLpBalance, usdcReserves, lpTotalSupply);
-                maiAmount = mulDiv(newLpBalance, maiReserves, lpTotalSupply);
+                usdcAmount = Math.mulDiv(newLpBalance, usdcReserves, lpTotalSupply);
+                maiAmount = Math.mulDiv(newLpBalance, maiReserves, lpTotalSupply);
                 lpTotalSupply -= newLpBalance;
             }
 
@@ -115,7 +115,7 @@ contract Migrator is IMigrator {
             kLast = usdcReserves * maiReserves;
 
             {
-                uint256 usdcAmountOut = mulDiv(997 * maiAmount, usdcReserves, 997 * maiAmount + 1000 * maiReserves);
+                uint256 usdcAmountOut = Math.mulDiv(997 * maiAmount, usdcReserves, 997 * maiAmount + 1000 * maiReserves);
                 usdc = usdcAmount + usdcAmountOut;
                 usdcReserves -= usdcAmountOut;
             }
@@ -126,14 +126,15 @@ contract Migrator is IMigrator {
             uint256 usdcAmount;
             uint256 maiAmount;
             {
-                uint256 usdcAmountToSwap = sqrt256(mulDiv(3988009 * usdcReserves + 3988000 * usdc, usdcReserves, 3976036)) - mulDiv(usdcReserves, 1997, 1994);
-                uint256 maiAmountOut = mulDiv(997 * usdcAmountToSwap, maiReserves, 997 * usdcAmountToSwap + 1000 * usdcReserves);
+                uint256 usdcAmountToSwap = Math.sqrt(Math.mulDiv(3988009 * usdcReserves + 3988000 * usdc, usdcReserves, 3976036)) -
+                    Math.mulDiv(usdcReserves, 1997, 1994);
+                uint256 maiAmountOut = Math.mulDiv(997 * usdcAmountToSwap, maiReserves, 997 * usdcAmountToSwap + 1000 * usdcReserves);
 
                 usdcReserves += usdcAmountToSwap;
                 maiReserves -= maiAmountOut;
 
                 {
-                    uint256 amountMaiOptimal = mulDiv(usdc, maiReserves, usdcReserves);
+                    uint256 amountMaiOptimal = Math.mulDiv(usdc, maiReserves, usdcReserves);
                     if (amountMaiOptimal <= maiAmountOut) {
                         (usdcAmount, maiAmount) = (usdc, amountMaiOptimal);
                     } else {
@@ -143,8 +144,8 @@ contract Migrator is IMigrator {
                 }
 
                 {
-                    uint256 rootK = sqrt256(usdcReserves * maiReserves);
-                    uint256 rootKLast = sqrt256(kLast);
+                    uint256 rootK = Math.sqrt(usdcReserves * maiReserves);
+                    uint256 rootKLast = Math.sqrt(kLast);
                     if (rootKLast < rootK) {
                         lpTotalSupply += (lpTotalSupply * (rootK - rootKLast)) / (5 * rootK + rootKLast);
                     }
@@ -158,8 +159,8 @@ contract Migrator is IMigrator {
                 totalMintFee = RatioWith6Decimals.unwrap(IPeronio(peronioV2Address).swapFee()) + uint256(depositFeeBP) * 10**(decimals - 4);
             }
 
-            lpAmountMint = mulDiv(
-                min(mulDiv(usdcAmount, lpTotalSupply, usdcReserves), mulDiv(maiAmount, lpTotalSupply, maiReserves)),
+            lpAmountMint = Math.mulDiv(
+                Math.min(Math.mulDiv(usdcAmount, lpTotalSupply, usdcReserves), Math.mulDiv(maiAmount, lpTotalSupply, maiReserves)),
                 10**decimals - totalMintFee,
                 10**decimals
             );
@@ -167,6 +168,6 @@ contract Migrator is IMigrator {
 
         uint256 stakedAmount = IFarm(IPeronio(peronioV2Address).qiDaoFarmAddress()).deposited(IPeronio(peronioV2Address).qiDaoPoolId(), peronioV2Address);
 
-        pe = mulDiv(lpAmountMint, IERC20(peronioV2Address).totalSupply(), stakedAmount);
+        pe = Math.mulDiv(lpAmountMint, IERC20(peronioV2Address).totalSupply(), stakedAmount);
     }
 }

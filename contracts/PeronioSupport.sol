@@ -3,7 +3,6 @@ pragma solidity ^0.8.17;
 // SPDX-License-Identifier: MIT
 
 import "./IPeronioSupport.sol";
-import {max, min, mulDiv, sqrt256} from "./Utils.sol";
 
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------
 // --- Implementation-side user defined value types -----------------------------------------------------------------------------------------------------------
@@ -47,11 +46,11 @@ function mul(uint256 x, UniSwapKQuantity val) pure returns (UniSwapKQuantity) {
 }
 
 function min(UniSwapKQuantity left, UniSwapKQuantity right) pure returns (UniSwapKQuantity) {
-    return UniSwapKQuantity.wrap(min(UniSwapKQuantity.unwrap(left), UniSwapKQuantity.unwrap(right)));
+    return UniSwapKQuantity.wrap(Math.min(UniSwapKQuantity.unwrap(left), UniSwapKQuantity.unwrap(right)));
 }
 
 function max(UniSwapKQuantity left, UniSwapKQuantity right) pure returns (UniSwapKQuantity) {
-    return UniSwapKQuantity.wrap(max(UniSwapKQuantity.unwrap(left), UniSwapKQuantity.unwrap(right)));
+    return UniSwapKQuantity.wrap(Math.max(UniSwapKQuantity.unwrap(left), UniSwapKQuantity.unwrap(right)));
 }
 
 function eq(UniSwapKQuantity left, UniSwapKQuantity right) pure returns (bool) {
@@ -96,11 +95,11 @@ function mul(uint256 x, UniSwapRootKQuantity val) pure returns (UniSwapRootKQuan
 }
 
 function min(UniSwapRootKQuantity left, UniSwapRootKQuantity right) pure returns (UniSwapRootKQuantity) {
-    return UniSwapRootKQuantity.wrap(min(UniSwapRootKQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right)));
+    return UniSwapRootKQuantity.wrap(Math.min(UniSwapRootKQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right)));
 }
 
 function max(UniSwapRootKQuantity left, UniSwapRootKQuantity right) pure returns (UniSwapRootKQuantity) {
-    return UniSwapRootKQuantity.wrap(max(UniSwapRootKQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right)));
+    return UniSwapRootKQuantity.wrap(Math.max(UniSwapRootKQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right)));
 }
 
 function eq(UniSwapRootKQuantity left, UniSwapRootKQuantity right) pure returns (bool) {
@@ -145,11 +144,11 @@ function mul(uint256 x, UsdcSqQuantity val) pure returns (UsdcSqQuantity) {
 }
 
 function min(UsdcSqQuantity left, UsdcSqQuantity right) pure returns (UsdcSqQuantity) {
-    return UsdcSqQuantity.wrap(min(UsdcSqQuantity.unwrap(left), UsdcSqQuantity.unwrap(right)));
+    return UsdcSqQuantity.wrap(Math.min(UsdcSqQuantity.unwrap(left), UsdcSqQuantity.unwrap(right)));
 }
 
 function max(UsdcSqQuantity left, UsdcSqQuantity right) pure returns (UsdcSqQuantity) {
-    return UsdcSqQuantity.wrap(max(UsdcSqQuantity.unwrap(left), UsdcSqQuantity.unwrap(right)));
+    return UsdcSqQuantity.wrap(Math.max(UsdcSqQuantity.unwrap(left), UsdcSqQuantity.unwrap(right)));
 }
 
 function eq(UsdcSqQuantity left, UsdcSqQuantity right) pure returns (bool) {
@@ -180,8 +179,8 @@ function gte(UsdcSqQuantity left, UsdcSqQuantity right) pure returns (bool) {
 // --- USDC-squared quantities --------------------------------------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-function sqrt256(UsdcSqQuantity x) pure returns (UsdcQuantity) {
-    return UsdcQuantity.wrap(sqrt256(UsdcSqQuantity.unwrap(x)));
+function sqrt(UsdcSqQuantity x) pure returns (UsdcQuantity) {
+    return UsdcQuantity.wrap(Math.sqrt(UsdcSqQuantity.unwrap(x)));
 }
 
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -192,8 +191,8 @@ function mul(UsdcQuantity left, MaiQuantity right) pure returns (UniSwapKQuantit
     return UniSwapKQuantity.wrap(UsdcQuantity.unwrap(left) * MaiQuantity.unwrap(right));
 }
 
-function sqrt256(UniSwapKQuantity x) pure returns (UniSwapRootKQuantity) {
-    return UniSwapRootKQuantity.wrap(sqrt256(UniSwapKQuantity.unwrap(x)));
+function sqrt(UniSwapKQuantity x) pure returns (UniSwapRootKQuantity) {
+    return UniSwapRootKQuantity.wrap(Math.sqrt(UniSwapKQuantity.unwrap(x)));
 }
 
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -213,7 +212,7 @@ function mulDiv(
     RatioWith4Decimals right,
     LpQuantity div
 ) pure returns (RatioWith4Decimals) {
-    return RatioWith4Decimals.wrap(mulDiv(LpQuantity.unwrap(left), RatioWith4Decimals.unwrap(right), LpQuantity.unwrap(div)));
+    return RatioWith4Decimals.wrap(Math.mulDiv(LpQuantity.unwrap(left), RatioWith4Decimals.unwrap(right), LpQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -221,7 +220,7 @@ function mulDiv(
     RatioWith4Decimals right,
     RatioWith4Decimals div
 ) pure returns (LpQuantity) {
-    return LpQuantity.wrap(mulDiv(LpQuantity.unwrap(left), RatioWith4Decimals.unwrap(right), RatioWith4Decimals.unwrap(div)));
+    return LpQuantity.wrap(Math.mulDiv(LpQuantity.unwrap(left), RatioWith4Decimals.unwrap(right), RatioWith4Decimals.unwrap(div)));
 }
 
 function mulDiv(
@@ -229,7 +228,7 @@ function mulDiv(
     UniSwapKQuantity right,
     LpQuantity div
 ) pure returns (UniSwapKQuantity) {
-    return UniSwapKQuantity.wrap(mulDiv(LpQuantity.unwrap(left), UniSwapKQuantity.unwrap(right), LpQuantity.unwrap(div)));
+    return UniSwapKQuantity.wrap(Math.mulDiv(LpQuantity.unwrap(left), UniSwapKQuantity.unwrap(right), LpQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -237,7 +236,7 @@ function mulDiv(
     UniSwapKQuantity right,
     UniSwapKQuantity div
 ) pure returns (LpQuantity) {
-    return LpQuantity.wrap(mulDiv(LpQuantity.unwrap(left), UniSwapKQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
+    return LpQuantity.wrap(Math.mulDiv(LpQuantity.unwrap(left), UniSwapKQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -245,7 +244,7 @@ function mulDiv(
     UniSwapRootKQuantity right,
     LpQuantity div
 ) pure returns (UniSwapRootKQuantity) {
-    return UniSwapRootKQuantity.wrap(mulDiv(LpQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), LpQuantity.unwrap(div)));
+    return UniSwapRootKQuantity.wrap(Math.mulDiv(LpQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), LpQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -253,7 +252,7 @@ function mulDiv(
     UniSwapRootKQuantity right,
     UniSwapRootKQuantity div
 ) pure returns (LpQuantity) {
-    return LpQuantity.wrap(mulDiv(LpQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
+    return LpQuantity.wrap(Math.mulDiv(LpQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -261,7 +260,7 @@ function mulDiv(
     UsdcSqQuantity right,
     LpQuantity div
 ) pure returns (UsdcSqQuantity) {
-    return UsdcSqQuantity.wrap(mulDiv(LpQuantity.unwrap(left), UsdcSqQuantity.unwrap(right), LpQuantity.unwrap(div)));
+    return UsdcSqQuantity.wrap(Math.mulDiv(LpQuantity.unwrap(left), UsdcSqQuantity.unwrap(right), LpQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -269,7 +268,7 @@ function mulDiv(
     UsdcSqQuantity right,
     UsdcSqQuantity div
 ) pure returns (LpQuantity) {
-    return LpQuantity.wrap(mulDiv(LpQuantity.unwrap(left), UsdcSqQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
+    return LpQuantity.wrap(Math.mulDiv(LpQuantity.unwrap(left), UsdcSqQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -277,7 +276,7 @@ function mulDiv(
     RatioWith4Decimals right,
     MaiQuantity div
 ) pure returns (RatioWith4Decimals) {
-    return RatioWith4Decimals.wrap(mulDiv(MaiQuantity.unwrap(left), RatioWith4Decimals.unwrap(right), MaiQuantity.unwrap(div)));
+    return RatioWith4Decimals.wrap(Math.mulDiv(MaiQuantity.unwrap(left), RatioWith4Decimals.unwrap(right), MaiQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -285,7 +284,7 @@ function mulDiv(
     RatioWith4Decimals right,
     RatioWith4Decimals div
 ) pure returns (MaiQuantity) {
-    return MaiQuantity.wrap(mulDiv(MaiQuantity.unwrap(left), RatioWith4Decimals.unwrap(right), RatioWith4Decimals.unwrap(div)));
+    return MaiQuantity.wrap(Math.mulDiv(MaiQuantity.unwrap(left), RatioWith4Decimals.unwrap(right), RatioWith4Decimals.unwrap(div)));
 }
 
 function mulDiv(
@@ -293,7 +292,7 @@ function mulDiv(
     UniSwapKQuantity right,
     MaiQuantity div
 ) pure returns (UniSwapKQuantity) {
-    return UniSwapKQuantity.wrap(mulDiv(MaiQuantity.unwrap(left), UniSwapKQuantity.unwrap(right), MaiQuantity.unwrap(div)));
+    return UniSwapKQuantity.wrap(Math.mulDiv(MaiQuantity.unwrap(left), UniSwapKQuantity.unwrap(right), MaiQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -301,7 +300,7 @@ function mulDiv(
     UniSwapKQuantity right,
     UniSwapKQuantity div
 ) pure returns (MaiQuantity) {
-    return MaiQuantity.wrap(mulDiv(MaiQuantity.unwrap(left), UniSwapKQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
+    return MaiQuantity.wrap(Math.mulDiv(MaiQuantity.unwrap(left), UniSwapKQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -309,7 +308,7 @@ function mulDiv(
     UniSwapRootKQuantity right,
     MaiQuantity div
 ) pure returns (UniSwapRootKQuantity) {
-    return UniSwapRootKQuantity.wrap(mulDiv(MaiQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), MaiQuantity.unwrap(div)));
+    return UniSwapRootKQuantity.wrap(Math.mulDiv(MaiQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), MaiQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -317,7 +316,7 @@ function mulDiv(
     UniSwapRootKQuantity right,
     UniSwapRootKQuantity div
 ) pure returns (MaiQuantity) {
-    return MaiQuantity.wrap(mulDiv(MaiQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
+    return MaiQuantity.wrap(Math.mulDiv(MaiQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -325,7 +324,7 @@ function mulDiv(
     UsdcQuantity right,
     UniSwapKQuantity div
 ) pure returns (uint256) {
-    return mulDiv(MaiQuantity.unwrap(left), UsdcQuantity.unwrap(right), UniSwapKQuantity.unwrap(div));
+    return Math.mulDiv(MaiQuantity.unwrap(left), UsdcQuantity.unwrap(right), UniSwapKQuantity.unwrap(div));
 }
 
 function mulDiv(
@@ -333,7 +332,7 @@ function mulDiv(
     UsdcQuantity right,
     UniSwapRootKQuantity div
 ) pure returns (UniSwapRootKQuantity) {
-    return UniSwapRootKQuantity.wrap(mulDiv(MaiQuantity.unwrap(left), UsdcQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
+    return UniSwapRootKQuantity.wrap(Math.mulDiv(MaiQuantity.unwrap(left), UsdcQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -341,7 +340,7 @@ function mulDiv(
     UsdcQuantity right,
     uint256 div
 ) pure returns (UniSwapKQuantity) {
-    return UniSwapKQuantity.wrap(mulDiv(MaiQuantity.unwrap(left), UsdcQuantity.unwrap(right), div));
+    return UniSwapKQuantity.wrap(Math.mulDiv(MaiQuantity.unwrap(left), UsdcQuantity.unwrap(right), div));
 }
 
 function mulDiv(
@@ -349,7 +348,7 @@ function mulDiv(
     UsdcSqQuantity right,
     MaiQuantity div
 ) pure returns (UsdcSqQuantity) {
-    return UsdcSqQuantity.wrap(mulDiv(MaiQuantity.unwrap(left), UsdcSqQuantity.unwrap(right), MaiQuantity.unwrap(div)));
+    return UsdcSqQuantity.wrap(Math.mulDiv(MaiQuantity.unwrap(left), UsdcSqQuantity.unwrap(right), MaiQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -357,7 +356,7 @@ function mulDiv(
     UsdcSqQuantity right,
     UniSwapKQuantity div
 ) pure returns (UsdcQuantity) {
-    return UsdcQuantity.wrap(mulDiv(MaiQuantity.unwrap(left), UsdcSqQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
+    return UsdcQuantity.wrap(Math.mulDiv(MaiQuantity.unwrap(left), UsdcSqQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -365,7 +364,7 @@ function mulDiv(
     UsdcSqQuantity right,
     UsdcQuantity div
 ) pure returns (UniSwapKQuantity) {
-    return UniSwapKQuantity.wrap(mulDiv(MaiQuantity.unwrap(left), UsdcSqQuantity.unwrap(right), UsdcQuantity.unwrap(div)));
+    return UniSwapKQuantity.wrap(Math.mulDiv(MaiQuantity.unwrap(left), UsdcSqQuantity.unwrap(right), UsdcQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -373,7 +372,7 @@ function mulDiv(
     UsdcSqQuantity right,
     UsdcSqQuantity div
 ) pure returns (MaiQuantity) {
-    return MaiQuantity.wrap(mulDiv(MaiQuantity.unwrap(left), UsdcSqQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
+    return MaiQuantity.wrap(Math.mulDiv(MaiQuantity.unwrap(left), UsdcSqQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -381,7 +380,7 @@ function mulDiv(
     RatioWith4Decimals right,
     PePerUsdcQuantity div
 ) pure returns (RatioWith4Decimals) {
-    return RatioWith4Decimals.wrap(mulDiv(PePerUsdcQuantity.unwrap(left), RatioWith4Decimals.unwrap(right), PePerUsdcQuantity.unwrap(div)));
+    return RatioWith4Decimals.wrap(Math.mulDiv(PePerUsdcQuantity.unwrap(left), RatioWith4Decimals.unwrap(right), PePerUsdcQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -389,7 +388,7 @@ function mulDiv(
     RatioWith4Decimals right,
     RatioWith4Decimals div
 ) pure returns (PePerUsdcQuantity) {
-    return PePerUsdcQuantity.wrap(mulDiv(PePerUsdcQuantity.unwrap(left), RatioWith4Decimals.unwrap(right), RatioWith4Decimals.unwrap(div)));
+    return PePerUsdcQuantity.wrap(Math.mulDiv(PePerUsdcQuantity.unwrap(left), RatioWith4Decimals.unwrap(right), RatioWith4Decimals.unwrap(div)));
 }
 
 function mulDiv(
@@ -397,7 +396,7 @@ function mulDiv(
     UniSwapKQuantity right,
     PePerUsdcQuantity div
 ) pure returns (UniSwapKQuantity) {
-    return UniSwapKQuantity.wrap(mulDiv(PePerUsdcQuantity.unwrap(left), UniSwapKQuantity.unwrap(right), PePerUsdcQuantity.unwrap(div)));
+    return UniSwapKQuantity.wrap(Math.mulDiv(PePerUsdcQuantity.unwrap(left), UniSwapKQuantity.unwrap(right), PePerUsdcQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -405,7 +404,7 @@ function mulDiv(
     UniSwapKQuantity right,
     UniSwapKQuantity div
 ) pure returns (PePerUsdcQuantity) {
-    return PePerUsdcQuantity.wrap(mulDiv(PePerUsdcQuantity.unwrap(left), UniSwapKQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
+    return PePerUsdcQuantity.wrap(Math.mulDiv(PePerUsdcQuantity.unwrap(left), UniSwapKQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -413,7 +412,7 @@ function mulDiv(
     UniSwapRootKQuantity right,
     PePerUsdcQuantity div
 ) pure returns (UniSwapRootKQuantity) {
-    return UniSwapRootKQuantity.wrap(mulDiv(PePerUsdcQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), PePerUsdcQuantity.unwrap(div)));
+    return UniSwapRootKQuantity.wrap(Math.mulDiv(PePerUsdcQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), PePerUsdcQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -421,7 +420,7 @@ function mulDiv(
     UniSwapRootKQuantity right,
     UniSwapRootKQuantity div
 ) pure returns (PePerUsdcQuantity) {
-    return PePerUsdcQuantity.wrap(mulDiv(PePerUsdcQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
+    return PePerUsdcQuantity.wrap(Math.mulDiv(PePerUsdcQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -429,7 +428,7 @@ function mulDiv(
     UsdcSqQuantity right,
     PePerUsdcQuantity div
 ) pure returns (UsdcSqQuantity) {
-    return UsdcSqQuantity.wrap(mulDiv(PePerUsdcQuantity.unwrap(left), UsdcSqQuantity.unwrap(right), PePerUsdcQuantity.unwrap(div)));
+    return UsdcSqQuantity.wrap(Math.mulDiv(PePerUsdcQuantity.unwrap(left), UsdcSqQuantity.unwrap(right), PePerUsdcQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -437,7 +436,7 @@ function mulDiv(
     UsdcSqQuantity right,
     UsdcSqQuantity div
 ) pure returns (PePerUsdcQuantity) {
-    return PePerUsdcQuantity.wrap(mulDiv(PePerUsdcQuantity.unwrap(left), UsdcSqQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
+    return PePerUsdcQuantity.wrap(Math.mulDiv(PePerUsdcQuantity.unwrap(left), UsdcSqQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -445,7 +444,7 @@ function mulDiv(
     RatioWith4Decimals right,
     PeQuantity div
 ) pure returns (RatioWith4Decimals) {
-    return RatioWith4Decimals.wrap(mulDiv(PeQuantity.unwrap(left), RatioWith4Decimals.unwrap(right), PeQuantity.unwrap(div)));
+    return RatioWith4Decimals.wrap(Math.mulDiv(PeQuantity.unwrap(left), RatioWith4Decimals.unwrap(right), PeQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -453,7 +452,7 @@ function mulDiv(
     RatioWith4Decimals right,
     RatioWith4Decimals div
 ) pure returns (PeQuantity) {
-    return PeQuantity.wrap(mulDiv(PeQuantity.unwrap(left), RatioWith4Decimals.unwrap(right), RatioWith4Decimals.unwrap(div)));
+    return PeQuantity.wrap(Math.mulDiv(PeQuantity.unwrap(left), RatioWith4Decimals.unwrap(right), RatioWith4Decimals.unwrap(div)));
 }
 
 function mulDiv(
@@ -461,7 +460,7 @@ function mulDiv(
     UniSwapKQuantity right,
     PeQuantity div
 ) pure returns (UniSwapKQuantity) {
-    return UniSwapKQuantity.wrap(mulDiv(PeQuantity.unwrap(left), UniSwapKQuantity.unwrap(right), PeQuantity.unwrap(div)));
+    return UniSwapKQuantity.wrap(Math.mulDiv(PeQuantity.unwrap(left), UniSwapKQuantity.unwrap(right), PeQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -469,7 +468,7 @@ function mulDiv(
     UniSwapKQuantity right,
     UniSwapKQuantity div
 ) pure returns (PeQuantity) {
-    return PeQuantity.wrap(mulDiv(PeQuantity.unwrap(left), UniSwapKQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
+    return PeQuantity.wrap(Math.mulDiv(PeQuantity.unwrap(left), UniSwapKQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -477,7 +476,7 @@ function mulDiv(
     UniSwapRootKQuantity right,
     PeQuantity div
 ) pure returns (UniSwapRootKQuantity) {
-    return UniSwapRootKQuantity.wrap(mulDiv(PeQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), PeQuantity.unwrap(div)));
+    return UniSwapRootKQuantity.wrap(Math.mulDiv(PeQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), PeQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -485,7 +484,7 @@ function mulDiv(
     UniSwapRootKQuantity right,
     UniSwapRootKQuantity div
 ) pure returns (PeQuantity) {
-    return PeQuantity.wrap(mulDiv(PeQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
+    return PeQuantity.wrap(Math.mulDiv(PeQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -493,7 +492,7 @@ function mulDiv(
     UsdcSqQuantity right,
     PeQuantity div
 ) pure returns (UsdcSqQuantity) {
-    return UsdcSqQuantity.wrap(mulDiv(PeQuantity.unwrap(left), UsdcSqQuantity.unwrap(right), PeQuantity.unwrap(div)));
+    return UsdcSqQuantity.wrap(Math.mulDiv(PeQuantity.unwrap(left), UsdcSqQuantity.unwrap(right), PeQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -501,7 +500,7 @@ function mulDiv(
     UsdcSqQuantity right,
     UsdcSqQuantity div
 ) pure returns (PeQuantity) {
-    return PeQuantity.wrap(mulDiv(PeQuantity.unwrap(left), UsdcSqQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
+    return PeQuantity.wrap(Math.mulDiv(PeQuantity.unwrap(left), UsdcSqQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -509,7 +508,7 @@ function mulDiv(
     RatioWith4Decimals right,
     QiQuantity div
 ) pure returns (RatioWith4Decimals) {
-    return RatioWith4Decimals.wrap(mulDiv(QiQuantity.unwrap(left), RatioWith4Decimals.unwrap(right), QiQuantity.unwrap(div)));
+    return RatioWith4Decimals.wrap(Math.mulDiv(QiQuantity.unwrap(left), RatioWith4Decimals.unwrap(right), QiQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -517,7 +516,7 @@ function mulDiv(
     RatioWith4Decimals right,
     RatioWith4Decimals div
 ) pure returns (QiQuantity) {
-    return QiQuantity.wrap(mulDiv(QiQuantity.unwrap(left), RatioWith4Decimals.unwrap(right), RatioWith4Decimals.unwrap(div)));
+    return QiQuantity.wrap(Math.mulDiv(QiQuantity.unwrap(left), RatioWith4Decimals.unwrap(right), RatioWith4Decimals.unwrap(div)));
 }
 
 function mulDiv(
@@ -525,7 +524,7 @@ function mulDiv(
     UniSwapKQuantity right,
     QiQuantity div
 ) pure returns (UniSwapKQuantity) {
-    return UniSwapKQuantity.wrap(mulDiv(QiQuantity.unwrap(left), UniSwapKQuantity.unwrap(right), QiQuantity.unwrap(div)));
+    return UniSwapKQuantity.wrap(Math.mulDiv(QiQuantity.unwrap(left), UniSwapKQuantity.unwrap(right), QiQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -533,7 +532,7 @@ function mulDiv(
     UniSwapKQuantity right,
     UniSwapKQuantity div
 ) pure returns (QiQuantity) {
-    return QiQuantity.wrap(mulDiv(QiQuantity.unwrap(left), UniSwapKQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
+    return QiQuantity.wrap(Math.mulDiv(QiQuantity.unwrap(left), UniSwapKQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -541,7 +540,7 @@ function mulDiv(
     UniSwapRootKQuantity right,
     QiQuantity div
 ) pure returns (UniSwapRootKQuantity) {
-    return UniSwapRootKQuantity.wrap(mulDiv(QiQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), QiQuantity.unwrap(div)));
+    return UniSwapRootKQuantity.wrap(Math.mulDiv(QiQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), QiQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -549,7 +548,7 @@ function mulDiv(
     UniSwapRootKQuantity right,
     UniSwapRootKQuantity div
 ) pure returns (QiQuantity) {
-    return QiQuantity.wrap(mulDiv(QiQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
+    return QiQuantity.wrap(Math.mulDiv(QiQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -557,7 +556,7 @@ function mulDiv(
     UsdcSqQuantity right,
     QiQuantity div
 ) pure returns (UsdcSqQuantity) {
-    return UsdcSqQuantity.wrap(mulDiv(QiQuantity.unwrap(left), UsdcSqQuantity.unwrap(right), QiQuantity.unwrap(div)));
+    return UsdcSqQuantity.wrap(Math.mulDiv(QiQuantity.unwrap(left), UsdcSqQuantity.unwrap(right), QiQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -565,7 +564,7 @@ function mulDiv(
     UsdcSqQuantity right,
     UsdcSqQuantity div
 ) pure returns (QiQuantity) {
-    return QiQuantity.wrap(mulDiv(QiQuantity.unwrap(left), UsdcSqQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
+    return QiQuantity.wrap(Math.mulDiv(QiQuantity.unwrap(left), UsdcSqQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -573,7 +572,7 @@ function mulDiv(
     LpQuantity right,
     LpQuantity div
 ) pure returns (RatioWith4Decimals) {
-    return RatioWith4Decimals.wrap(mulDiv(RatioWith4Decimals.unwrap(left), LpQuantity.unwrap(right), LpQuantity.unwrap(div)));
+    return RatioWith4Decimals.wrap(Math.mulDiv(RatioWith4Decimals.unwrap(left), LpQuantity.unwrap(right), LpQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -581,7 +580,7 @@ function mulDiv(
     LpQuantity right,
     RatioWith4Decimals div
 ) pure returns (LpQuantity) {
-    return LpQuantity.wrap(mulDiv(RatioWith4Decimals.unwrap(left), LpQuantity.unwrap(right), RatioWith4Decimals.unwrap(div)));
+    return LpQuantity.wrap(Math.mulDiv(RatioWith4Decimals.unwrap(left), LpQuantity.unwrap(right), RatioWith4Decimals.unwrap(div)));
 }
 
 function mulDiv(
@@ -589,7 +588,7 @@ function mulDiv(
     MaiQuantity right,
     MaiQuantity div
 ) pure returns (RatioWith4Decimals) {
-    return RatioWith4Decimals.wrap(mulDiv(RatioWith4Decimals.unwrap(left), MaiQuantity.unwrap(right), MaiQuantity.unwrap(div)));
+    return RatioWith4Decimals.wrap(Math.mulDiv(RatioWith4Decimals.unwrap(left), MaiQuantity.unwrap(right), MaiQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -597,7 +596,7 @@ function mulDiv(
     MaiQuantity right,
     RatioWith4Decimals div
 ) pure returns (MaiQuantity) {
-    return MaiQuantity.wrap(mulDiv(RatioWith4Decimals.unwrap(left), MaiQuantity.unwrap(right), RatioWith4Decimals.unwrap(div)));
+    return MaiQuantity.wrap(Math.mulDiv(RatioWith4Decimals.unwrap(left), MaiQuantity.unwrap(right), RatioWith4Decimals.unwrap(div)));
 }
 
 function mulDiv(
@@ -605,7 +604,7 @@ function mulDiv(
     PePerUsdcQuantity right,
     PePerUsdcQuantity div
 ) pure returns (RatioWith4Decimals) {
-    return RatioWith4Decimals.wrap(mulDiv(RatioWith4Decimals.unwrap(left), PePerUsdcQuantity.unwrap(right), PePerUsdcQuantity.unwrap(div)));
+    return RatioWith4Decimals.wrap(Math.mulDiv(RatioWith4Decimals.unwrap(left), PePerUsdcQuantity.unwrap(right), PePerUsdcQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -613,7 +612,7 @@ function mulDiv(
     PePerUsdcQuantity right,
     RatioWith4Decimals div
 ) pure returns (PePerUsdcQuantity) {
-    return PePerUsdcQuantity.wrap(mulDiv(RatioWith4Decimals.unwrap(left), PePerUsdcQuantity.unwrap(right), RatioWith4Decimals.unwrap(div)));
+    return PePerUsdcQuantity.wrap(Math.mulDiv(RatioWith4Decimals.unwrap(left), PePerUsdcQuantity.unwrap(right), RatioWith4Decimals.unwrap(div)));
 }
 
 function mulDiv(
@@ -621,7 +620,7 @@ function mulDiv(
     PeQuantity right,
     PeQuantity div
 ) pure returns (RatioWith4Decimals) {
-    return RatioWith4Decimals.wrap(mulDiv(RatioWith4Decimals.unwrap(left), PeQuantity.unwrap(right), PeQuantity.unwrap(div)));
+    return RatioWith4Decimals.wrap(Math.mulDiv(RatioWith4Decimals.unwrap(left), PeQuantity.unwrap(right), PeQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -629,7 +628,7 @@ function mulDiv(
     PeQuantity right,
     RatioWith4Decimals div
 ) pure returns (PeQuantity) {
-    return PeQuantity.wrap(mulDiv(RatioWith4Decimals.unwrap(left), PeQuantity.unwrap(right), RatioWith4Decimals.unwrap(div)));
+    return PeQuantity.wrap(Math.mulDiv(RatioWith4Decimals.unwrap(left), PeQuantity.unwrap(right), RatioWith4Decimals.unwrap(div)));
 }
 
 function mulDiv(
@@ -637,7 +636,7 @@ function mulDiv(
     QiQuantity right,
     QiQuantity div
 ) pure returns (RatioWith4Decimals) {
-    return RatioWith4Decimals.wrap(mulDiv(RatioWith4Decimals.unwrap(left), QiQuantity.unwrap(right), QiQuantity.unwrap(div)));
+    return RatioWith4Decimals.wrap(Math.mulDiv(RatioWith4Decimals.unwrap(left), QiQuantity.unwrap(right), QiQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -645,7 +644,7 @@ function mulDiv(
     QiQuantity right,
     RatioWith4Decimals div
 ) pure returns (QiQuantity) {
-    return QiQuantity.wrap(mulDiv(RatioWith4Decimals.unwrap(left), QiQuantity.unwrap(right), RatioWith4Decimals.unwrap(div)));
+    return QiQuantity.wrap(Math.mulDiv(RatioWith4Decimals.unwrap(left), QiQuantity.unwrap(right), RatioWith4Decimals.unwrap(div)));
 }
 
 function mulDiv(
@@ -653,7 +652,7 @@ function mulDiv(
     RatioWith4Decimals right,
     RatioWith4Decimals div
 ) pure returns (RatioWith4Decimals) {
-    return RatioWith4Decimals.wrap(mulDiv(RatioWith4Decimals.unwrap(left), RatioWith4Decimals.unwrap(right), RatioWith4Decimals.unwrap(div)));
+    return RatioWith4Decimals.wrap(Math.mulDiv(RatioWith4Decimals.unwrap(left), RatioWith4Decimals.unwrap(right), RatioWith4Decimals.unwrap(div)));
 }
 
 function mulDiv(
@@ -661,7 +660,7 @@ function mulDiv(
     RatioWith6Decimals right,
     RatioWith4Decimals div
 ) pure returns (RatioWith6Decimals) {
-    return RatioWith6Decimals.wrap(mulDiv(RatioWith4Decimals.unwrap(left), RatioWith6Decimals.unwrap(right), RatioWith4Decimals.unwrap(div)));
+    return RatioWith6Decimals.wrap(Math.mulDiv(RatioWith4Decimals.unwrap(left), RatioWith6Decimals.unwrap(right), RatioWith4Decimals.unwrap(div)));
 }
 
 function mulDiv(
@@ -669,7 +668,7 @@ function mulDiv(
     RatioWith6Decimals right,
     RatioWith6Decimals div
 ) pure returns (RatioWith4Decimals) {
-    return RatioWith4Decimals.wrap(mulDiv(RatioWith4Decimals.unwrap(left), RatioWith6Decimals.unwrap(right), RatioWith6Decimals.unwrap(div)));
+    return RatioWith4Decimals.wrap(Math.mulDiv(RatioWith4Decimals.unwrap(left), RatioWith6Decimals.unwrap(right), RatioWith6Decimals.unwrap(div)));
 }
 
 function mulDiv(
@@ -677,7 +676,7 @@ function mulDiv(
     UniSwapKQuantity right,
     RatioWith4Decimals div
 ) pure returns (UniSwapKQuantity) {
-    return UniSwapKQuantity.wrap(mulDiv(RatioWith4Decimals.unwrap(left), UniSwapKQuantity.unwrap(right), RatioWith4Decimals.unwrap(div)));
+    return UniSwapKQuantity.wrap(Math.mulDiv(RatioWith4Decimals.unwrap(left), UniSwapKQuantity.unwrap(right), RatioWith4Decimals.unwrap(div)));
 }
 
 function mulDiv(
@@ -685,7 +684,7 @@ function mulDiv(
     UniSwapKQuantity right,
     UniSwapKQuantity div
 ) pure returns (RatioWith4Decimals) {
-    return RatioWith4Decimals.wrap(mulDiv(RatioWith4Decimals.unwrap(left), UniSwapKQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
+    return RatioWith4Decimals.wrap(Math.mulDiv(RatioWith4Decimals.unwrap(left), UniSwapKQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -693,7 +692,7 @@ function mulDiv(
     UniSwapRootKQuantity right,
     RatioWith4Decimals div
 ) pure returns (UniSwapRootKQuantity) {
-    return UniSwapRootKQuantity.wrap(mulDiv(RatioWith4Decimals.unwrap(left), UniSwapRootKQuantity.unwrap(right), RatioWith4Decimals.unwrap(div)));
+    return UniSwapRootKQuantity.wrap(Math.mulDiv(RatioWith4Decimals.unwrap(left), UniSwapRootKQuantity.unwrap(right), RatioWith4Decimals.unwrap(div)));
 }
 
 function mulDiv(
@@ -701,7 +700,7 @@ function mulDiv(
     UniSwapRootKQuantity right,
     UniSwapRootKQuantity div
 ) pure returns (RatioWith4Decimals) {
-    return RatioWith4Decimals.wrap(mulDiv(RatioWith4Decimals.unwrap(left), UniSwapRootKQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
+    return RatioWith4Decimals.wrap(Math.mulDiv(RatioWith4Decimals.unwrap(left), UniSwapRootKQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -709,7 +708,7 @@ function mulDiv(
     UsdcPerPeQuantity right,
     RatioWith4Decimals div
 ) pure returns (UsdcPerPeQuantity) {
-    return UsdcPerPeQuantity.wrap(mulDiv(RatioWith4Decimals.unwrap(left), UsdcPerPeQuantity.unwrap(right), RatioWith4Decimals.unwrap(div)));
+    return UsdcPerPeQuantity.wrap(Math.mulDiv(RatioWith4Decimals.unwrap(left), UsdcPerPeQuantity.unwrap(right), RatioWith4Decimals.unwrap(div)));
 }
 
 function mulDiv(
@@ -717,7 +716,7 @@ function mulDiv(
     UsdcPerPeQuantity right,
     UsdcPerPeQuantity div
 ) pure returns (RatioWith4Decimals) {
-    return RatioWith4Decimals.wrap(mulDiv(RatioWith4Decimals.unwrap(left), UsdcPerPeQuantity.unwrap(right), UsdcPerPeQuantity.unwrap(div)));
+    return RatioWith4Decimals.wrap(Math.mulDiv(RatioWith4Decimals.unwrap(left), UsdcPerPeQuantity.unwrap(right), UsdcPerPeQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -725,7 +724,7 @@ function mulDiv(
     UsdcQuantity right,
     RatioWith4Decimals div
 ) pure returns (UsdcQuantity) {
-    return UsdcQuantity.wrap(mulDiv(RatioWith4Decimals.unwrap(left), UsdcQuantity.unwrap(right), RatioWith4Decimals.unwrap(div)));
+    return UsdcQuantity.wrap(Math.mulDiv(RatioWith4Decimals.unwrap(left), UsdcQuantity.unwrap(right), RatioWith4Decimals.unwrap(div)));
 }
 
 function mulDiv(
@@ -733,7 +732,7 @@ function mulDiv(
     UsdcQuantity right,
     UsdcQuantity div
 ) pure returns (RatioWith4Decimals) {
-    return RatioWith4Decimals.wrap(mulDiv(RatioWith4Decimals.unwrap(left), UsdcQuantity.unwrap(right), UsdcQuantity.unwrap(div)));
+    return RatioWith4Decimals.wrap(Math.mulDiv(RatioWith4Decimals.unwrap(left), UsdcQuantity.unwrap(right), UsdcQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -741,7 +740,7 @@ function mulDiv(
     UsdcSqQuantity right,
     RatioWith4Decimals div
 ) pure returns (UsdcSqQuantity) {
-    return UsdcSqQuantity.wrap(mulDiv(RatioWith4Decimals.unwrap(left), UsdcSqQuantity.unwrap(right), RatioWith4Decimals.unwrap(div)));
+    return UsdcSqQuantity.wrap(Math.mulDiv(RatioWith4Decimals.unwrap(left), UsdcSqQuantity.unwrap(right), RatioWith4Decimals.unwrap(div)));
 }
 
 function mulDiv(
@@ -749,7 +748,7 @@ function mulDiv(
     UsdcSqQuantity right,
     UsdcSqQuantity div
 ) pure returns (RatioWith4Decimals) {
-    return RatioWith4Decimals.wrap(mulDiv(RatioWith4Decimals.unwrap(left), UsdcSqQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
+    return RatioWith4Decimals.wrap(Math.mulDiv(RatioWith4Decimals.unwrap(left), UsdcSqQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -757,7 +756,7 @@ function mulDiv(
     uint256 right,
     RatioWith4Decimals div
 ) pure returns (uint256) {
-    return mulDiv(RatioWith4Decimals.unwrap(left), right, RatioWith4Decimals.unwrap(div));
+    return Math.mulDiv(RatioWith4Decimals.unwrap(left), right, RatioWith4Decimals.unwrap(div));
 }
 
 function mulDiv(
@@ -765,7 +764,7 @@ function mulDiv(
     uint256 right,
     uint256 div
 ) pure returns (RatioWith4Decimals) {
-    return RatioWith4Decimals.wrap(mulDiv(RatioWith4Decimals.unwrap(left), right, div));
+    return RatioWith4Decimals.wrap(Math.mulDiv(RatioWith4Decimals.unwrap(left), right, div));
 }
 
 function mulDiv(
@@ -773,7 +772,7 @@ function mulDiv(
     RatioWith4Decimals right,
     RatioWith4Decimals div
 ) pure returns (RatioWith6Decimals) {
-    return RatioWith6Decimals.wrap(mulDiv(RatioWith6Decimals.unwrap(left), RatioWith4Decimals.unwrap(right), RatioWith4Decimals.unwrap(div)));
+    return RatioWith6Decimals.wrap(Math.mulDiv(RatioWith6Decimals.unwrap(left), RatioWith4Decimals.unwrap(right), RatioWith4Decimals.unwrap(div)));
 }
 
 function mulDiv(
@@ -781,7 +780,7 @@ function mulDiv(
     RatioWith4Decimals right,
     RatioWith6Decimals div
 ) pure returns (RatioWith4Decimals) {
-    return RatioWith4Decimals.wrap(mulDiv(RatioWith6Decimals.unwrap(left), RatioWith4Decimals.unwrap(right), RatioWith6Decimals.unwrap(div)));
+    return RatioWith4Decimals.wrap(Math.mulDiv(RatioWith6Decimals.unwrap(left), RatioWith4Decimals.unwrap(right), RatioWith6Decimals.unwrap(div)));
 }
 
 function mulDiv(
@@ -789,7 +788,7 @@ function mulDiv(
     UniSwapKQuantity right,
     RatioWith6Decimals div
 ) pure returns (UniSwapKQuantity) {
-    return UniSwapKQuantity.wrap(mulDiv(RatioWith6Decimals.unwrap(left), UniSwapKQuantity.unwrap(right), RatioWith6Decimals.unwrap(div)));
+    return UniSwapKQuantity.wrap(Math.mulDiv(RatioWith6Decimals.unwrap(left), UniSwapKQuantity.unwrap(right), RatioWith6Decimals.unwrap(div)));
 }
 
 function mulDiv(
@@ -797,7 +796,7 @@ function mulDiv(
     UniSwapKQuantity right,
     UniSwapKQuantity div
 ) pure returns (RatioWith6Decimals) {
-    return RatioWith6Decimals.wrap(mulDiv(RatioWith6Decimals.unwrap(left), UniSwapKQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
+    return RatioWith6Decimals.wrap(Math.mulDiv(RatioWith6Decimals.unwrap(left), UniSwapKQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -805,7 +804,7 @@ function mulDiv(
     UniSwapRootKQuantity right,
     RatioWith6Decimals div
 ) pure returns (UniSwapRootKQuantity) {
-    return UniSwapRootKQuantity.wrap(mulDiv(RatioWith6Decimals.unwrap(left), UniSwapRootKQuantity.unwrap(right), RatioWith6Decimals.unwrap(div)));
+    return UniSwapRootKQuantity.wrap(Math.mulDiv(RatioWith6Decimals.unwrap(left), UniSwapRootKQuantity.unwrap(right), RatioWith6Decimals.unwrap(div)));
 }
 
 function mulDiv(
@@ -813,7 +812,7 @@ function mulDiv(
     UniSwapRootKQuantity right,
     UniSwapRootKQuantity div
 ) pure returns (RatioWith6Decimals) {
-    return RatioWith6Decimals.wrap(mulDiv(RatioWith6Decimals.unwrap(left), UniSwapRootKQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
+    return RatioWith6Decimals.wrap(Math.mulDiv(RatioWith6Decimals.unwrap(left), UniSwapRootKQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -821,7 +820,7 @@ function mulDiv(
     UsdcSqQuantity right,
     RatioWith6Decimals div
 ) pure returns (UsdcSqQuantity) {
-    return UsdcSqQuantity.wrap(mulDiv(RatioWith6Decimals.unwrap(left), UsdcSqQuantity.unwrap(right), RatioWith6Decimals.unwrap(div)));
+    return UsdcSqQuantity.wrap(Math.mulDiv(RatioWith6Decimals.unwrap(left), UsdcSqQuantity.unwrap(right), RatioWith6Decimals.unwrap(div)));
 }
 
 function mulDiv(
@@ -829,7 +828,7 @@ function mulDiv(
     UsdcSqQuantity right,
     UsdcSqQuantity div
 ) pure returns (RatioWith6Decimals) {
-    return RatioWith6Decimals.wrap(mulDiv(RatioWith6Decimals.unwrap(left), UsdcSqQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
+    return RatioWith6Decimals.wrap(Math.mulDiv(RatioWith6Decimals.unwrap(left), UsdcSqQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -837,7 +836,7 @@ function mulDiv(
     LpQuantity right,
     LpQuantity div
 ) pure returns (UniSwapKQuantity) {
-    return UniSwapKQuantity.wrap(mulDiv(UniSwapKQuantity.unwrap(left), LpQuantity.unwrap(right), LpQuantity.unwrap(div)));
+    return UniSwapKQuantity.wrap(Math.mulDiv(UniSwapKQuantity.unwrap(left), LpQuantity.unwrap(right), LpQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -845,7 +844,7 @@ function mulDiv(
     LpQuantity right,
     UniSwapKQuantity div
 ) pure returns (LpQuantity) {
-    return LpQuantity.wrap(mulDiv(UniSwapKQuantity.unwrap(left), LpQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
+    return LpQuantity.wrap(Math.mulDiv(UniSwapKQuantity.unwrap(left), LpQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -853,7 +852,7 @@ function mulDiv(
     MaiQuantity right,
     MaiQuantity div
 ) pure returns (UniSwapKQuantity) {
-    return UniSwapKQuantity.wrap(mulDiv(UniSwapKQuantity.unwrap(left), MaiQuantity.unwrap(right), MaiQuantity.unwrap(div)));
+    return UniSwapKQuantity.wrap(Math.mulDiv(UniSwapKQuantity.unwrap(left), MaiQuantity.unwrap(right), MaiQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -861,7 +860,7 @@ function mulDiv(
     MaiQuantity right,
     UniSwapKQuantity div
 ) pure returns (MaiQuantity) {
-    return MaiQuantity.wrap(mulDiv(UniSwapKQuantity.unwrap(left), MaiQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
+    return MaiQuantity.wrap(Math.mulDiv(UniSwapKQuantity.unwrap(left), MaiQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -869,7 +868,7 @@ function mulDiv(
     PePerUsdcQuantity right,
     PePerUsdcQuantity div
 ) pure returns (UniSwapKQuantity) {
-    return UniSwapKQuantity.wrap(mulDiv(UniSwapKQuantity.unwrap(left), PePerUsdcQuantity.unwrap(right), PePerUsdcQuantity.unwrap(div)));
+    return UniSwapKQuantity.wrap(Math.mulDiv(UniSwapKQuantity.unwrap(left), PePerUsdcQuantity.unwrap(right), PePerUsdcQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -877,7 +876,7 @@ function mulDiv(
     PePerUsdcQuantity right,
     UniSwapKQuantity div
 ) pure returns (PePerUsdcQuantity) {
-    return PePerUsdcQuantity.wrap(mulDiv(UniSwapKQuantity.unwrap(left), PePerUsdcQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
+    return PePerUsdcQuantity.wrap(Math.mulDiv(UniSwapKQuantity.unwrap(left), PePerUsdcQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -885,7 +884,7 @@ function mulDiv(
     PeQuantity right,
     PeQuantity div
 ) pure returns (UniSwapKQuantity) {
-    return UniSwapKQuantity.wrap(mulDiv(UniSwapKQuantity.unwrap(left), PeQuantity.unwrap(right), PeQuantity.unwrap(div)));
+    return UniSwapKQuantity.wrap(Math.mulDiv(UniSwapKQuantity.unwrap(left), PeQuantity.unwrap(right), PeQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -893,7 +892,7 @@ function mulDiv(
     PeQuantity right,
     UniSwapKQuantity div
 ) pure returns (PeQuantity) {
-    return PeQuantity.wrap(mulDiv(UniSwapKQuantity.unwrap(left), PeQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
+    return PeQuantity.wrap(Math.mulDiv(UniSwapKQuantity.unwrap(left), PeQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -901,7 +900,7 @@ function mulDiv(
     QiQuantity right,
     QiQuantity div
 ) pure returns (UniSwapKQuantity) {
-    return UniSwapKQuantity.wrap(mulDiv(UniSwapKQuantity.unwrap(left), QiQuantity.unwrap(right), QiQuantity.unwrap(div)));
+    return UniSwapKQuantity.wrap(Math.mulDiv(UniSwapKQuantity.unwrap(left), QiQuantity.unwrap(right), QiQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -909,7 +908,7 @@ function mulDiv(
     QiQuantity right,
     UniSwapKQuantity div
 ) pure returns (QiQuantity) {
-    return QiQuantity.wrap(mulDiv(UniSwapKQuantity.unwrap(left), QiQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
+    return QiQuantity.wrap(Math.mulDiv(UniSwapKQuantity.unwrap(left), QiQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -917,7 +916,7 @@ function mulDiv(
     RatioWith4Decimals right,
     RatioWith4Decimals div
 ) pure returns (UniSwapKQuantity) {
-    return UniSwapKQuantity.wrap(mulDiv(UniSwapKQuantity.unwrap(left), RatioWith4Decimals.unwrap(right), RatioWith4Decimals.unwrap(div)));
+    return UniSwapKQuantity.wrap(Math.mulDiv(UniSwapKQuantity.unwrap(left), RatioWith4Decimals.unwrap(right), RatioWith4Decimals.unwrap(div)));
 }
 
 function mulDiv(
@@ -925,7 +924,7 @@ function mulDiv(
     RatioWith4Decimals right,
     UniSwapKQuantity div
 ) pure returns (RatioWith4Decimals) {
-    return RatioWith4Decimals.wrap(mulDiv(UniSwapKQuantity.unwrap(left), RatioWith4Decimals.unwrap(right), UniSwapKQuantity.unwrap(div)));
+    return RatioWith4Decimals.wrap(Math.mulDiv(UniSwapKQuantity.unwrap(left), RatioWith4Decimals.unwrap(right), UniSwapKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -933,7 +932,7 @@ function mulDiv(
     RatioWith6Decimals right,
     RatioWith6Decimals div
 ) pure returns (UniSwapKQuantity) {
-    return UniSwapKQuantity.wrap(mulDiv(UniSwapKQuantity.unwrap(left), RatioWith6Decimals.unwrap(right), RatioWith6Decimals.unwrap(div)));
+    return UniSwapKQuantity.wrap(Math.mulDiv(UniSwapKQuantity.unwrap(left), RatioWith6Decimals.unwrap(right), RatioWith6Decimals.unwrap(div)));
 }
 
 function mulDiv(
@@ -941,7 +940,7 @@ function mulDiv(
     RatioWith6Decimals right,
     UniSwapKQuantity div
 ) pure returns (RatioWith6Decimals) {
-    return RatioWith6Decimals.wrap(mulDiv(UniSwapKQuantity.unwrap(left), RatioWith6Decimals.unwrap(right), UniSwapKQuantity.unwrap(div)));
+    return RatioWith6Decimals.wrap(Math.mulDiv(UniSwapKQuantity.unwrap(left), RatioWith6Decimals.unwrap(right), UniSwapKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -949,7 +948,7 @@ function mulDiv(
     UniSwapKQuantity right,
     UniSwapKQuantity div
 ) pure returns (UniSwapKQuantity) {
-    return UniSwapKQuantity.wrap(mulDiv(UniSwapKQuantity.unwrap(left), UniSwapKQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
+    return UniSwapKQuantity.wrap(Math.mulDiv(UniSwapKQuantity.unwrap(left), UniSwapKQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -957,7 +956,7 @@ function mulDiv(
     UniSwapRootKQuantity right,
     UniSwapKQuantity div
 ) pure returns (UniSwapRootKQuantity) {
-    return UniSwapRootKQuantity.wrap(mulDiv(UniSwapKQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
+    return UniSwapRootKQuantity.wrap(Math.mulDiv(UniSwapKQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -965,7 +964,7 @@ function mulDiv(
     UniSwapRootKQuantity right,
     UniSwapRootKQuantity div
 ) pure returns (UniSwapKQuantity) {
-    return UniSwapKQuantity.wrap(mulDiv(UniSwapKQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
+    return UniSwapKQuantity.wrap(Math.mulDiv(UniSwapKQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -973,7 +972,7 @@ function mulDiv(
     UsdcPerPeQuantity right,
     UniSwapKQuantity div
 ) pure returns (UsdcPerPeQuantity) {
-    return UsdcPerPeQuantity.wrap(mulDiv(UniSwapKQuantity.unwrap(left), UsdcPerPeQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
+    return UsdcPerPeQuantity.wrap(Math.mulDiv(UniSwapKQuantity.unwrap(left), UsdcPerPeQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -981,7 +980,7 @@ function mulDiv(
     UsdcPerPeQuantity right,
     UsdcPerPeQuantity div
 ) pure returns (UniSwapKQuantity) {
-    return UniSwapKQuantity.wrap(mulDiv(UniSwapKQuantity.unwrap(left), UsdcPerPeQuantity.unwrap(right), UsdcPerPeQuantity.unwrap(div)));
+    return UniSwapKQuantity.wrap(Math.mulDiv(UniSwapKQuantity.unwrap(left), UsdcPerPeQuantity.unwrap(right), UsdcPerPeQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -989,7 +988,7 @@ function mulDiv(
     UsdcQuantity right,
     MaiQuantity div
 ) pure returns (UsdcSqQuantity) {
-    return UsdcSqQuantity.wrap(mulDiv(UniSwapKQuantity.unwrap(left), UsdcQuantity.unwrap(right), MaiQuantity.unwrap(div)));
+    return UsdcSqQuantity.wrap(Math.mulDiv(UniSwapKQuantity.unwrap(left), UsdcQuantity.unwrap(right), MaiQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -997,7 +996,7 @@ function mulDiv(
     UsdcQuantity right,
     UniSwapKQuantity div
 ) pure returns (UsdcQuantity) {
-    return UsdcQuantity.wrap(mulDiv(UniSwapKQuantity.unwrap(left), UsdcQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
+    return UsdcQuantity.wrap(Math.mulDiv(UniSwapKQuantity.unwrap(left), UsdcQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1005,7 +1004,7 @@ function mulDiv(
     UsdcQuantity right,
     UsdcQuantity div
 ) pure returns (UniSwapKQuantity) {
-    return UniSwapKQuantity.wrap(mulDiv(UniSwapKQuantity.unwrap(left), UsdcQuantity.unwrap(right), UsdcQuantity.unwrap(div)));
+    return UniSwapKQuantity.wrap(Math.mulDiv(UniSwapKQuantity.unwrap(left), UsdcQuantity.unwrap(right), UsdcQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1013,7 +1012,7 @@ function mulDiv(
     UsdcQuantity right,
     UsdcSqQuantity div
 ) pure returns (MaiQuantity) {
-    return MaiQuantity.wrap(mulDiv(UniSwapKQuantity.unwrap(left), UsdcQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
+    return MaiQuantity.wrap(Math.mulDiv(UniSwapKQuantity.unwrap(left), UsdcQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1021,7 +1020,7 @@ function mulDiv(
     UsdcSqQuantity right,
     UniSwapKQuantity div
 ) pure returns (UsdcSqQuantity) {
-    return UsdcSqQuantity.wrap(mulDiv(UniSwapKQuantity.unwrap(left), UsdcSqQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
+    return UsdcSqQuantity.wrap(Math.mulDiv(UniSwapKQuantity.unwrap(left), UsdcSqQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1029,7 +1028,7 @@ function mulDiv(
     UsdcSqQuantity right,
     UsdcSqQuantity div
 ) pure returns (UniSwapKQuantity) {
-    return UniSwapKQuantity.wrap(mulDiv(UniSwapKQuantity.unwrap(left), UsdcSqQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
+    return UniSwapKQuantity.wrap(Math.mulDiv(UniSwapKQuantity.unwrap(left), UsdcSqQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1037,7 +1036,7 @@ function mulDiv(
     uint256 right,
     MaiQuantity div
 ) pure returns (UsdcQuantity) {
-    return UsdcQuantity.wrap(mulDiv(UniSwapKQuantity.unwrap(left), right, MaiQuantity.unwrap(div)));
+    return UsdcQuantity.wrap(Math.mulDiv(UniSwapKQuantity.unwrap(left), right, MaiQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1045,7 +1044,7 @@ function mulDiv(
     uint256 right,
     UniSwapKQuantity div
 ) pure returns (uint256) {
-    return mulDiv(UniSwapKQuantity.unwrap(left), right, UniSwapKQuantity.unwrap(div));
+    return Math.mulDiv(UniSwapKQuantity.unwrap(left), right, UniSwapKQuantity.unwrap(div));
 }
 
 function mulDiv(
@@ -1053,7 +1052,7 @@ function mulDiv(
     uint256 right,
     UniSwapRootKQuantity div
 ) pure returns (UniSwapRootKQuantity) {
-    return UniSwapRootKQuantity.wrap(mulDiv(UniSwapKQuantity.unwrap(left), right, UniSwapRootKQuantity.unwrap(div)));
+    return UniSwapRootKQuantity.wrap(Math.mulDiv(UniSwapKQuantity.unwrap(left), right, UniSwapRootKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1061,7 +1060,7 @@ function mulDiv(
     uint256 right,
     UsdcQuantity div
 ) pure returns (MaiQuantity) {
-    return MaiQuantity.wrap(mulDiv(UniSwapKQuantity.unwrap(left), right, UsdcQuantity.unwrap(div)));
+    return MaiQuantity.wrap(Math.mulDiv(UniSwapKQuantity.unwrap(left), right, UsdcQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1069,7 +1068,7 @@ function mulDiv(
     uint256 right,
     uint256 div
 ) pure returns (UniSwapKQuantity) {
-    return UniSwapKQuantity.wrap(mulDiv(UniSwapKQuantity.unwrap(left), right, div));
+    return UniSwapKQuantity.wrap(Math.mulDiv(UniSwapKQuantity.unwrap(left), right, div));
 }
 
 function mulDiv(
@@ -1077,7 +1076,7 @@ function mulDiv(
     LpQuantity right,
     LpQuantity div
 ) pure returns (UniSwapRootKQuantity) {
-    return UniSwapRootKQuantity.wrap(mulDiv(UniSwapRootKQuantity.unwrap(left), LpQuantity.unwrap(right), LpQuantity.unwrap(div)));
+    return UniSwapRootKQuantity.wrap(Math.mulDiv(UniSwapRootKQuantity.unwrap(left), LpQuantity.unwrap(right), LpQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1085,7 +1084,7 @@ function mulDiv(
     LpQuantity right,
     UniSwapRootKQuantity div
 ) pure returns (LpQuantity) {
-    return LpQuantity.wrap(mulDiv(UniSwapRootKQuantity.unwrap(left), LpQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
+    return LpQuantity.wrap(Math.mulDiv(UniSwapRootKQuantity.unwrap(left), LpQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1093,7 +1092,7 @@ function mulDiv(
     MaiQuantity right,
     MaiQuantity div
 ) pure returns (UniSwapRootKQuantity) {
-    return UniSwapRootKQuantity.wrap(mulDiv(UniSwapRootKQuantity.unwrap(left), MaiQuantity.unwrap(right), MaiQuantity.unwrap(div)));
+    return UniSwapRootKQuantity.wrap(Math.mulDiv(UniSwapRootKQuantity.unwrap(left), MaiQuantity.unwrap(right), MaiQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1101,7 +1100,7 @@ function mulDiv(
     MaiQuantity right,
     UniSwapRootKQuantity div
 ) pure returns (MaiQuantity) {
-    return MaiQuantity.wrap(mulDiv(UniSwapRootKQuantity.unwrap(left), MaiQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
+    return MaiQuantity.wrap(Math.mulDiv(UniSwapRootKQuantity.unwrap(left), MaiQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1109,7 +1108,7 @@ function mulDiv(
     PePerUsdcQuantity right,
     PePerUsdcQuantity div
 ) pure returns (UniSwapRootKQuantity) {
-    return UniSwapRootKQuantity.wrap(mulDiv(UniSwapRootKQuantity.unwrap(left), PePerUsdcQuantity.unwrap(right), PePerUsdcQuantity.unwrap(div)));
+    return UniSwapRootKQuantity.wrap(Math.mulDiv(UniSwapRootKQuantity.unwrap(left), PePerUsdcQuantity.unwrap(right), PePerUsdcQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1117,7 +1116,7 @@ function mulDiv(
     PePerUsdcQuantity right,
     UniSwapRootKQuantity div
 ) pure returns (PePerUsdcQuantity) {
-    return PePerUsdcQuantity.wrap(mulDiv(UniSwapRootKQuantity.unwrap(left), PePerUsdcQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
+    return PePerUsdcQuantity.wrap(Math.mulDiv(UniSwapRootKQuantity.unwrap(left), PePerUsdcQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1125,7 +1124,7 @@ function mulDiv(
     PeQuantity right,
     PeQuantity div
 ) pure returns (UniSwapRootKQuantity) {
-    return UniSwapRootKQuantity.wrap(mulDiv(UniSwapRootKQuantity.unwrap(left), PeQuantity.unwrap(right), PeQuantity.unwrap(div)));
+    return UniSwapRootKQuantity.wrap(Math.mulDiv(UniSwapRootKQuantity.unwrap(left), PeQuantity.unwrap(right), PeQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1133,7 +1132,7 @@ function mulDiv(
     PeQuantity right,
     UniSwapRootKQuantity div
 ) pure returns (PeQuantity) {
-    return PeQuantity.wrap(mulDiv(UniSwapRootKQuantity.unwrap(left), PeQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
+    return PeQuantity.wrap(Math.mulDiv(UniSwapRootKQuantity.unwrap(left), PeQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1141,7 +1140,7 @@ function mulDiv(
     QiQuantity right,
     QiQuantity div
 ) pure returns (UniSwapRootKQuantity) {
-    return UniSwapRootKQuantity.wrap(mulDiv(UniSwapRootKQuantity.unwrap(left), QiQuantity.unwrap(right), QiQuantity.unwrap(div)));
+    return UniSwapRootKQuantity.wrap(Math.mulDiv(UniSwapRootKQuantity.unwrap(left), QiQuantity.unwrap(right), QiQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1149,7 +1148,7 @@ function mulDiv(
     QiQuantity right,
     UniSwapRootKQuantity div
 ) pure returns (QiQuantity) {
-    return QiQuantity.wrap(mulDiv(UniSwapRootKQuantity.unwrap(left), QiQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
+    return QiQuantity.wrap(Math.mulDiv(UniSwapRootKQuantity.unwrap(left), QiQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1157,7 +1156,7 @@ function mulDiv(
     RatioWith4Decimals right,
     RatioWith4Decimals div
 ) pure returns (UniSwapRootKQuantity) {
-    return UniSwapRootKQuantity.wrap(mulDiv(UniSwapRootKQuantity.unwrap(left), RatioWith4Decimals.unwrap(right), RatioWith4Decimals.unwrap(div)));
+    return UniSwapRootKQuantity.wrap(Math.mulDiv(UniSwapRootKQuantity.unwrap(left), RatioWith4Decimals.unwrap(right), RatioWith4Decimals.unwrap(div)));
 }
 
 function mulDiv(
@@ -1165,7 +1164,7 @@ function mulDiv(
     RatioWith4Decimals right,
     UniSwapRootKQuantity div
 ) pure returns (RatioWith4Decimals) {
-    return RatioWith4Decimals.wrap(mulDiv(UniSwapRootKQuantity.unwrap(left), RatioWith4Decimals.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
+    return RatioWith4Decimals.wrap(Math.mulDiv(UniSwapRootKQuantity.unwrap(left), RatioWith4Decimals.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1173,7 +1172,7 @@ function mulDiv(
     RatioWith6Decimals right,
     RatioWith6Decimals div
 ) pure returns (UniSwapRootKQuantity) {
-    return UniSwapRootKQuantity.wrap(mulDiv(UniSwapRootKQuantity.unwrap(left), RatioWith6Decimals.unwrap(right), RatioWith6Decimals.unwrap(div)));
+    return UniSwapRootKQuantity.wrap(Math.mulDiv(UniSwapRootKQuantity.unwrap(left), RatioWith6Decimals.unwrap(right), RatioWith6Decimals.unwrap(div)));
 }
 
 function mulDiv(
@@ -1181,7 +1180,7 @@ function mulDiv(
     RatioWith6Decimals right,
     UniSwapRootKQuantity div
 ) pure returns (RatioWith6Decimals) {
-    return RatioWith6Decimals.wrap(mulDiv(UniSwapRootKQuantity.unwrap(left), RatioWith6Decimals.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
+    return RatioWith6Decimals.wrap(Math.mulDiv(UniSwapRootKQuantity.unwrap(left), RatioWith6Decimals.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1189,7 +1188,7 @@ function mulDiv(
     UniSwapKQuantity right,
     UniSwapKQuantity div
 ) pure returns (UniSwapRootKQuantity) {
-    return UniSwapRootKQuantity.wrap(mulDiv(UniSwapRootKQuantity.unwrap(left), UniSwapKQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
+    return UniSwapRootKQuantity.wrap(Math.mulDiv(UniSwapRootKQuantity.unwrap(left), UniSwapKQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1197,7 +1196,7 @@ function mulDiv(
     UniSwapKQuantity right,
     UniSwapRootKQuantity div
 ) pure returns (UniSwapKQuantity) {
-    return UniSwapKQuantity.wrap(mulDiv(UniSwapRootKQuantity.unwrap(left), UniSwapKQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
+    return UniSwapKQuantity.wrap(Math.mulDiv(UniSwapRootKQuantity.unwrap(left), UniSwapKQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1205,7 +1204,7 @@ function mulDiv(
     UniSwapRootKQuantity right,
     MaiQuantity div
 ) pure returns (UsdcQuantity) {
-    return UsdcQuantity.wrap(mulDiv(UniSwapRootKQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), MaiQuantity.unwrap(div)));
+    return UsdcQuantity.wrap(Math.mulDiv(UniSwapRootKQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), MaiQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1213,7 +1212,7 @@ function mulDiv(
     UniSwapRootKQuantity right,
     UniSwapKQuantity div
 ) pure returns (uint256) {
-    return mulDiv(UniSwapRootKQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), UniSwapKQuantity.unwrap(div));
+    return Math.mulDiv(UniSwapRootKQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), UniSwapKQuantity.unwrap(div));
 }
 
 function mulDiv(
@@ -1221,7 +1220,7 @@ function mulDiv(
     UniSwapRootKQuantity right,
     UniSwapRootKQuantity div
 ) pure returns (UniSwapRootKQuantity) {
-    return UniSwapRootKQuantity.wrap(mulDiv(UniSwapRootKQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
+    return UniSwapRootKQuantity.wrap(Math.mulDiv(UniSwapRootKQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1229,7 +1228,7 @@ function mulDiv(
     UniSwapRootKQuantity right,
     UsdcQuantity div
 ) pure returns (MaiQuantity) {
-    return MaiQuantity.wrap(mulDiv(UniSwapRootKQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), UsdcQuantity.unwrap(div)));
+    return MaiQuantity.wrap(Math.mulDiv(UniSwapRootKQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), UsdcQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1237,7 +1236,7 @@ function mulDiv(
     UniSwapRootKQuantity right,
     uint256 div
 ) pure returns (UniSwapKQuantity) {
-    return UniSwapKQuantity.wrap(mulDiv(UniSwapRootKQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), div));
+    return UniSwapKQuantity.wrap(Math.mulDiv(UniSwapRootKQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), div));
 }
 
 function mulDiv(
@@ -1245,7 +1244,7 @@ function mulDiv(
     UsdcPerPeQuantity right,
     UniSwapRootKQuantity div
 ) pure returns (UsdcPerPeQuantity) {
-    return UsdcPerPeQuantity.wrap(mulDiv(UniSwapRootKQuantity.unwrap(left), UsdcPerPeQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
+    return UsdcPerPeQuantity.wrap(Math.mulDiv(UniSwapRootKQuantity.unwrap(left), UsdcPerPeQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1253,7 +1252,7 @@ function mulDiv(
     UsdcPerPeQuantity right,
     UsdcPerPeQuantity div
 ) pure returns (UniSwapRootKQuantity) {
-    return UniSwapRootKQuantity.wrap(mulDiv(UniSwapRootKQuantity.unwrap(left), UsdcPerPeQuantity.unwrap(right), UsdcPerPeQuantity.unwrap(div)));
+    return UniSwapRootKQuantity.wrap(Math.mulDiv(UniSwapRootKQuantity.unwrap(left), UsdcPerPeQuantity.unwrap(right), UsdcPerPeQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1261,7 +1260,7 @@ function mulDiv(
     UsdcQuantity right,
     UniSwapRootKQuantity div
 ) pure returns (UsdcQuantity) {
-    return UsdcQuantity.wrap(mulDiv(UniSwapRootKQuantity.unwrap(left), UsdcQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
+    return UsdcQuantity.wrap(Math.mulDiv(UniSwapRootKQuantity.unwrap(left), UsdcQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1269,7 +1268,7 @@ function mulDiv(
     UsdcQuantity right,
     UsdcQuantity div
 ) pure returns (UniSwapRootKQuantity) {
-    return UniSwapRootKQuantity.wrap(mulDiv(UniSwapRootKQuantity.unwrap(left), UsdcQuantity.unwrap(right), UsdcQuantity.unwrap(div)));
+    return UniSwapRootKQuantity.wrap(Math.mulDiv(UniSwapRootKQuantity.unwrap(left), UsdcQuantity.unwrap(right), UsdcQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1277,7 +1276,7 @@ function mulDiv(
     UsdcSqQuantity right,
     UniSwapRootKQuantity div
 ) pure returns (UsdcSqQuantity) {
-    return UsdcSqQuantity.wrap(mulDiv(UniSwapRootKQuantity.unwrap(left), UsdcSqQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
+    return UsdcSqQuantity.wrap(Math.mulDiv(UniSwapRootKQuantity.unwrap(left), UsdcSqQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1285,7 +1284,7 @@ function mulDiv(
     UsdcSqQuantity right,
     UsdcSqQuantity div
 ) pure returns (UniSwapRootKQuantity) {
-    return UniSwapRootKQuantity.wrap(mulDiv(UniSwapRootKQuantity.unwrap(left), UsdcSqQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
+    return UniSwapRootKQuantity.wrap(Math.mulDiv(UniSwapRootKQuantity.unwrap(left), UsdcSqQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1293,7 +1292,7 @@ function mulDiv(
     uint256 right,
     UniSwapRootKQuantity div
 ) pure returns (uint256) {
-    return mulDiv(UniSwapRootKQuantity.unwrap(left), right, UniSwapRootKQuantity.unwrap(div));
+    return Math.mulDiv(UniSwapRootKQuantity.unwrap(left), right, UniSwapRootKQuantity.unwrap(div));
 }
 
 function mulDiv(
@@ -1301,7 +1300,7 @@ function mulDiv(
     uint256 right,
     uint256 div
 ) pure returns (UniSwapRootKQuantity) {
-    return UniSwapRootKQuantity.wrap(mulDiv(UniSwapRootKQuantity.unwrap(left), right, div));
+    return UniSwapRootKQuantity.wrap(Math.mulDiv(UniSwapRootKQuantity.unwrap(left), right, div));
 }
 
 function mulDiv(
@@ -1309,7 +1308,7 @@ function mulDiv(
     RatioWith4Decimals right,
     RatioWith4Decimals div
 ) pure returns (UsdcPerPeQuantity) {
-    return UsdcPerPeQuantity.wrap(mulDiv(UsdcPerPeQuantity.unwrap(left), RatioWith4Decimals.unwrap(right), RatioWith4Decimals.unwrap(div)));
+    return UsdcPerPeQuantity.wrap(Math.mulDiv(UsdcPerPeQuantity.unwrap(left), RatioWith4Decimals.unwrap(right), RatioWith4Decimals.unwrap(div)));
 }
 
 function mulDiv(
@@ -1317,7 +1316,7 @@ function mulDiv(
     RatioWith4Decimals right,
     UsdcPerPeQuantity div
 ) pure returns (RatioWith4Decimals) {
-    return RatioWith4Decimals.wrap(mulDiv(UsdcPerPeQuantity.unwrap(left), RatioWith4Decimals.unwrap(right), UsdcPerPeQuantity.unwrap(div)));
+    return RatioWith4Decimals.wrap(Math.mulDiv(UsdcPerPeQuantity.unwrap(left), RatioWith4Decimals.unwrap(right), UsdcPerPeQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1325,7 +1324,7 @@ function mulDiv(
     UniSwapKQuantity right,
     UniSwapKQuantity div
 ) pure returns (UsdcPerPeQuantity) {
-    return UsdcPerPeQuantity.wrap(mulDiv(UsdcPerPeQuantity.unwrap(left), UniSwapKQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
+    return UsdcPerPeQuantity.wrap(Math.mulDiv(UsdcPerPeQuantity.unwrap(left), UniSwapKQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1333,7 +1332,7 @@ function mulDiv(
     UniSwapKQuantity right,
     UsdcPerPeQuantity div
 ) pure returns (UniSwapKQuantity) {
-    return UniSwapKQuantity.wrap(mulDiv(UsdcPerPeQuantity.unwrap(left), UniSwapKQuantity.unwrap(right), UsdcPerPeQuantity.unwrap(div)));
+    return UniSwapKQuantity.wrap(Math.mulDiv(UsdcPerPeQuantity.unwrap(left), UniSwapKQuantity.unwrap(right), UsdcPerPeQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1341,7 +1340,7 @@ function mulDiv(
     UniSwapRootKQuantity right,
     UniSwapRootKQuantity div
 ) pure returns (UsdcPerPeQuantity) {
-    return UsdcPerPeQuantity.wrap(mulDiv(UsdcPerPeQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
+    return UsdcPerPeQuantity.wrap(Math.mulDiv(UsdcPerPeQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1349,7 +1348,7 @@ function mulDiv(
     UniSwapRootKQuantity right,
     UsdcPerPeQuantity div
 ) pure returns (UniSwapRootKQuantity) {
-    return UniSwapRootKQuantity.wrap(mulDiv(UsdcPerPeQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), UsdcPerPeQuantity.unwrap(div)));
+    return UniSwapRootKQuantity.wrap(Math.mulDiv(UsdcPerPeQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), UsdcPerPeQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1357,7 +1356,7 @@ function mulDiv(
     UsdcSqQuantity right,
     UsdcPerPeQuantity div
 ) pure returns (UsdcSqQuantity) {
-    return UsdcSqQuantity.wrap(mulDiv(UsdcPerPeQuantity.unwrap(left), UsdcSqQuantity.unwrap(right), UsdcPerPeQuantity.unwrap(div)));
+    return UsdcSqQuantity.wrap(Math.mulDiv(UsdcPerPeQuantity.unwrap(left), UsdcSqQuantity.unwrap(right), UsdcPerPeQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1365,7 +1364,7 @@ function mulDiv(
     UsdcSqQuantity right,
     UsdcSqQuantity div
 ) pure returns (UsdcPerPeQuantity) {
-    return UsdcPerPeQuantity.wrap(mulDiv(UsdcPerPeQuantity.unwrap(left), UsdcSqQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
+    return UsdcPerPeQuantity.wrap(Math.mulDiv(UsdcPerPeQuantity.unwrap(left), UsdcSqQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1373,7 +1372,7 @@ function mulDiv(
     MaiQuantity right,
     UniSwapKQuantity div
 ) pure returns (uint256) {
-    return mulDiv(UsdcQuantity.unwrap(left), MaiQuantity.unwrap(right), UniSwapKQuantity.unwrap(div));
+    return Math.mulDiv(UsdcQuantity.unwrap(left), MaiQuantity.unwrap(right), UniSwapKQuantity.unwrap(div));
 }
 
 function mulDiv(
@@ -1381,7 +1380,7 @@ function mulDiv(
     MaiQuantity right,
     UniSwapRootKQuantity div
 ) pure returns (UniSwapRootKQuantity) {
-    return UniSwapRootKQuantity.wrap(mulDiv(UsdcQuantity.unwrap(left), MaiQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
+    return UniSwapRootKQuantity.wrap(Math.mulDiv(UsdcQuantity.unwrap(left), MaiQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1389,7 +1388,7 @@ function mulDiv(
     MaiQuantity right,
     uint256 div
 ) pure returns (UniSwapKQuantity) {
-    return UniSwapKQuantity.wrap(mulDiv(UsdcQuantity.unwrap(left), MaiQuantity.unwrap(right), div));
+    return UniSwapKQuantity.wrap(Math.mulDiv(UsdcQuantity.unwrap(left), MaiQuantity.unwrap(right), div));
 }
 
 function mulDiv(
@@ -1397,7 +1396,7 @@ function mulDiv(
     RatioWith4Decimals right,
     RatioWith4Decimals div
 ) pure returns (UsdcQuantity) {
-    return UsdcQuantity.wrap(mulDiv(UsdcQuantity.unwrap(left), RatioWith4Decimals.unwrap(right), RatioWith4Decimals.unwrap(div)));
+    return UsdcQuantity.wrap(Math.mulDiv(UsdcQuantity.unwrap(left), RatioWith4Decimals.unwrap(right), RatioWith4Decimals.unwrap(div)));
 }
 
 function mulDiv(
@@ -1405,7 +1404,7 @@ function mulDiv(
     RatioWith4Decimals right,
     UsdcQuantity div
 ) pure returns (RatioWith4Decimals) {
-    return RatioWith4Decimals.wrap(mulDiv(UsdcQuantity.unwrap(left), RatioWith4Decimals.unwrap(right), UsdcQuantity.unwrap(div)));
+    return RatioWith4Decimals.wrap(Math.mulDiv(UsdcQuantity.unwrap(left), RatioWith4Decimals.unwrap(right), UsdcQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1413,7 +1412,7 @@ function mulDiv(
     UniSwapKQuantity right,
     MaiQuantity div
 ) pure returns (UsdcSqQuantity) {
-    return UsdcSqQuantity.wrap(mulDiv(UsdcQuantity.unwrap(left), UniSwapKQuantity.unwrap(right), MaiQuantity.unwrap(div)));
+    return UsdcSqQuantity.wrap(Math.mulDiv(UsdcQuantity.unwrap(left), UniSwapKQuantity.unwrap(right), MaiQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1421,7 +1420,7 @@ function mulDiv(
     UniSwapKQuantity right,
     UniSwapKQuantity div
 ) pure returns (UsdcQuantity) {
-    return UsdcQuantity.wrap(mulDiv(UsdcQuantity.unwrap(left), UniSwapKQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
+    return UsdcQuantity.wrap(Math.mulDiv(UsdcQuantity.unwrap(left), UniSwapKQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1429,7 +1428,7 @@ function mulDiv(
     UniSwapKQuantity right,
     UsdcQuantity div
 ) pure returns (UniSwapKQuantity) {
-    return UniSwapKQuantity.wrap(mulDiv(UsdcQuantity.unwrap(left), UniSwapKQuantity.unwrap(right), UsdcQuantity.unwrap(div)));
+    return UniSwapKQuantity.wrap(Math.mulDiv(UsdcQuantity.unwrap(left), UniSwapKQuantity.unwrap(right), UsdcQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1437,7 +1436,7 @@ function mulDiv(
     UniSwapKQuantity right,
     UsdcSqQuantity div
 ) pure returns (MaiQuantity) {
-    return MaiQuantity.wrap(mulDiv(UsdcQuantity.unwrap(left), UniSwapKQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
+    return MaiQuantity.wrap(Math.mulDiv(UsdcQuantity.unwrap(left), UniSwapKQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1445,7 +1444,7 @@ function mulDiv(
     UniSwapRootKQuantity right,
     UniSwapRootKQuantity div
 ) pure returns (UsdcQuantity) {
-    return UsdcQuantity.wrap(mulDiv(UsdcQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
+    return UsdcQuantity.wrap(Math.mulDiv(UsdcQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1453,7 +1452,7 @@ function mulDiv(
     UniSwapRootKQuantity right,
     UsdcQuantity div
 ) pure returns (UniSwapRootKQuantity) {
-    return UniSwapRootKQuantity.wrap(mulDiv(UsdcQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), UsdcQuantity.unwrap(div)));
+    return UniSwapRootKQuantity.wrap(Math.mulDiv(UsdcQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), UsdcQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1461,7 +1460,7 @@ function mulDiv(
     UsdcQuantity right,
     UsdcSqQuantity div
 ) pure returns (uint256) {
-    return mulDiv(UsdcQuantity.unwrap(left), UsdcQuantity.unwrap(right), UsdcSqQuantity.unwrap(div));
+    return Math.mulDiv(UsdcQuantity.unwrap(left), UsdcQuantity.unwrap(right), UsdcSqQuantity.unwrap(div));
 }
 
 function mulDiv(
@@ -1469,7 +1468,7 @@ function mulDiv(
     UsdcQuantity right,
     uint256 div
 ) pure returns (UsdcSqQuantity) {
-    return UsdcSqQuantity.wrap(mulDiv(UsdcQuantity.unwrap(left), UsdcQuantity.unwrap(right), div));
+    return UsdcSqQuantity.wrap(Math.mulDiv(UsdcQuantity.unwrap(left), UsdcQuantity.unwrap(right), div));
 }
 
 function mulDiv(
@@ -1477,7 +1476,7 @@ function mulDiv(
     UsdcSqQuantity right,
     UsdcQuantity div
 ) pure returns (UsdcSqQuantity) {
-    return UsdcSqQuantity.wrap(mulDiv(UsdcQuantity.unwrap(left), UsdcSqQuantity.unwrap(right), UsdcQuantity.unwrap(div)));
+    return UsdcSqQuantity.wrap(Math.mulDiv(UsdcQuantity.unwrap(left), UsdcSqQuantity.unwrap(right), UsdcQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1485,7 +1484,7 @@ function mulDiv(
     UsdcSqQuantity right,
     UsdcSqQuantity div
 ) pure returns (UsdcQuantity) {
-    return UsdcQuantity.wrap(mulDiv(UsdcQuantity.unwrap(left), UsdcSqQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
+    return UsdcQuantity.wrap(Math.mulDiv(UsdcQuantity.unwrap(left), UsdcSqQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1493,7 +1492,7 @@ function mulDiv(
     LpQuantity right,
     LpQuantity div
 ) pure returns (UsdcSqQuantity) {
-    return UsdcSqQuantity.wrap(mulDiv(UsdcSqQuantity.unwrap(left), LpQuantity.unwrap(right), LpQuantity.unwrap(div)));
+    return UsdcSqQuantity.wrap(Math.mulDiv(UsdcSqQuantity.unwrap(left), LpQuantity.unwrap(right), LpQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1501,7 +1500,7 @@ function mulDiv(
     LpQuantity right,
     UsdcSqQuantity div
 ) pure returns (LpQuantity) {
-    return LpQuantity.wrap(mulDiv(UsdcSqQuantity.unwrap(left), LpQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
+    return LpQuantity.wrap(Math.mulDiv(UsdcSqQuantity.unwrap(left), LpQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1509,7 +1508,7 @@ function mulDiv(
     MaiQuantity right,
     MaiQuantity div
 ) pure returns (UsdcSqQuantity) {
-    return UsdcSqQuantity.wrap(mulDiv(UsdcSqQuantity.unwrap(left), MaiQuantity.unwrap(right), MaiQuantity.unwrap(div)));
+    return UsdcSqQuantity.wrap(Math.mulDiv(UsdcSqQuantity.unwrap(left), MaiQuantity.unwrap(right), MaiQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1517,7 +1516,7 @@ function mulDiv(
     MaiQuantity right,
     UniSwapKQuantity div
 ) pure returns (UsdcQuantity) {
-    return UsdcQuantity.wrap(mulDiv(UsdcSqQuantity.unwrap(left), MaiQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
+    return UsdcQuantity.wrap(Math.mulDiv(UsdcSqQuantity.unwrap(left), MaiQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1525,7 +1524,7 @@ function mulDiv(
     MaiQuantity right,
     UsdcQuantity div
 ) pure returns (UniSwapKQuantity) {
-    return UniSwapKQuantity.wrap(mulDiv(UsdcSqQuantity.unwrap(left), MaiQuantity.unwrap(right), UsdcQuantity.unwrap(div)));
+    return UniSwapKQuantity.wrap(Math.mulDiv(UsdcSqQuantity.unwrap(left), MaiQuantity.unwrap(right), UsdcQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1533,7 +1532,7 @@ function mulDiv(
     MaiQuantity right,
     UsdcSqQuantity div
 ) pure returns (MaiQuantity) {
-    return MaiQuantity.wrap(mulDiv(UsdcSqQuantity.unwrap(left), MaiQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
+    return MaiQuantity.wrap(Math.mulDiv(UsdcSqQuantity.unwrap(left), MaiQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1541,7 +1540,7 @@ function mulDiv(
     PePerUsdcQuantity right,
     PePerUsdcQuantity div
 ) pure returns (UsdcSqQuantity) {
-    return UsdcSqQuantity.wrap(mulDiv(UsdcSqQuantity.unwrap(left), PePerUsdcQuantity.unwrap(right), PePerUsdcQuantity.unwrap(div)));
+    return UsdcSqQuantity.wrap(Math.mulDiv(UsdcSqQuantity.unwrap(left), PePerUsdcQuantity.unwrap(right), PePerUsdcQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1549,7 +1548,7 @@ function mulDiv(
     PePerUsdcQuantity right,
     UsdcSqQuantity div
 ) pure returns (PePerUsdcQuantity) {
-    return PePerUsdcQuantity.wrap(mulDiv(UsdcSqQuantity.unwrap(left), PePerUsdcQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
+    return PePerUsdcQuantity.wrap(Math.mulDiv(UsdcSqQuantity.unwrap(left), PePerUsdcQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1557,7 +1556,7 @@ function mulDiv(
     PeQuantity right,
     PeQuantity div
 ) pure returns (UsdcSqQuantity) {
-    return UsdcSqQuantity.wrap(mulDiv(UsdcSqQuantity.unwrap(left), PeQuantity.unwrap(right), PeQuantity.unwrap(div)));
+    return UsdcSqQuantity.wrap(Math.mulDiv(UsdcSqQuantity.unwrap(left), PeQuantity.unwrap(right), PeQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1565,7 +1564,7 @@ function mulDiv(
     PeQuantity right,
     UsdcSqQuantity div
 ) pure returns (PeQuantity) {
-    return PeQuantity.wrap(mulDiv(UsdcSqQuantity.unwrap(left), PeQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
+    return PeQuantity.wrap(Math.mulDiv(UsdcSqQuantity.unwrap(left), PeQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1573,7 +1572,7 @@ function mulDiv(
     QiQuantity right,
     QiQuantity div
 ) pure returns (UsdcSqQuantity) {
-    return UsdcSqQuantity.wrap(mulDiv(UsdcSqQuantity.unwrap(left), QiQuantity.unwrap(right), QiQuantity.unwrap(div)));
+    return UsdcSqQuantity.wrap(Math.mulDiv(UsdcSqQuantity.unwrap(left), QiQuantity.unwrap(right), QiQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1581,7 +1580,7 @@ function mulDiv(
     QiQuantity right,
     UsdcSqQuantity div
 ) pure returns (QiQuantity) {
-    return QiQuantity.wrap(mulDiv(UsdcSqQuantity.unwrap(left), QiQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
+    return QiQuantity.wrap(Math.mulDiv(UsdcSqQuantity.unwrap(left), QiQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1589,7 +1588,7 @@ function mulDiv(
     RatioWith4Decimals right,
     RatioWith4Decimals div
 ) pure returns (UsdcSqQuantity) {
-    return UsdcSqQuantity.wrap(mulDiv(UsdcSqQuantity.unwrap(left), RatioWith4Decimals.unwrap(right), RatioWith4Decimals.unwrap(div)));
+    return UsdcSqQuantity.wrap(Math.mulDiv(UsdcSqQuantity.unwrap(left), RatioWith4Decimals.unwrap(right), RatioWith4Decimals.unwrap(div)));
 }
 
 function mulDiv(
@@ -1597,7 +1596,7 @@ function mulDiv(
     RatioWith4Decimals right,
     UsdcSqQuantity div
 ) pure returns (RatioWith4Decimals) {
-    return RatioWith4Decimals.wrap(mulDiv(UsdcSqQuantity.unwrap(left), RatioWith4Decimals.unwrap(right), UsdcSqQuantity.unwrap(div)));
+    return RatioWith4Decimals.wrap(Math.mulDiv(UsdcSqQuantity.unwrap(left), RatioWith4Decimals.unwrap(right), UsdcSqQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1605,7 +1604,7 @@ function mulDiv(
     RatioWith6Decimals right,
     RatioWith6Decimals div
 ) pure returns (UsdcSqQuantity) {
-    return UsdcSqQuantity.wrap(mulDiv(UsdcSqQuantity.unwrap(left), RatioWith6Decimals.unwrap(right), RatioWith6Decimals.unwrap(div)));
+    return UsdcSqQuantity.wrap(Math.mulDiv(UsdcSqQuantity.unwrap(left), RatioWith6Decimals.unwrap(right), RatioWith6Decimals.unwrap(div)));
 }
 
 function mulDiv(
@@ -1613,7 +1612,7 @@ function mulDiv(
     RatioWith6Decimals right,
     UsdcSqQuantity div
 ) pure returns (RatioWith6Decimals) {
-    return RatioWith6Decimals.wrap(mulDiv(UsdcSqQuantity.unwrap(left), RatioWith6Decimals.unwrap(right), UsdcSqQuantity.unwrap(div)));
+    return RatioWith6Decimals.wrap(Math.mulDiv(UsdcSqQuantity.unwrap(left), RatioWith6Decimals.unwrap(right), UsdcSqQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1621,7 +1620,7 @@ function mulDiv(
     UniSwapKQuantity right,
     UniSwapKQuantity div
 ) pure returns (UsdcSqQuantity) {
-    return UsdcSqQuantity.wrap(mulDiv(UsdcSqQuantity.unwrap(left), UniSwapKQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
+    return UsdcSqQuantity.wrap(Math.mulDiv(UsdcSqQuantity.unwrap(left), UniSwapKQuantity.unwrap(right), UniSwapKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1629,7 +1628,7 @@ function mulDiv(
     UniSwapKQuantity right,
     UsdcSqQuantity div
 ) pure returns (UniSwapKQuantity) {
-    return UniSwapKQuantity.wrap(mulDiv(UsdcSqQuantity.unwrap(left), UniSwapKQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
+    return UniSwapKQuantity.wrap(Math.mulDiv(UsdcSqQuantity.unwrap(left), UniSwapKQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1637,7 +1636,7 @@ function mulDiv(
     UniSwapRootKQuantity right,
     UniSwapRootKQuantity div
 ) pure returns (UsdcSqQuantity) {
-    return UsdcSqQuantity.wrap(mulDiv(UsdcSqQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
+    return UsdcSqQuantity.wrap(Math.mulDiv(UsdcSqQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1645,7 +1644,7 @@ function mulDiv(
     UniSwapRootKQuantity right,
     UsdcSqQuantity div
 ) pure returns (UniSwapRootKQuantity) {
-    return UniSwapRootKQuantity.wrap(mulDiv(UsdcSqQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
+    return UniSwapRootKQuantity.wrap(Math.mulDiv(UsdcSqQuantity.unwrap(left), UniSwapRootKQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1653,7 +1652,7 @@ function mulDiv(
     UsdcPerPeQuantity right,
     UsdcPerPeQuantity div
 ) pure returns (UsdcSqQuantity) {
-    return UsdcSqQuantity.wrap(mulDiv(UsdcSqQuantity.unwrap(left), UsdcPerPeQuantity.unwrap(right), UsdcPerPeQuantity.unwrap(div)));
+    return UsdcSqQuantity.wrap(Math.mulDiv(UsdcSqQuantity.unwrap(left), UsdcPerPeQuantity.unwrap(right), UsdcPerPeQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1661,7 +1660,7 @@ function mulDiv(
     UsdcPerPeQuantity right,
     UsdcSqQuantity div
 ) pure returns (UsdcPerPeQuantity) {
-    return UsdcPerPeQuantity.wrap(mulDiv(UsdcSqQuantity.unwrap(left), UsdcPerPeQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
+    return UsdcPerPeQuantity.wrap(Math.mulDiv(UsdcSqQuantity.unwrap(left), UsdcPerPeQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1669,7 +1668,7 @@ function mulDiv(
     UsdcQuantity right,
     UsdcQuantity div
 ) pure returns (UsdcSqQuantity) {
-    return UsdcSqQuantity.wrap(mulDiv(UsdcSqQuantity.unwrap(left), UsdcQuantity.unwrap(right), UsdcQuantity.unwrap(div)));
+    return UsdcSqQuantity.wrap(Math.mulDiv(UsdcSqQuantity.unwrap(left), UsdcQuantity.unwrap(right), UsdcQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1677,7 +1676,7 @@ function mulDiv(
     UsdcQuantity right,
     UsdcSqQuantity div
 ) pure returns (UsdcQuantity) {
-    return UsdcQuantity.wrap(mulDiv(UsdcSqQuantity.unwrap(left), UsdcQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
+    return UsdcQuantity.wrap(Math.mulDiv(UsdcSqQuantity.unwrap(left), UsdcQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1685,7 +1684,7 @@ function mulDiv(
     UsdcSqQuantity right,
     UsdcSqQuantity div
 ) pure returns (UsdcSqQuantity) {
-    return UsdcSqQuantity.wrap(mulDiv(UsdcSqQuantity.unwrap(left), UsdcSqQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
+    return UsdcSqQuantity.wrap(Math.mulDiv(UsdcSqQuantity.unwrap(left), UsdcSqQuantity.unwrap(right), UsdcSqQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1693,7 +1692,7 @@ function mulDiv(
     uint256 right,
     UsdcQuantity div
 ) pure returns (UsdcQuantity) {
-    return UsdcQuantity.wrap(mulDiv(UsdcSqQuantity.unwrap(left), right, UsdcQuantity.unwrap(div)));
+    return UsdcQuantity.wrap(Math.mulDiv(UsdcSqQuantity.unwrap(left), right, UsdcQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1701,7 +1700,7 @@ function mulDiv(
     uint256 right,
     UsdcSqQuantity div
 ) pure returns (uint256) {
-    return mulDiv(UsdcSqQuantity.unwrap(left), right, UsdcSqQuantity.unwrap(div));
+    return Math.mulDiv(UsdcSqQuantity.unwrap(left), right, UsdcSqQuantity.unwrap(div));
 }
 
 function mulDiv(
@@ -1709,7 +1708,7 @@ function mulDiv(
     uint256 right,
     uint256 div
 ) pure returns (UsdcSqQuantity) {
-    return UsdcSqQuantity.wrap(mulDiv(UsdcSqQuantity.unwrap(left), right, div));
+    return UsdcSqQuantity.wrap(Math.mulDiv(UsdcSqQuantity.unwrap(left), right, div));
 }
 
 function mulDiv(
@@ -1717,7 +1716,7 @@ function mulDiv(
     RatioWith4Decimals right,
     RatioWith4Decimals div
 ) pure returns (uint256) {
-    return mulDiv(left, RatioWith4Decimals.unwrap(right), RatioWith4Decimals.unwrap(div));
+    return Math.mulDiv(left, RatioWith4Decimals.unwrap(right), RatioWith4Decimals.unwrap(div));
 }
 
 function mulDiv(
@@ -1725,7 +1724,7 @@ function mulDiv(
     RatioWith4Decimals right,
     uint256 div
 ) pure returns (RatioWith4Decimals) {
-    return RatioWith4Decimals.wrap(mulDiv(left, RatioWith4Decimals.unwrap(right), div));
+    return RatioWith4Decimals.wrap(Math.mulDiv(left, RatioWith4Decimals.unwrap(right), div));
 }
 
 function mulDiv(
@@ -1733,7 +1732,7 @@ function mulDiv(
     UniSwapKQuantity right,
     MaiQuantity div
 ) pure returns (UsdcQuantity) {
-    return UsdcQuantity.wrap(mulDiv(left, UniSwapKQuantity.unwrap(right), MaiQuantity.unwrap(div)));
+    return UsdcQuantity.wrap(Math.mulDiv(left, UniSwapKQuantity.unwrap(right), MaiQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1741,7 +1740,7 @@ function mulDiv(
     UniSwapKQuantity right,
     UniSwapKQuantity div
 ) pure returns (uint256) {
-    return mulDiv(left, UniSwapKQuantity.unwrap(right), UniSwapKQuantity.unwrap(div));
+    return Math.mulDiv(left, UniSwapKQuantity.unwrap(right), UniSwapKQuantity.unwrap(div));
 }
 
 function mulDiv(
@@ -1749,7 +1748,7 @@ function mulDiv(
     UniSwapKQuantity right,
     UniSwapRootKQuantity div
 ) pure returns (UniSwapRootKQuantity) {
-    return UniSwapRootKQuantity.wrap(mulDiv(left, UniSwapKQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
+    return UniSwapRootKQuantity.wrap(Math.mulDiv(left, UniSwapKQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1757,7 +1756,7 @@ function mulDiv(
     UniSwapKQuantity right,
     UsdcQuantity div
 ) pure returns (MaiQuantity) {
-    return MaiQuantity.wrap(mulDiv(left, UniSwapKQuantity.unwrap(right), UsdcQuantity.unwrap(div)));
+    return MaiQuantity.wrap(Math.mulDiv(left, UniSwapKQuantity.unwrap(right), UsdcQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1765,7 +1764,7 @@ function mulDiv(
     UniSwapKQuantity right,
     uint256 div
 ) pure returns (UniSwapKQuantity) {
-    return UniSwapKQuantity.wrap(mulDiv(left, UniSwapKQuantity.unwrap(right), div));
+    return UniSwapKQuantity.wrap(Math.mulDiv(left, UniSwapKQuantity.unwrap(right), div));
 }
 
 function mulDiv(
@@ -1773,7 +1772,7 @@ function mulDiv(
     UniSwapRootKQuantity right,
     UniSwapRootKQuantity div
 ) pure returns (uint256) {
-    return mulDiv(left, UniSwapRootKQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div));
+    return Math.mulDiv(left, UniSwapRootKQuantity.unwrap(right), UniSwapRootKQuantity.unwrap(div));
 }
 
 function mulDiv(
@@ -1781,7 +1780,7 @@ function mulDiv(
     UniSwapRootKQuantity right,
     uint256 div
 ) pure returns (UniSwapRootKQuantity) {
-    return UniSwapRootKQuantity.wrap(mulDiv(left, UniSwapRootKQuantity.unwrap(right), div));
+    return UniSwapRootKQuantity.wrap(Math.mulDiv(left, UniSwapRootKQuantity.unwrap(right), div));
 }
 
 function mulDiv(
@@ -1789,7 +1788,7 @@ function mulDiv(
     UsdcSqQuantity right,
     UsdcQuantity div
 ) pure returns (UsdcQuantity) {
-    return UsdcQuantity.wrap(mulDiv(left, UsdcSqQuantity.unwrap(right), UsdcQuantity.unwrap(div)));
+    return UsdcQuantity.wrap(Math.mulDiv(left, UsdcSqQuantity.unwrap(right), UsdcQuantity.unwrap(div)));
 }
 
 function mulDiv(
@@ -1797,7 +1796,7 @@ function mulDiv(
     UsdcSqQuantity right,
     UsdcSqQuantity div
 ) pure returns (uint256) {
-    return mulDiv(left, UsdcSqQuantity.unwrap(right), UsdcSqQuantity.unwrap(div));
+    return Math.mulDiv(left, UsdcSqQuantity.unwrap(right), UsdcSqQuantity.unwrap(div));
 }
 
 function mulDiv(
@@ -1805,5 +1804,5 @@ function mulDiv(
     UsdcSqQuantity right,
     uint256 div
 ) pure returns (UsdcSqQuantity) {
-    return UsdcSqQuantity.wrap(mulDiv(left, UsdcSqQuantity.unwrap(right), div));
+    return UsdcSqQuantity.wrap(Math.mulDiv(left, UsdcSqQuantity.unwrap(right), div));
 }

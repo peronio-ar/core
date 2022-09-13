@@ -74,7 +74,7 @@ def unwrap(unit: str, value: str) -> str:
     return f'{unit}.unwrap({value})' if unit not in existingUnits else f'{value}'
 
 def mulDiv(leftUnit: str, rightUnit: str, divUnit: str, resultUnit: str) -> str:
-    return f"""function mulDiv({leftUnit} left, {rightUnit} right, {divUnit} div) pure returns ({resultUnit}) {{ return {wrap(resultUnit, f"mulDiv({unwrap(leftUnit, 'left')}, {unwrap(rightUnit, 'right')}, {unwrap(divUnit, 'div')})")}; }}"""
+    return f"""function mulDiv({leftUnit} left, {rightUnit} right, {divUnit} div) pure returns ({resultUnit}) {{ return {wrap(resultUnit, f"Math.mulDiv({unwrap(leftUnit, 'left')}, {unwrap(rightUnit, 'right')}, {unwrap(divUnit, 'div')})")}; }}"""
 
 def declAll(overloads: set[tuple[str, str, str, str]]) -> str:
     decls: set[str] = set()
