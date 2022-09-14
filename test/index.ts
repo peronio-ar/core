@@ -31,8 +31,6 @@ const peronioConstructorParams: IPeronioConstructorParams = getConstructorParams
 const deployPeronio = async (constructor: IPeronioConstructorParams): Promise<Peronio> => {
     const Peronio: PeronioFactory = await ethers.getContractFactory("Peronio");
     const contract: Peronio = await Peronio.deploy(
-        constructor.name,
-        constructor.symbol,
         constructor.usdcAddress,
         constructor.maiAddress,
         constructor.lpAddress,
