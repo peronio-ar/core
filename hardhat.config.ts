@@ -75,6 +75,12 @@ const config: HardhatUserConfig = {
             gasPrice: GAS_PRICE * 10 ** 9,
             accounts: ACCOUNTS,
         },
+        frame: {
+            chainId: 137,
+            url: "http://localhost:1248",
+            gasPrice: GAS_PRICE * 10 ** 9,
+            accounts: ACCOUNTS,
+        },
     },
     gasReporter: {
         enabled: process.env.REPORT_GAS !== undefined,
