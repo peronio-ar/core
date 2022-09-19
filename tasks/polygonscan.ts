@@ -26,19 +26,10 @@ task("polygonscan", "Verify contract on Polyscan").setAction(async (_a, { networ
 
     const peronioAddress: Address = (await deployments.get("Peronio")).address;
     const peronioV1Address: Address = (await deployments.get("PeronioV1")).address;
-    const peronioV1WrapperAddress: Address = (await deployments.get("PeronioV1Wrapper")).address;
     const migratorAddress: Address = (await deployments.get("Migrator")).address;
-    const factoryAddress: Address = (await deployments.get("UniswapV2Factory")).address;
-    const routerAddress: Address = (await deployments.get("UniswapV2Router02")).address;
     const autoCompounderAddress: Address = (await deployments.get("AutoCompounder")).address;
-    const wmaticAddress: Address = process.env.WMATIC_ADDRESS ?? "";
-
-    const { deployer } = await getNamedAccounts();
 
     runVerify("Publishing Peronio to Polygonscan", peronioAddress, getConstructorParams());
-    runVerify("Publishing Peronio V1 Wrapper to Polygonscan", peronioV1WrapperAddress, [peronioV1Address]);
-    runVerify("Publishing Migrator to Polygonscan", migratorAddress, [peronioV1WrapperAddress, peronioAddress]);
-    runVerify("Publishing Uniswap Factory to Polygonscan", factoryAddress, { deployer });
-    runVerify("Publishing Uniswap Router to Polygonscan", routerAddress, { factoryAddress, wmaticAddress });
+    runVerify("Publishing Migrator to Polygonscan", migratorAddress, [peronioV1Address, peronioAddress]);
     runVerify("Publishing AutoCompounder Polygonscan", autoCompounderAddress, { peronioAddress });
 });
