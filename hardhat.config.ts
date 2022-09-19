@@ -21,15 +21,10 @@ const REPORT_GAS = process.env.REPORT_GAS;
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY ?? "";
 const MAINNET_API_URL = process.env.MAINNET_API_URL ?? "";
 
-const PRIVATE_KEY = process.env.PRIVATE_KEY ?? "";
-const TESTER_PRIVATE_KEY = process.env.TESTER_PRIVATE_KEY ?? "";
-
-const ACCOUNTS = [PRIVATE_KEY, TESTER_PRIVATE_KEY];
-
 const BLOCK_NUMBER = parseInt(process.env.BLOCK_NUMBER ?? "0");
 
 const config: HardhatUserConfig = {
-    defaultNetwork: "localhost",
+    defaultNetwork: "hardhat",
     solidity: {
         compilers: [
             {
@@ -64,13 +59,12 @@ const config: HardhatUserConfig = {
                 blockNumber: BLOCK_NUMBER,
             },
             mining: {
+                auto: true,
                 interval: 2000,
             },
-        },
-        localhost: {
-            chainId: 137,
-            url: "http://localhost:8545",
-            accounts: ACCOUNTS,
+            accounts: {
+                count: 2,
+            },
         },
         matic: {
             timeout: 1000000,
