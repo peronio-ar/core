@@ -1,7 +1,8 @@
 .*
 coverage
 coverage.json
-deployments/localhost
+deployments/**
+!deployments/matic
 node_modules
 typechain-types
 yarn-error.log
