@@ -16,6 +16,7 @@ dotenv.config();
 // Go to https://hardhat.org/config/ to learn more
 
 const GAS_PRICE = parseFloat(process.env.GAS_PRICE || "1");
+const REPORT_GAS = process.env.REPORT_GAS;
 
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY ?? "";
 const MAINNET_API_URL = process.env.MAINNET_API_URL ?? "";
@@ -24,6 +25,8 @@ const PRIVATE_KEY = process.env.PRIVATE_KEY ?? "";
 const TESTER_PRIVATE_KEY = process.env.TESTER_PRIVATE_KEY ?? "";
 
 const ACCOUNTS = [PRIVATE_KEY, TESTER_PRIVATE_KEY];
+
+const BLOCK_NUMBER = parseInt(process.env.BLOCK_NUMBER ?? "0");
 
 const config: HardhatUserConfig = {
     defaultNetwork: "localhost",
@@ -58,10 +61,10 @@ const config: HardhatUserConfig = {
             chainId: 137,
             forking: {
                 url: MAINNET_API_URL,
-                blockNumber: 32121120,
+                blockNumber: BLOCK_NUMBER,
             },
             mining: {
-                auto: true,
+                interval: 2000,
             },
         },
         localhost: {
@@ -70,14 +73,14 @@ const config: HardhatUserConfig = {
             accounts: ACCOUNTS,
         },
         matic: {
+            timeout: 1000000,
             chainId: 137,
-            url: MAINNET_API_URL,
+            url: "http://localhost:1248",
             gasPrice: GAS_PRICE * 10 ** 9,
-            accounts: ACCOUNTS,
         },
     },
     gasReporter: {
-        enabled: process.env.REPORT_GAS !== undefined,
+        enabled: REPORT_GAS !== undefined,
         currency: "USD",
     },
     etherscan: {
@@ -85,7 +88,7 @@ const config: HardhatUserConfig = {
     },
     namedAccounts: {
         deployer: {
-            default: 0, // here this will by default take the first account as deployer
+            default: 0, // this will by default take the first account as deployer
         },
         tester: {
             default: 1,

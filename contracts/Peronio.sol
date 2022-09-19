@@ -23,7 +23,7 @@ import {IUniswapV2Router02} from "./uniswap/interfaces/IUniswapV2Router02.sol";
 import "./PeronioSupport.sol";
 
 string constant NAME = "Peronio";
-string constant SYMBOL = "PE";
+string constant SYMBOL = "P";
 
 contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, ERC165, AccessControl, ReentrancyGuard {
     using SafeERC20 for IERC20;
