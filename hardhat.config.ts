@@ -64,6 +64,7 @@ const config: HardhatUserConfig = {
                 blockNumber: BLOCK_NUMBER,
             },
             mining: {
+                auto: true,
                 interval: 2000,
             },
         },
