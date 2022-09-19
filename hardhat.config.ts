@@ -64,25 +64,19 @@ const config: HardhatUserConfig = {
                 blockNumber: BLOCK_NUMBER,
             },
             mining: {
-                auto: true,
+                interval: 2000,
             },
-        },
-        matic: {
-            chainId: 137,
-            url: MAINNET_API_URL,
-            gasPrice: GAS_PRICE * 10 ** 9,
-            accounts: ACCOUNTS,
         },
         localhost: {
             chainId: 137,
             url: "http://localhost:8545",
             accounts: ACCOUNTS,
         },
-        frame: {
+        matic: {
+            timeout: 1000000,
             chainId: 137,
             url: "http://localhost:1248",
             gasPrice: GAS_PRICE * 10 ** 9,
-            accounts: ACCOUNTS,
         },
     },
     gasReporter: {
