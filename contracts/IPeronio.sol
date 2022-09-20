@@ -55,6 +55,71 @@ type RatioWith6Decimals is uint256;
  */
 type RoleId is bytes32;
 
+/**
+ * Permit voucher
+ *
+ * @custom:member from  The address granting allowance
+ * @custom:member usdcAmount  The number of USDC tokens being allowed
+ * @custom:member deadline  The maximum block timestamp this voucher is valid until
+ * @custom:member v  The "v" part of an ERC20Permit signature
+ * @custom:member r  The "r" part of an ERC20Permit signature
+ * @custom:member s  The "s" part of an ERC20Permit signature
+ * @custom:member fee  The number of USDC tokens awarded to the delegate for executing the transaction
+ * @custom:member nonce  The voucher nonce to use
+ */
+struct PermitVoucher {
+    address from;
+    UsdcQuantity usdcAmount;
+    uint256 deadline;
+    uint8 v;
+    bytes32 r;
+    bytes32 s;
+    //
+    UsdcQuantity fee;
+    uint256 nonce;
+}
+
+/**
+ * Mint voucher
+ *
+ * @custom:member from  The address providing USDC collateral
+ * @custom:member to  The address to which minted PE tokens will be transferred
+ * @custom:member usdcAmount  The number of USDC tokens being provided as collateral
+ * @custom:member deadline  The maximum block timestamp this voucher is valid until
+ * @custom:member fee  The number of PE tokens awarded to the delegate for executing the transaction
+ * @custom:member nonce  The voucher nonce to use
+ */
+struct MintVoucher {
+    address from;
+    address to;
+    UsdcQuantity usdcAmount;
+    PeQuantity minReceive;
+    uint256 deadline;
+    //
+    PeQuantity fee;
+    uint256 nonce;
+}
+
+/**
+ * Withdraw voucher
+ *
+ * @custom:member from  The address from whence to extract PE tokens
+ * @custom:member to  The address to which extracted USDC tokens will be transferred
+ * @custom:member peAmount  The number of PE tokens being extracted
+ * @custom:member deadline  The maximum block timestamp this voucher is valid until
+ * @custom:member fee  The number of PE tokens awarded to the delegate for executing the transaction
+ * @custom:member nonce  The voucher nonce to use
+ */
+struct WithdrawVoucher {
+    address from;
+    address to;
+    PeQuantity peAmount;
+    uint256 deadline;
+    //
+    PeQuantity fee;
+    uint256 nonce;
+}
+
 interface IPeronio {
     // --- Events ---------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -110,6 +175,15 @@ interface IPeronio {
      * @param lp  Number of LP USDC/MAI tokens re-invested
      */
     event CompoundRewards(QiQuantity qi, UsdcQuantity usdc, LpQuantity lp);
+
+    /**
+     * Emitted upon a voucher being served
+     *
+     * @param voucherNonce  The voucher nonce served
+     * @param voucherHash  The voucher hash served
+     * @param delegate  The delegate serving the voucher
+     */
+    event VoucherServed(uint256 indexed voucherNonce, bytes32 voucherHash, address delegate);
 
     // --- Roles - Automatic ----------------------------------------------------------------------------------------------------------------------------------
 
@@ -209,6 +283,14 @@ interface IPeronio {
      * @return  True whenever the contract has already been initialized, false otherwise
      */
     function initialized() external view returns (bool);
+
+    /**
+     * Determine whether the given voucher hash has been already served
+     *
+     * @param voucherHash  The voucher hash to check
+     * @return  True whenever the given voucher hash has already been served
+     */
+    function voucherServed(bytes32 voucherHash) external view returns (bool);
 
     // --- Decimals -------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -331,10 +413,10 @@ interface IPeronio {
      *
      * @param to  Address to deposit extracted USDC tokens into
      * @param peAmount  Number of PE tokens to withdraw
-     * @return usdcTotal  Number of USDC tokens extracted
+     * @return usdcAmount  Number of USDC tokens extracted
      * @custom:emit  Withdrawal
      */
-    function withdraw(address to, PeQuantity peAmount) external returns (UsdcQuantity usdcTotal);
+    function withdraw(address to, PeQuantity peAmount) external returns (UsdcQuantity usdcAmount);
 
     /**
      * Extract the given number of PE tokens as LP USDC/MAI tokens
@@ -345,6 +427,40 @@ interface IPeronio {
      * @custom:emit LiquidityWithdrawal
      */
     function withdrawLiquidity(address to, PeQuantity peAmount) external returns (LpQuantity lpAmount);
+
+    // --- Voucher operations ---------------------------------------------------------------------------------------------------------------------------------
+
+    /**
+     * Execute an ERC20Permit call (with the current contract as beneficiary) --- using a pre-signed voucher
+     *
+     * @param permitVoucher  The `PermitVoucher` to serve
+     * @param signature  The signature, issued by the `from` address
+     * @custom:emit  Minted
+     * @custom:emit  VoucherServed
+     */
+    function permitWithVoucher(PermitVoucher memory permitVoucher, bytes memory signature) external;
+
+    /**
+     * Mint PE tokens using the provided USDC tokens as collateral --- using a pre-signed voucher
+     *
+     * @param mintVoucher  The `MintVoucher` to serve
+     * @param signature  The signature, issued by the `from` address
+     * @return peAmount  The number of PE tokens actually minted
+     * @custom:emit  Minted
+     * @custom:emit  VoucherServed
+     */
+    function mintWithVoucher(MintVoucher memory mintVoucher, bytes memory signature) external returns (PeQuantity peAmount);
+
+    /**
+     * Extract the given number of PE tokens as USDC tokens --- using a pre-signed voucher
+     *
+     * @param withdrawVoucher  The `WithdrawVoucher` to serve
+     * @param signature  The signature, issued by the `from` address
+     * @return usdcAmount  Number of USDC tokens extracted
+     * @custom:emit  Withdrawal
+     * @custom:emit  VoucherServed
+     */
+    function withdrawWithVoucher(WithdrawVoucher memory withdrawVoucher, bytes memory signature) external returns (UsdcQuantity usdcAmount);
 
     // --- Rewards --------------------------------------------------------------------------------------------------------------------------------------------
 
