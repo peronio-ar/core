@@ -1,5 +1,3 @@
-import { ChildProcess, exec, execSync } from "node:child_process";
-
 import { expect } from "chai";
 import { BigNumber, ContractTransaction } from "ethers";
 import { keccak256 } from "ethers/lib/utils";
@@ -73,18 +71,9 @@ describe("Peronio", function () {
     let accounts: { [name: string]: string };
     let usdcContract: ERC20;
 
-    let childId: ChildProcess;
-
     before(async () => {
-        childId = exec("nc -z localhost 8545 || yarn chain");
-        execSync("while ! nc -z localhost 8545; do sleep 0.1; done");
-
         accounts = await hre.getNamedAccounts();
         usdcContract = await ethers.getContractAt("ERC20", process.env.USDC_ADDRESS ?? "");
-    });
-
-    after(() => {
-        childId.kill();
     });
 
     before(async () => {
