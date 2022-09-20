@@ -63,7 +63,7 @@ const config: HardhatUserConfig = {
                 interval: 2000,
             },
             accounts: {
-                count: 2,
+                count: 3,
             },
         },
         matic: {
