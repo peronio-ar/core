@@ -28,8 +28,10 @@ task("polygonscan", "Verify contract on Polyscan").setAction(async (_a, { networ
     const peronioV1Address: Address = (await deployments.get("PeronioV1")).address;
     const migratorAddress: Address = (await deployments.get("Migrator")).address;
     const autoCompounderAddress: Address = (await deployments.get("AutoCompounder")).address;
+    const cumpaAddress: Address = (await deployments.get("Cumpa")).address;
 
     runVerify("Publishing Peronio to Polygonscan", peronioAddress, getConstructorParams());
     runVerify("Publishing Migrator to Polygonscan", migratorAddress, [peronioV1Address, peronioAddress]);
-    runVerify("Publishing AutoCompounder Polygonscan", autoCompounderAddress, { peronioAddress });
+    runVerify("Publishing AutoCompounder to Polygonscan", autoCompounderAddress, { peronioAddress });
+    runVerify("Publishing Cumpa to Polygonscan", cumpaAddress, { peronioAddress });
 });
