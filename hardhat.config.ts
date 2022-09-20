@@ -62,9 +62,6 @@ const config: HardhatUserConfig = {
                 auto: true,
                 interval: 2000,
             },
-            accounts: {
-                count: 3,
-            },
         },
         matic: {
             timeout: 1000000,
