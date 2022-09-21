@@ -7,11 +7,9 @@ import {ReentrancyGuard} from "@openzeppelin/contracts_latest/security/Reentranc
 import {ERC20} from "@openzeppelin/contracts_latest/token/ERC20/ERC20.sol";
 import {IERC20} from "@openzeppelin/contracts_latest/token/ERC20/IERC20.sol";
 import {ERC20Permit} from "@openzeppelin/contracts_latest/token/ERC20/extensions/draft-ERC20Permit.sol";
-import {IERC20Permit} from "@openzeppelin/contracts_latest/token/ERC20/extensions/draft-IERC20Permit.sol";
 import {ERC20Burnable} from "@openzeppelin/contracts_latest/token/ERC20/extensions/ERC20Burnable.sol";
 import {SafeERC20} from "@openzeppelin/contracts_latest/token/ERC20/utils/SafeERC20.sol";
 import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
-import {SignatureChecker} from "@openzeppelin/contracts_latest/utils/cryptography/SignatureChecker.sol";
 
 // QiDao
 import {IFarm} from "./qidao/IFarm.sol";
@@ -34,14 +32,6 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, ERC165, AccessC
     RoleId public constant override MARKUP_ROLE = RoleId.wrap(keccak256("MARKUP_ROLE"));
     RoleId public constant override REWARDS_ROLE = RoleId.wrap(keccak256("REWARDS_ROLE"));
     RoleId public constant override MIGRATOR_ROLE = RoleId.wrap(keccak256("MIGRATOR_ROLE"));
-
-    // Type hashes
-    bytes32 private constant _MINT_WITH_VOUCHER_TYPEHASH =
-        keccak256(bytes("mintWithVoucher(MintVoucher{address,address,uint256,uint256,uint256,uint256,uint256})"));
-    bytes32 private constant _WITHDRAW_WITH_VOUCHER_TYPEHASH =
-        keccak256(bytes("withdrawWithVoucher(WithdrawVoucher{address,address,uint256,uint256,uint256,uint256})"));
-    bytes32 private constant _PERMIT_WITH_VOUCHER_TYPEHASH =
-        keccak256(bytes("permitWithVoucher(PermitVoucher{address,uint256,uint256,uint8,bytes32,bytes32,uint256,uint256})"));
 
     // USDC Token Address
     address public immutable override usdcAddress;
@@ -73,8 +63,6 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, ERC165, AccessC
     // Initialization can only be run once
     bool public override initialized;
 
-    // Set of voucher hashes served
-    mapping(bytes32 => bool) public voucherServed;
 
     /**
      * Allow execution by the default admin only
@@ -379,89 +367,6 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, ERC165, AccessC
         _burn(sender, PeQuantity.unwrap(peAmount));
 
         emit LiquidityWithdrawal(sender, lpAmount, peAmount);
-    }
-
-    // --- Voucher operations ---------------------------------------------------------------------------------------------------------------------------------
-
-    /**
-     * Execute an ERC20Permit call (with the current contract as beneficiary) --- using a pre-signed voucher
-     *
-     * @param permitVoucher  The `PermitVoucher` to serve
-     * @param signature  The signature, issued by the `from` address
-     * @custom:emit  Minted
-     * @custom:emit  VoucherServed
-     */
-    function permitWithVoucher(PermitVoucher memory permitVoucher, bytes memory signature) external override {
-        bytes32 voucherHash = _getVoucherHash(permitVoucher);
-        _validateVoucher(permitVoucher.from, voucherHash, signature);
-
-        IERC20Permit(usdcAddress).permit(
-            permitVoucher.from,
-            address(this),
-            UsdcQuantity.unwrap(permitVoucher.usdcAmount),
-            permitVoucher.deadline,
-            permitVoucher.v,
-            permitVoucher.r,
-            permitVoucher.s
-        );
-
-        uint256 fee = UsdcQuantity.unwrap(permitVoucher.fee);
-        if (0 != fee) {
-            IERC20(usdcAddress).transferFrom(permitVoucher.from, _msgSender(), fee);
-        }
-
-        emit VoucherServed(permitVoucher.nonce, voucherHash, _msgSender());
-    }
-
-    /**
-     * Mint PE tokens using the provided USDC tokens as collateral --- using a pre-signed voucher
-     *
-     * @param mintVoucher  The `MintVoucher` to serve
-     * @param signature  The signature, issued by the `from` address
-     * @return peAmount  The number of PE tokens actually minted
-     * @custom:emit  Minted
-     */
-    function mintWithVoucher(MintVoucher memory mintVoucher, bytes memory signature) external override nonReentrant returns (PeQuantity peAmount) {
-        bytes32 voucherHash = _getVoucherHash(mintVoucher);
-        _validateVoucher(mintVoucher.from, voucherHash, signature);
-        require(block.timestamp <= mintVoucher.deadline, "Peronio: expired deadline");
-
-        peAmount = _mintPe(_msgSender(), mintVoucher.to, mintVoucher.usdcAmount, mintVoucher.minReceive, markupFee);
-
-        uint256 fee = PeQuantity.unwrap(mintVoucher.fee);
-        if (0 != fee) {
-            transfer(_msgSender(), fee);
-        }
-
-        emit VoucherServed(mintVoucher.nonce, voucherHash, _msgSender());
-    }
-
-    /**
-     * Extract the given number of PE tokens as USDC tokens --- using a pre-signed voucher
-     *
-     * @param withdrawVoucher  The `WithdrawVoucher` to serve
-     * @param signature  The signature, issued by the `from` address
-     * @return usdcAmount  Number of USDC tokens extracted
-     * @custom:emit  Withdrawal
-     */
-    function withdrawWithVoucher(WithdrawVoucher memory withdrawVoucher, bytes memory signature)
-        external
-        override
-        nonReentrant
-        returns (UsdcQuantity usdcAmount)
-    {
-        bytes32 voucherHash = _getVoucherHash(withdrawVoucher);
-        _validateVoucher(withdrawVoucher.from, voucherHash, signature);
-        require(block.timestamp <= withdrawVoucher.deadline, "Peronio: expired deadline");
-
-        uint256 fee = PeQuantity.unwrap(withdrawVoucher.fee);
-        if (0 != fee) {
-            transfer(_msgSender(), fee);
-        }
-
-        usdcAmount = _withdraw(withdrawVoucher.from, withdrawVoucher.to, withdrawVoucher.peAmount);
-
-        emit VoucherServed(withdrawVoucher.nonce, voucherHash, _msgSender());
     }
 
     // --- Rewards --------------------------------------------------------------------------------------------------------------------------------------------
@@ -939,54 +844,6 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, ERC165, AccessC
         (path[0], path[1]) = (fromAddress, toAddress);
 
         swappedAmount = IUniswapV2Router02(quickSwapRouterAddress).swapExactTokensForTokens(amount, 1, path, address(this), block.timestamp + 1 hours)[1];
-    }
-
-    /**
-     * Retrieve the voucher hash for the given `PermitVoucher`
-     *
-     * @param permitVoucher  The `PermitVoucher` to hash
-     * @return voucherHash  The voucher hash of the given `PermitVoucher`
-     */
-    function _getVoucherHash(PermitVoucher memory permitVoucher) internal view returns (bytes32 voucherHash) {
-        voucherHash = _hashTypedDataV4(keccak256(abi.encode(_PERMIT_WITH_VOUCHER_TYPEHASH, permitVoucher)));
-    }
-
-    /**
-     * Retrieve the voucher hash for the given `MintVoucher`
-     *
-     * @param mintVoucher  The `MintVoucher` to hash
-     * @return voucherHash  The voucher hash of the given `MintVoucher`
-     */
-    function _getVoucherHash(MintVoucher memory mintVoucher) internal view returns (bytes32 voucherHash) {
-        voucherHash = _hashTypedDataV4(keccak256(abi.encode(_MINT_WITH_VOUCHER_TYPEHASH, mintVoucher)));
-    }
-
-    /**
-     * Retrieve the voucher hash for the given `WithdrawVoucher`
-     *
-     * @param withdrawVoucher  The `WithdrawVoucher` to hash
-     * @return voucherHash  The voucher hash of the given `WithdrawVoucher`
-     */
-    function _getVoucherHash(WithdrawVoucher memory withdrawVoucher) internal view returns (bytes32 voucherHash) {
-        voucherHash = _hashTypedDataV4(keccak256(abi.encode(_WITHDRAW_WITH_VOUCHER_TYPEHASH, withdrawVoucher)));
-    }
-
-    /**
-     * Validate that the given voucher is correctly signed and has not been already served
-     *
-     * @param signer  The purported signer
-     * @param voucherHash  The voucher's hash to validate
-     * @param signature  The signature to be validated
-     */
-    function _validateVoucher(
-        address signer,
-        bytes32 voucherHash,
-        bytes memory signature
-    ) internal {
-        require(SignatureChecker.isValidSignatureNow(signer, voucherHash, signature), "Peronio: invalid voucher signature");
-        require(voucherServed[voucherHash] == false, "Peronio: voucher already served");
-
-        voucherServed[voucherHash] = true;
     }
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------
