@@ -63,6 +63,8 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, ERC165, AccessC
     // Initialization can only be run once
     bool public override initialized;
 
+    // Last timestamp on which compoundRewards() was called
+    uint256 public lastCompounded;
 
     /**
      * Allow execution by the default admin only
@@ -388,6 +390,9 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, ERC165, AccessC
      * @custom:emit CompoundRewards
      */
     function compoundRewards() external override onlyRewardsRole returns (UsdcQuantity usdcAmount, LpQuantity lpAmount) {
+        require(12 hours < block.timestamp - lastCompounded, "Peronio: time not elapsed");
+        lastCompounded = block.timestamp;
+
         // Claim rewards from QiDao's Farm
         IFarm(qiDaoFarmAddress).deposit(qiDaoPoolId, 0);
 

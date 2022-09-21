@@ -210,6 +210,13 @@ interface IPeronio {
      */
     function initialized() external view returns (bool);
 
+    /**
+     * Return the last timestamp on which compoundRewards() was called
+     *
+     * @return  The last timestamp on which compoundRewards() was called
+     */
+    function lastCompounded() external view returns (uint256);
+
     // --- Decimals -------------------------------------------------------------------------------------------------------------------------------------------
 
     /**
