@@ -14,7 +14,7 @@ import "./IPeronio.sol";
 
 string constant NAME = "Cumpa";
 string constant SYMBOL = "CUM";
-uint256 constant MINIMUM_PERIOD = 12 * 60 * 60;
+uint256 constant MINIMUM_PERIOD = 12 hours;
 
 contract Cumpa is Context, ICumpa, IERC20, ERC20Permit, ERC165 {
 
