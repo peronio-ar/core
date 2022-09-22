@@ -2,11 +2,11 @@
 pragma solidity ^0.8.17;
 
 // OpenZeppelin imports
+import {AccessControl} from "@openzeppelin/contracts_latest/access/AccessControl.sol";
 import {Context} from "@openzeppelin/contracts_latest/utils/Context.sol";
 import {ERC20} from "@openzeppelin/contracts_latest/token/ERC20/ERC20.sol";
 import {IERC20} from "@openzeppelin/contracts_latest/token/ERC20/IERC20.sol";
 import {ERC20Permit} from "@openzeppelin/contracts_latest/token/ERC20/extensions/draft-ERC20Permit.sol";
-import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 // Interfaces
 import "./ICumpa.sol";
@@ -16,11 +16,17 @@ string constant NAME = "Cumpa";
 string constant SYMBOL = "CUM";
 uint256 constant MINIMUM_PERIOD = 12 hours;
 
-contract Cumpa is Context, ICumpa, IERC20, ERC20Permit, ERC165 {
+contract Cumpa is AccessControl, ICumpa, ERC20, ERC20Permit {
 
-    IPeronio internal peronio;
+    // Roles
+    bytes32 public constant override MINTER_ROLE = keccak256("MINTER_ROLE");
 
-    uint256 public lastExecuted;
+    address public peronio;
+
+    modifier onlyMinterRole() {
+        _checkRole(MINTER_ROLE);
+        _;
+    }
 
     /**
      * Construct a new Cumpa contract
@@ -28,7 +34,19 @@ contract Cumpa is Context, ICumpa, IERC20, ERC20Permit, ERC165 {
      * @param _peronio  The Peronio contract to reap rewards for
      */
     constructor(address _peronio) ERC20(NAME, SYMBOL) ERC20Permit(NAME) {
-        peronio = IPeronio(_peronio);
+        peronio = _peronio;
+
+        _setupRole(MINTER_ROLE, _msgSender());
+    }
+
+    /**
+     * Expose ERC20's _mint() function
+     *
+     * @param to  Address to mint the CUM tokens to
+     * @param amount  Number of CUM tokens to mint
+     */
+    function mint(address to, uint256 amount) external onlyMinterRole {
+        _mint(to, amount);
     }
 
     /**
@@ -42,18 +60,16 @@ contract Cumpa is Context, ICumpa, IERC20, ERC20Permit, ERC165 {
     }
 
     /**
-     * Reap Peronio rewards, and get CUMs in return
+     * Compound Peronio rewards, and get CUMs in return
      *
      * @return cumpaAmount  Number of CUM tokens awarded
      */
-    function reap() external override returns (CumpaQuantity cumpaAmount) {
-        require(MINIMUM_PERIOD < block.timestamp - lastExecuted, "Cumpa: Time not elapsed");
-
-        lastExecuted = block.timestamp;
-        (, LpQuantity lpAmount) = peronio.compoundRewards();
+    function compoundRewards() external override returns (CumpaQuantity cumpaAmount) {
+        (, LpQuantity lpAmount) = IPeronio(peronio).compoundRewards();
 
         cumpaAmount = CumpaQuantity.wrap(LpQuantity.unwrap(lpAmount));
 
+        // TODO: determine factor
         _mint(_msgSender(), CumpaQuantity.unwrap(cumpaAmount));
     }
 }
