@@ -1,0 +1,220 @@
+{
+  "address": "0xDca0C1d495C722452d05faaa9305425415f1A403",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_peronio",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "MINIMUM_PERIOD",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "autoCompound",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "lastExecuted",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x24757e304d2303ed439d7753311a2a77991af9ce9dd01df2ab656aa5be6417f5",
+  "receipt": {
+    "to": null,
+    "from": "0x4BADCf0DCeaAD060f86D9b34c9E118c8319945AE",
+    "contractAddress": "0xDca0C1d495C722452d05faaa9305425415f1A403",
+    "transactionIndex": 22,
+    "gasUsed": "340437",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000800000000000400000000000000000000000000000000000108000000000000000000000000000000000000000000000000000000000800001000000000000000100000000000000000000020000000000000000000800000000000000000080000000000000400000000000000000000400000000000000000000000000000000800000000000200000040000100000000000000000000000000000000000000000000000004000100000000000000001000000000000000000000000000000100100000020000000000000000000000000000000002000000000000000000000000000100000",
+    "blockHash": "0x7bcf2f1091134a812a8f4bd71be5cb4ca884761e1e0fc52f4fc452d0a0397219",
+    "transactionHash": "0x24757e304d2303ed439d7753311a2a77991af9ce9dd01df2ab656aa5be6417f5",
+    "logs": [
+      {
+        "transactionIndex": 22,
+        "blockNumber": 33279725,
+        "transactionHash": "0x24757e304d2303ed439d7753311a2a77991af9ce9dd01df2ab656aa5be6417f5",
+        "address": "0xDca0C1d495C722452d05faaa9305425415f1A403",
+        "topics": [
+          "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0",
+          "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "0x0000000000000000000000004badcf0dceaad060f86d9b34c9e118c8319945ae"
+        ],
+        "data": "0x",
+        "logIndex": 84,
+        "blockHash": "0x7bcf2f1091134a812a8f4bd71be5cb4ca884761e1e0fc52f4fc452d0a0397219"
+      },
+      {
+        "transactionIndex": 22,
+        "blockNumber": 33279725,
+        "transactionHash": "0x24757e304d2303ed439d7753311a2a77991af9ce9dd01df2ab656aa5be6417f5",
+        "address": "0x0000000000000000000000000000000000001010",
+        "topics": [
+          "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+          "0x0000000000000000000000000000000000000000000000000000000000001010",
+          "0x0000000000000000000000004badcf0dceaad060f86d9b34c9e118c8319945ae",
+          "0x00000000000000000000000026c80cc193b27d73d2c40943acec77f4da2c5bd8"
+        ],
+        "data": "0x000000000000000000000000000000000000000000000000002448c4f99a1c000000000000000000000000000000000000000000000000d34715a4d78ea057a000000000000000000000000000000000000000000000563423ee8378dd27cd840000000000000000000000000000000000000000000000d346f15c1295063ba00000000000000000000000000000000000000000000056342412cc3dd6c1e984",
+        "logIndex": 85,
+        "blockHash": "0x7bcf2f1091134a812a8f4bd71be5cb4ca884761e1e0fc52f4fc452d0a0397219"
+      }
+    ],
+    "blockNumber": 33279725,
+    "cumulativeGasUsed": "3548713",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [
+    "0x78a486306D15E7111cca541F2f1307a1cFCaF5C4"
+  ],
+  "numDeployments": 2,
+  "solcInputHash": "9e65e83c249b1715b9679e816c39ce68",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.17+commit.8df45f5f\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_peronio\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"MINIMUM_PERIOD\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"autoCompound\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"lastExecuted\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"owner()\":{\"details\":\"Returns the address of the current owner.\"},\"renounceOwnership()\":{\"details\":\"Leaves the contract without owner. It will not be possible to call `onlyOwner` functions anymore. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby removing any functionality that is only available to the owner.\"},\"transferOwnership(address)\":{\"details\":\"Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner.\"}},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/AutoCompounder.sol\":\"AutoCompounder\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":2000},\"remappings\":[]},\"sources\":{\"@openzeppelin/contracts_latest/access/Ownable.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts (last updated v4.7.0) (access/Ownable.sol)\\n\\npragma solidity ^0.8.0;\\n\\nimport \\\"../utils/Context.sol\\\";\\n\\n/**\\n * @dev Contract module which provides a basic access control mechanism, where\\n * there is an account (an owner) that can be granted exclusive access to\\n * specific functions.\\n *\\n * By default, the owner account will be the one that deploys the contract. This\\n * can later be changed with {transferOwnership}.\\n *\\n * This module is used through inheritance. It will make available the modifier\\n * `onlyOwner`, which can be applied to your functions to restrict their use to\\n * the owner.\\n */\\nabstract contract Ownable is Context {\\n    address private _owner;\\n\\n    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);\\n\\n    /**\\n     * @dev Initializes the contract setting the deployer as the initial owner.\\n     */\\n    constructor() {\\n        _transferOwnership(_msgSender());\\n    }\\n\\n    /**\\n     * @dev Throws if called by any account other than the owner.\\n     */\\n    modifier onlyOwner() {\\n        _checkOwner();\\n        _;\\n    }\\n\\n    /**\\n     * @dev Returns the address of the current owner.\\n     */\\n    function owner() public view virtual returns (address) {\\n        return _owner;\\n    }\\n\\n    /**\\n     * @dev Throws if the sender is not the owner.\\n     */\\n    function _checkOwner() internal view virtual {\\n        require(owner() == _msgSender(), \\\"Ownable: caller is not the owner\\\");\\n    }\\n\\n    /**\\n     * @dev Leaves the contract without owner. It will not be possible to call\\n     * `onlyOwner` functions anymore. Can only be called by the current owner.\\n     *\\n     * NOTE: Renouncing ownership will leave the contract without an owner,\\n     * thereby removing any functionality that is only available to the owner.\\n     */\\n    function renounceOwnership() public virtual onlyOwner {\\n        _transferOwnership(address(0));\\n    }\\n\\n    /**\\n     * @dev Transfers ownership of the contract to a new account (`newOwner`).\\n     * Can only be called by the current owner.\\n     */\\n    function transferOwnership(address newOwner) public virtual onlyOwner {\\n        require(newOwner != address(0), \\\"Ownable: new owner is the zero address\\\");\\n        _transferOwnership(newOwner);\\n    }\\n\\n    /**\\n     * @dev Transfers ownership of the contract to a new account (`newOwner`).\\n     * Internal function without access restriction.\\n     */\\n    function _transferOwnership(address newOwner) internal virtual {\\n        address oldOwner = _owner;\\n        _owner = newOwner;\\n        emit OwnershipTransferred(oldOwner, newOwner);\\n    }\\n}\\n\",\"keccak256\":\"0xa94b34880e3c1b0b931662cb1c09e5dfa6662f31cba80e07c5ee71cd135c9673\",\"license\":\"MIT\"},\"@openzeppelin/contracts_latest/utils/Context.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts v4.4.1 (utils/Context.sol)\\n\\npragma solidity ^0.8.0;\\n\\n/**\\n * @dev Provides information about the current execution context, including the\\n * sender of the transaction and its data. While these are generally available\\n * via msg.sender and msg.data, they should not be accessed in such a direct\\n * manner, since when dealing with meta-transactions the account sending and\\n * paying for execution may not be the actual sender (as far as an application\\n * is concerned).\\n *\\n * This contract is only required for intermediate, library-like contracts.\\n */\\nabstract contract Context {\\n    function _msgSender() internal view virtual returns (address) {\\n        return msg.sender;\\n    }\\n\\n    function _msgData() internal view virtual returns (bytes calldata) {\\n        return msg.data;\\n    }\\n}\\n\",\"keccak256\":\"0xe2e337e6dde9ef6b680e07338c493ebea1b5fd09b43424112868e9cc1706bca7\",\"license\":\"MIT\"},\"contracts/AutoCompounder.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.17;\\n\\nimport {IPeronio} from \\\"./IPeronio.sol\\\";\\nimport {Ownable} from \\\"@openzeppelin/contracts_latest/access/Ownable.sol\\\";\\n\\ncontract AutoCompounder is Ownable {\\n    IPeronio internal peronio;\\n\\n    uint256 public constant MINIMUM_PERIOD = 12 * 60 * 60;\\n\\n    uint256 public lastExecuted;\\n\\n    constructor(address _peronio) {\\n        peronio = IPeronio(_peronio);\\n    }\\n\\n    function autoCompound() public onlyOwner {\\n        require(MINIMUM_PERIOD < block.timestamp - lastExecuted, \\\"autoCompound: Time not elapsed\\\");\\n\\n        lastExecuted = block.timestamp;\\n        peronio.compoundRewards();\\n    }\\n}\\n\",\"keccak256\":\"0x9199a3c7efdc6dd90ae891041d763458cb7087261c7587df75f3395949126906\",\"license\":\"MIT\"},\"contracts/IPeronio.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.17;\\n\\n/**\\n * Type representing an USDC token quantity\\n *\\n */\\ntype UsdcQuantity is uint256;\\n\\n/**\\n * Type representing a MAI token quantity\\n *\\n */\\ntype MaiQuantity is uint256;\\n\\n/**\\n * Type representing an LP USDC/MAI token quantity\\n *\\n */\\ntype LpQuantity is uint256;\\n\\n/**\\n * Type representing a PE token quantity\\n *\\n */\\ntype PeQuantity is uint256;\\n\\n/**\\n * Type representing a QI token quantity\\n *\\n */\\ntype QiQuantity is uint256;\\n\\n/**\\n * Type representing a ratio of PE/USD tokens (always represented using `DECIMALS` decimals)\\n *\\n */\\ntype PePerUsdcQuantity is uint256;\\n\\n/**\\n * Type representing a ratio of USD/PE tokens (always represented using `DECIMALS` decimals)\\n *\\n */\\ntype UsdcPerPeQuantity is uint256;\\n\\n/**\\n * Type representing an adimensional ratio, expressed with 6 decimals\\n *\\n */\\ntype RatioWith6Decimals is uint256;\\n\\n/**\\n * Type representing a role ID\\n *\\n */\\ntype RoleId is bytes32;\\n\\ninterface IPeronio {\\n    // --- Events ---------------------------------------------------------------------------------------------------------------------------------------------\\n\\n    /**\\n     * Emitted upon initialization of the Peronio contract\\n     *\\n     * @param owner  The address initializing the contract\\n     * @param collateral  The number of USDC tokens used as collateral\\n     * @param startingRatio  The number of PE tokens per USDC token the vault is initialized with\\n     */\\n    event Initialized(address owner, UsdcQuantity collateral, PePerUsdcQuantity startingRatio);\\n\\n    /**\\n     * Emitted upon minting PE tokens\\n     *\\n     * @param to  The address where minted PE tokens get transferred to\\n     * @param collateralAmount  The number of USDC tokens used as collateral in this minting\\n     * @param tokenAmount  Amount of PE tokens minted\\n     */\\n    event Minted(address indexed to, UsdcQuantity collateralAmount, PeQuantity tokenAmount);\\n\\n    /**\\n     * Emitted upon collateral withdrawal\\n     *\\n     * @param to  Address where the USDC token withdrawal is directed\\n     * @param collateralAmount  The number of USDC tokens withdrawn\\n     * @param tokenAmount  The number of PE tokens burnt\\n     */\\n    event Withdrawal(address indexed to, UsdcQuantity collateralAmount, PeQuantity tokenAmount);\\n\\n    /**\\n     * Emitted upon liquidity withdrawal\\n     *\\n     * @param to  Address where the USDC token withdrawal is directed\\n     * @param lpAmount  The number of LP USDC/MAI tokens withdrawn\\n     * @param tokenAmount  The number of PE tokens burnt\\n     */\\n    event LiquidityWithdrawal(address indexed to, LpQuantity lpAmount, PeQuantity tokenAmount);\\n\\n    /**\\n     * Emitted upon the markup fee being updated\\n     *\\n     * @param operator  Address of the one updating the markup fee\\n     * @param markupFee  New markup fee\\n     */\\n    event MarkupFeeUpdated(address operator, RatioWith6Decimals markupFee);\\n\\n    /**\\n     * Emitted upon compounding rewards from QiDao's Farm back into the vault\\n     *\\n     * @param qi  Number of awarded QI tokens\\n     * @param usdc  Equivalent number of USDC tokens\\n     * @param lp  Number of LP USDC/MAI tokens re-invested\\n     */\\n    event CompoundRewards(QiQuantity qi, UsdcQuantity usdc, LpQuantity lp);\\n\\n    // --- Roles - Automatic ----------------------------------------------------------------------------------------------------------------------------------\\n\\n    /**\\n     * Return the hash identifying the role responsible for updating the markup fee\\n     *\\n     * @return roleId  The role hash in question\\n     */\\n    function MARKUP_ROLE() external view returns (RoleId roleId); // solhint-disable-line func-name-mixedcase\\n\\n    /**\\n     * Return the hash identifying the role responsible for compounding rewards\\n     *\\n     * @return roleId  The role hash in question\\n     */\\n    function REWARDS_ROLE() external view returns (RoleId roleId); // solhint-disable-line func-name-mixedcase\\n\\n    /**\\n     * Return the hash identifying the role responsible for migrating between versions\\n     *\\n     * @return roleId  The role hash in question\\n     */\\n    function MIGRATOR_ROLE() external view returns (RoleId roleId); // solhint-disable-line func-name-mixedcase\\n\\n    // --- Addresses - Automatic ------------------------------------------------------------------------------------------------------------------------------\\n\\n    /**\\n     * Return the address used for the USDC tokens in vault\\n     *\\n     * @return  The address in question\\n     */\\n    function usdcAddress() external view returns (address);\\n\\n    /**\\n     * Return the address used for the MAI tokens in vault\\n     *\\n     * @return  The address in question\\n     */\\n    function maiAddress() external view returns (address);\\n\\n    /**\\n     * Return the address used for the LP USDC/MAI tokens in vault\\n     *\\n     * @return  The address in question\\n     */\\n    function lpAddress() external view returns (address);\\n\\n    /**\\n     * Return the address used for the QI tokens in vault\\n     *\\n     * @return  The address in question\\n     */\\n    function qiAddress() external view returns (address);\\n\\n    /**\\n     * Return the address of the QuickSwap Router to talk to\\n     *\\n     * @return  The address in question\\n     */\\n    function quickSwapRouterAddress() external view returns (address);\\n\\n    /**\\n     * Return the address of the QiDao Farm to use\\n     *\\n     * @return  The address in question\\n     */\\n    function qiDaoFarmAddress() external view returns (address);\\n\\n    /**\\n     * Return the pool ID within the QiDao Farm\\n     *\\n     * @return  The pool ID in question\\n     */\\n    function qiDaoPoolId() external view returns (uint256);\\n\\n    // --- Fees - Automatic -----------------------------------------------------------------------------------------------------------------------------------\\n\\n    /**\\n     * Return the markup fee the use, using `_decimals()` decimals implicitly\\n     *\\n     * @return  The markup fee to use\\n     */\\n    function markupFee() external view returns (RatioWith6Decimals);\\n\\n    /**\\n     * Return the swap fee the use, using `_decimals()` decimals implicitly\\n     *\\n     * @return  The swap fee to use\\n     */\\n    function swapFee() external view returns (RatioWith6Decimals);\\n\\n    // --- Status - Automatic ---------------------------------------------------------------------------------------------------------------------------------\\n\\n    /**\\n     * Return wether the Peronio contract has been initialized yet\\n     *\\n     * @return  True whenever the contract has already been initialized, false otherwise\\n     */\\n    function initialized() external view returns (bool);\\n\\n    // --- Decimals -------------------------------------------------------------------------------------------------------------------------------------------\\n\\n    /**\\n     * Return the number of decimals the PE token will work with\\n     *\\n     * @return decimals_  This will always be 6\\n     */\\n    function decimals() external view returns (uint8);\\n\\n    // --- Markup fee change ----------------------------------------------------------------------------------------------------------------------------------\\n\\n    /**\\n     * Set the markup fee to the given value (take into account that this will use `_decimals` decimals implicitly)\\n     *\\n     * @param newMarkupFee  New markup fee value\\n     * @return prevMarkupFee  Previous markup fee value\\n     * @custom:emit  MarkupFeeUpdated\\n     */\\n    function setMarkupFee(RatioWith6Decimals newMarkupFee) external returns (RatioWith6Decimals prevMarkupFee);\\n\\n    // --- Initialization -------------------------------------------------------------------------------------------------------------------------------------\\n\\n    /**\\n     * Initialize the PE token by providing collateral USDC tokens - initial conversion rate will be set at the given starting ratio\\n     *\\n     * @param usdcAmount  Number of collateral USDC tokens\\n     * @param startingRatio  Initial minting ratio in PE tokens per USDC tokens minted\\n     * @custom:emit  Initialized\\n     */\\n    function initialize(UsdcQuantity usdcAmount, PePerUsdcQuantity startingRatio) external;\\n\\n    // --- State views ----------------------------------------------------------------------------------------------------------------------------------------\\n\\n    /**\\n     * Return the USDC and MAI token reserves present in QuickSwap\\n     *\\n     * @return usdcReserves  Number of USDC tokens in reserve\\n     * @return maiReserves  Number of MAI tokens in reserve\\n     */\\n    function getLpReserves() external view returns (UsdcQuantity usdcReserves, MaiQuantity maiReserves);\\n\\n    /**\\n     * Return the number of LP USDC/MAI tokens on stake at QiDao's Farm\\n     *\\n     * @return lpAmount  Number of LP USDC/MAI token on stake\\n     */\\n    function stakedBalance() external view returns (LpQuantity lpAmount);\\n\\n    /**\\n     * Return the number of USDC and MAI tokens on stake at QiDao's Farm\\n     *\\n     * @return usdcAmount  Number of USDC tokens on stake\\n     * @return maiAmount  Number of MAI tokens on stake\\n     */\\n    function stakedTokens() external view returns (UsdcQuantity usdcAmount, MaiQuantity maiAmount);\\n\\n    /**\\n     * Return the equivalent number of USDC tokens on stake at QiDao's Farm\\n     *\\n     * @return usdcAmount  Total equivalent number of USDC token on stake\\n     */\\n    function stakedValue() external view returns (UsdcQuantity usdcAmount);\\n\\n    /**\\n     * Return the _collateralized_ price in USDC tokens per PE token\\n     *\\n     * @return price  Collateralized price in USDC tokens per PE token\\n     */\\n    function usdcPrice() external view returns (PePerUsdcQuantity price);\\n\\n    /**\\n     * Return the effective _minting_ price in USDC tokens per PE token\\n     *\\n     * @return price  Minting price in USDC tokens per PE token\\n     */\\n    function buyingPrice() external view returns (UsdcPerPeQuantity price);\\n\\n    /**\\n     * Return the ratio of total number of USDC tokens per PE token\\n     *\\n     * @return ratio  Ratio of USDC tokens per PE token, with `_decimal` decimals\\n     */\\n    function collateralRatio() external view returns (UsdcPerPeQuantity ratio);\\n\\n    // --- State changers -------------------------------------------------------------------------------------------------------------------------------------\\n\\n    /**\\n     * Mint PE tokens using the provided USDC tokens as collateral --- used by the migrators in order not to incur normal fees\\n     *\\n     * @param to  The address to transfer the minted PE tokens to\\n     * @param usdcAmount  Number of USDC tokens to use as collateral\\n     * @param minReceive  The minimum number of PE tokens to mint\\n     * @return peAmount  The number of PE tokens actually minted\\n     * @custom:emit  Minted\\n     */\\n    function mintForMigration(\\n        address to,\\n        UsdcQuantity usdcAmount,\\n        PeQuantity minReceive\\n    ) external returns (PeQuantity peAmount);\\n\\n    /**\\n     * Mint PE tokens using the provided USDC tokens as collateral\\n     *\\n     * @param to  The address to transfer the minted PE tokens to\\n     * @param usdcAmount  Number of USDC tokens to use as collateral\\n     * @param minReceive  The minimum number of PE tokens to mint\\n     * @return peAmount  The number of PE tokens actually minted\\n     * @custom:emit  Minted\\n     */\\n    function mint(\\n        address to,\\n        UsdcQuantity usdcAmount,\\n        PeQuantity minReceive\\n    ) external returns (PeQuantity peAmount);\\n\\n    /**\\n     * Extract the given number of PE tokens as USDC tokens\\n     *\\n     * @param to  Address to deposit extracted USDC tokens into\\n     * @param peAmount  Number of PE tokens to withdraw\\n     * @return usdcTotal  Number of USDC tokens extracted\\n     * @custom:emit  Withdrawal\\n     */\\n    function withdraw(address to, PeQuantity peAmount) external returns (UsdcQuantity usdcTotal);\\n\\n    /**\\n     * Extract the given number of PE tokens as LP USDC/MAI tokens\\n     *\\n     * @param to  Address to deposit extracted LP USDC/MAI tokens into\\n     * @param peAmount  Number of PE tokens to withdraw liquidity for\\n     * @return lpAmount  Number of LP USDC/MAI tokens extracted\\n     * @custom:emit LiquidityWithdrawal\\n     */\\n    function withdrawLiquidity(address to, PeQuantity peAmount) external returns (LpQuantity lpAmount);\\n\\n    // --- Rewards --------------------------------------------------------------------------------------------------------------------------------------------\\n\\n    /**\\n     * Return the rewards accrued by staking LP USDC/MAI tokens in QiDao's Farm (in QI tokens)\\n     *\\n     * @return qiAmount  Number of QI tokens accrued\\n     */\\n    function getPendingRewardsAmount() external view returns (QiQuantity qiAmount);\\n\\n    /**\\n     * Claim QiDao's QI token rewards, and re-invest them in the QuickSwap liquidity pool and QiDao's Farm\\n     *\\n     * @return usdcAmount  The number of USDC tokens being re-invested\\n     * @return lpAmount  The number of LP USDC/MAI tokens being put on stake\\n     * @custom:emit CompoundRewards\\n     */\\n    function compoundRewards() external returns (UsdcQuantity usdcAmount, LpQuantity lpAmount);\\n\\n    // --- Quotes ---------------------------------------------------------------------------------------------------------------------------------------------\\n\\n    /**\\n     * Retrieve the expected number of PE tokens corresponding to the given number of USDC tokens for minting.\\n     *\\n     * @param usdc  Number of USDC tokens to quote for\\n     * @return pe  Number of PE tokens quoted for the given number of USDC tokens\\n     */\\n    function quoteIn(UsdcQuantity usdc) external view returns (PeQuantity pe);\\n\\n    /**\\n     * Retrieve the expected number of USDC tokens corresponding to the given number of PE tokens for withdrawal.\\n     *\\n     * @param pe  Number of PE tokens to quote for\\n     * @return usdc  Number of USDC tokens quoted for the given number of PE tokens\\n     */\\n    function quoteOut(PeQuantity pe) external view returns (UsdcQuantity usdc);\\n}\\n\",\"keccak256\":\"0x1d04021ebd684dbf1d61a6f9c475b14fdf90b5c9d88f77b4cff16f45f33fd669\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b5060405161053e38038061053e83398101604081905261002f916100ad565b6100383361005d565b600180546001600160a01b0319166001600160a01b03929092169190911790556100dd565b600080546001600160a01b038381166001600160a01b0319831681178455604051919092169283917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a35050565b6000602082840312156100bf57600080fd5b81516001600160a01b03811681146100d657600080fd5b9392505050565b610452806100ec6000396000f3fe608060405234801561001057600080fd5b50600436106100725760003560e01c8063821c057611610050578063821c0576146100a65780638da5cb5b146100ae578063f2fde38b146100d657600080fd5b80631c15ff771461007757806351cd41e814610093578063715018a61461009c575b600080fd5b61008060025481565b6040519081526020015b60405180910390f35b61008061a8c081565b6100a46100e9565b005b6100a46100fd565b60005460405173ffffffffffffffffffffffffffffffffffffffff909116815260200161008a565b6100a46100e436600461037b565b610202565b6100f161029f565b6100fb6000610306565b565b61010561029f565b60025461011290426103b8565b61a8c0106101675760405162461bcd60e51b815260206004820152601e60248201527f6175746f436f6d706f756e643a2054696d65206e6f7420656c6170736564000060448201526064015b60405180910390fd5b42600255600154604080517fc00c9f7f000000000000000000000000000000000000000000000000000000008152815173ffffffffffffffffffffffffffffffffffffffff9093169263c00c9f7f9260048084019391929182900301816000875af11580156101da573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906101fe91906103f8565b5050565b61020a61029f565b73ffffffffffffffffffffffffffffffffffffffff81166102935760405162461bcd60e51b815260206004820152602660248201527f4f776e61626c653a206e6577206f776e657220697320746865207a65726f206160448201527f6464726573730000000000000000000000000000000000000000000000000000606482015260840161015e565b61029c81610306565b50565b60005473ffffffffffffffffffffffffffffffffffffffff1633146100fb5760405162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e6572604482015260640161015e565b6000805473ffffffffffffffffffffffffffffffffffffffff8381167fffffffffffffffffffffffff0000000000000000000000000000000000000000831681178455604051919092169283917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a35050565b60006020828403121561038d57600080fd5b813573ffffffffffffffffffffffffffffffffffffffff811681146103b157600080fd5b9392505050565b818103818111156103f2577f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b92915050565b6000806040838503121561040b57600080fd5b50508051602090910151909290915056fea264697066735822122051674105c5664a82b75d45bd3d5149026429f746c299d651393704c6307bb8ce64736f6c63430008110033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100725760003560e01c8063821c057611610050578063821c0576146100a65780638da5cb5b146100ae578063f2fde38b146100d657600080fd5b80631c15ff771461007757806351cd41e814610093578063715018a61461009c575b600080fd5b61008060025481565b6040519081526020015b60405180910390f35b61008061a8c081565b6100a46100e9565b005b6100a46100fd565b60005460405173ffffffffffffffffffffffffffffffffffffffff909116815260200161008a565b6100a46100e436600461037b565b610202565b6100f161029f565b6100fb6000610306565b565b61010561029f565b60025461011290426103b8565b61a8c0106101675760405162461bcd60e51b815260206004820152601e60248201527f6175746f436f6d706f756e643a2054696d65206e6f7420656c6170736564000060448201526064015b60405180910390fd5b42600255600154604080517fc00c9f7f000000000000000000000000000000000000000000000000000000008152815173ffffffffffffffffffffffffffffffffffffffff9093169263c00c9f7f9260048084019391929182900301816000875af11580156101da573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906101fe91906103f8565b5050565b61020a61029f565b73ffffffffffffffffffffffffffffffffffffffff81166102935760405162461bcd60e51b815260206004820152602660248201527f4f776e61626c653a206e6577206f776e657220697320746865207a65726f206160448201527f6464726573730000000000000000000000000000000000000000000000000000606482015260840161015e565b61029c81610306565b50565b60005473ffffffffffffffffffffffffffffffffffffffff1633146100fb5760405162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e6572604482015260640161015e565b6000805473ffffffffffffffffffffffffffffffffffffffff8381167fffffffffffffffffffffffff0000000000000000000000000000000000000000831681178455604051919092169283917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a35050565b60006020828403121561038d57600080fd5b813573ffffffffffffffffffffffffffffffffffffffff811681146103b157600080fd5b9392505050565b818103818111156103f2577f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b92915050565b6000806040838503121561040b57600080fd5b50508051602090910151909290915056fea264697066735822122051674105c5664a82b75d45bd3d5149026429f746c299d651393704c6307bb8ce64736f6c63430008110033",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {
+      "owner()": {
+        "details": "Returns the address of the current owner."
+      },
+      "renounceOwnership()": {
+        "details": "Leaves the contract without owner. It will not be possible to call `onlyOwner` functions anymore. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby removing any functionality that is only available to the owner."
+      },
+      "transferOwnership(address)": {
+        "details": "Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner."
+      }
+    },
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 436,
+        "contract": "contracts/AutoCompounder.sol:AutoCompounder",
+        "label": "_owner",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_address"
+      },
+      {
+        "astId": 3629,
+        "contract": "contracts/AutoCompounder.sol:AutoCompounder",
+        "label": "peronio",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_contract(IPeronio)4017"
+      },
+      {
+        "astId": 3638,
+        "contract": "contracts/AutoCompounder.sol:AutoCompounder",
+        "label": "lastExecuted",
+        "offset": 0,
+        "slot": "2",
+        "type": "t_uint256"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_contract(IPeronio)4017": {
+        "encoding": "inplace",
+        "label": "contract IPeronio",
+        "numberOfBytes": "20"
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      }
+    }
+  }
+}
