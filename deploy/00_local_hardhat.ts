@@ -20,7 +20,7 @@ const swapMATICtoUSDC = async (
 };
 
 const localHardhat = async (hre: HardhatRuntimeEnvironment) => {
-    if (hre.network.name !== "localhost") {
+    if (hre.network.name !== "hardhat") {
         return;
     }
     console.info("-- Hardhat network");
