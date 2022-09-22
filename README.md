@@ -5,6 +5,7 @@
 [![Lint](https://github.com/peronio-ar/core/actions/workflows/lint.yml/badge.svg)](https://github.com/peronio-ar/core/actions/workflows/lint.yml)
 ![Tests Status](https://github.com/peronio-ar/core/actions/workflows/test.yml/badge.svg)
 ![CodeQL Status](https://github.com/peronio-ar/core/actions/workflows/codeql-analysis.yml/badge.svg)
+[![Discord](https://img.shields.io/discord/957135981847384084?color=62c060)](https://discord.peronio.ar)
 
 # Peronio Core Contracts
 
@@ -87,16 +88,6 @@ added 1 package, and audited 2 packages in 756ms
 found 0 vulnerabilities
 ```
 
-If `yarn` was already installed you'll see something like:
-
-```shell
-$ npm install -g yarn
-
-changed 1 package, and audited 2 packages in 635ms
-
-found 0 vulnerabilities
-```
-
 ### Environmental Variables
 
 Lastly, copy the environmental variables sample file and edit to taste:
@@ -165,10 +156,10 @@ No need to generate any newer typings.
 Increase MATIC
 Swapping MATIC into USDC
 Deploying Peronio
-deploying "Peronio" (tx: 0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef)...: deployed at 0xFeDcBa9876543210fEdCbA9876543210FeDcBa98 with 7654321 gas
+deploying "Peronio" (tx: 0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef)...: deployed at 0x78a486306D15E7111cca541F2f1307a1cFCaF5C4 with 7654321 gas
 Initializing Peronio
 Deploying Migrator
-deploying "Migrator" (tx: 0x23456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef01)...: deployed at 0x10FeDcBa9876543210fEdCbA9876543210FeDcBa with 9876543 gas
+deploying "Migrator" (tx: 0x23456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef01)...: deployed at 0xfe672A4b063b1895b2f6531a78a69c014614B2D8 with 9876543 gas
 Deploying Uniswap
 Deploying AutoCompound
 deploying "AutoCompounder" (tx: 0x456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123)...: deployed at 0x3210FeDcBa9876543210fEdCbA9876543210FeDc with 111098 gas
