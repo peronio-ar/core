@@ -5,6 +5,7 @@
 [![Lint](https://github.com/peronio-ar/core/actions/workflows/lint.yml/badge.svg)](https://github.com/peronio-ar/core/actions/workflows/lint.yml)
 ![Tests Status](https://github.com/peronio-ar/core/actions/workflows/test.yml/badge.svg)
 ![CodeQL Status](https://github.com/peronio-ar/core/actions/workflows/codeql-analysis.yml/badge.svg)
+[![Discord](https://img.shields.io/discord/957135981847384084?color=62c060)](https://discord.peronio.ar)
 
 # Peronio Core Contracts
 
