@@ -4,7 +4,6 @@ pragma solidity ^0.8.17;
 import {IGateway} from "./IGateway.sol";
 
 interface IERC20Gateway is IGateway {
-
     /**
      * Retrieve the address of the underlying ERC20 token
      *
@@ -64,7 +63,11 @@ interface IERC20Gateway is IGateway {
      * @param signature  The associated voucher signature
      * @param signer  The address signing the voucher
      */
-    function validateTransferFromWithVoucher(TransferFromVoucher memory voucher, bytes memory signature, address signer) external view;
+    function validateTransferFromWithVoucher(
+        TransferFromVoucher memory voucher,
+        bytes memory signature,
+        address signer
+    ) external view;
 
     /**
      * Execute the transferFrom() call to the underlying ERC20 token with the parameters in the given voucher

@@ -9,7 +9,6 @@ import {IPeronioGateway} from "./IPeronioGateway.sol";
 import {IPeronio, PeQuantity, UsdcQuantity} from "../IPeronio.sol";
 
 abstract contract PeronioGateway is ERC20PermitGateway, IPeronioGateway {
-
     /**
      * Build a new PeronioGateway from the given token address and gateway name
      *
@@ -51,7 +50,11 @@ abstract contract PeronioGateway is ERC20PermitGateway, IPeronioGateway {
      * @param signature  The associated voucher signature
      * @param signer  The address signing the voucher
      */
-    function validateMintWithVoucher(MintVoucher memory voucher, bytes memory signature, address signer ) external view override {
+    function validateMintWithVoucher(
+        MintVoucher memory voucher,
+        bytes memory signature,
+        address signer
+    ) external view override {
         _validateMintWithVoucher(voucher, signature, signer);
     }
 
@@ -62,7 +65,7 @@ abstract contract PeronioGateway is ERC20PermitGateway, IPeronioGateway {
      * @param signature  The associated voucher signature
      * @custom:emit  VoucherServed
      */
-    function mintWithVoucher(MintVoucher memory voucher, bytes memory signature) external nonReentrant override {
+    function mintWithVoucher(MintVoucher memory voucher, bytes memory signature) external override nonReentrant {
         _beforeMintWithVoucher(voucher);
         _mintWithVoucher(voucher, signature);
         _afterMintWithVoucher(voucher);
@@ -91,7 +94,11 @@ abstract contract PeronioGateway is ERC20PermitGateway, IPeronioGateway {
      * @param signature  The associated voucher signature
      * @param signer  The address signing the voucher
      */
-    function validateWithdrawWithVoucher(WithdrawVoucher memory voucher, bytes memory signature, address signer ) external view override {
+    function validateWithdrawWithVoucher(
+        WithdrawVoucher memory voucher,
+        bytes memory signature,
+        address signer
+    ) external view override {
         _validateWithdrawWithVoucher(voucher, signature, signer);
     }
 
@@ -102,7 +109,7 @@ abstract contract PeronioGateway is ERC20PermitGateway, IPeronioGateway {
      * @param signature  The associated voucher signature
      * @custom:emit  VoucherServed
      */
-    function withdrawWithVoucher(WithdrawVoucher memory voucher, bytes memory signature) external nonReentrant override {
+    function withdrawWithVoucher(WithdrawVoucher memory voucher, bytes memory signature) external override nonReentrant {
         _beforeWithdrawWithVoucher(voucher);
         _withdrawWithVoucher(voucher, signature);
         _afterWithdrawWithVoucher(voucher);
@@ -127,7 +134,11 @@ abstract contract PeronioGateway is ERC20PermitGateway, IPeronioGateway {
      * @param signature  The associated voucher signature
      * @param signer  The address signing the voucher
      */
-    function _validateMintWithVoucher(MintVoucher memory voucher, bytes memory signature, address signer) internal view {
+    function _validateMintWithVoucher(
+        MintVoucher memory voucher,
+        bytes memory signature,
+        address signer
+    ) internal view {
         _validateVoucher(_hashMintWithVoucher(voucher), signature, signer);
     }
 
@@ -179,7 +190,11 @@ abstract contract PeronioGateway is ERC20PermitGateway, IPeronioGateway {
      * @param signature  The associated voucher signature
      * @param signer  The address signing the voucher
      */
-    function _validateWithdrawWithVoucher(WithdrawVoucher memory voucher, bytes memory signature, address signer) internal view {
+    function _validateWithdrawWithVoucher(
+        WithdrawVoucher memory voucher,
+        bytes memory signature,
+        address signer
+    ) internal view {
         _validateVoucher(_hashWithdrawWithVoucher(voucher), signature, signer);
     }
 

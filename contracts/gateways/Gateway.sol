@@ -8,7 +8,6 @@ import {SignatureChecker} from "@openzeppelin/contracts_latest/utils/cryptograph
 import {IGateway} from "./IGateway.sol";
 
 abstract contract Gateway is Context, ERC165, IGateway {
-
     // Set of voucher hashes served
     mapping(bytes32 => bool) public override voucherServed;
 
@@ -31,7 +30,11 @@ abstract contract Gateway is Context, ERC165, IGateway {
      * @param signature  The associated voucher signature
      * @param signer  The address signing the voucher
      */
-    function _validateVoucher(bytes32 voucherHash, bytes memory signature, address signer) internal view {
+    function _validateVoucher(
+        bytes32 voucherHash,
+        bytes memory signature,
+        address signer
+    ) internal view {
         require(SignatureChecker.isValidSignatureNow(signer, voucherHash, signature), "Gateway: invalid voucher signature");
         require(voucherServed[voucherHash] == false, "Gateway: voucher already served");
     }

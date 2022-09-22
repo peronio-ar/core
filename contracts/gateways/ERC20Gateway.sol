@@ -10,7 +10,6 @@ import {Gateway} from "./Gateway.sol";
 import {IERC20Gateway} from "./IERC20Gateway.sol";
 
 abstract contract ERC20Gateway is EIP712, Gateway, IERC20Gateway, ReentrancyGuard {
-
     // address of the underlying ERC20 token
     address public immutable override token;
     // generated name of gateway proper
@@ -60,7 +59,11 @@ abstract contract ERC20Gateway is EIP712, Gateway, IERC20Gateway, ReentrancyGuar
      * @param signature  The associated voucher signature
      * @param signer  The address signing the voucher
      */
-    function validateTransferFromWithVoucher(TransferFromVoucher memory voucher, bytes memory signature, address signer) external view override {
+    function validateTransferFromWithVoucher(
+        TransferFromVoucher memory voucher,
+        bytes memory signature,
+        address signer
+    ) external view override {
         _validateTransferFromWithVoucher(voucher, signature, signer);
     }
 
@@ -71,7 +74,7 @@ abstract contract ERC20Gateway is EIP712, Gateway, IERC20Gateway, ReentrancyGuar
      * @param signature  The associated voucher signature
      * @custom:emit  VoucherServed
      */
-    function transferFromWithVoucher(TransferFromVoucher memory voucher, bytes memory signature) external nonReentrant override {
+    function transferFromWithVoucher(TransferFromVoucher memory voucher, bytes memory signature) external override nonReentrant {
         _beforeTransferFromWithVoucher(voucher);
         _transferFromWithVoucher(voucher, signature);
         _afterTransferFromWithVoucher(voucher);
@@ -96,7 +99,11 @@ abstract contract ERC20Gateway is EIP712, Gateway, IERC20Gateway, ReentrancyGuar
      * @param signature  The associated voucher signature
      * @param signer  The address signing the voucher
      */
-    function _validateTransferFromWithVoucher(TransferFromVoucher memory voucher, bytes memory signature, address signer) internal view {
+    function _validateTransferFromWithVoucher(
+        TransferFromVoucher memory voucher,
+        bytes memory signature,
+        address signer
+    ) internal view {
         _validateVoucher(_hashTransferFromWithVoucher(voucher), signature, signer);
     }
 

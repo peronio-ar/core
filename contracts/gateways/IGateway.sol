@@ -4,7 +4,6 @@ pragma solidity ^0.8.17;
 import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
 interface IGateway is IERC165 {
-
     /**
      * Emitted upon a voucher being served
      *

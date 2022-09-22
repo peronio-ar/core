@@ -1,100 +1,157 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import {EnumerableMap} from "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
-
-import {Context} from "@openzeppelin/contracts_latest/utils/Context.sol";
 import {Math} from "@openzeppelin/contracts_latest/utils/math/Math.sol";
 
-import "./ICumpaFarm.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts_latest/security/ReentrancyGuard.sol";
+
 import {Cumpa} from "./Cumpa.sol";
-import "./Peronio.sol";
+import {Peronio} from "./Peronio.sol";
 
-contract CumpaFarm is Context, ICumpaFarm {
-    using EnumerableMap for EnumerableMap.AddressToUintMap;
+contract Farm is ReentrancyGuard {
+    Cumpa public cumpa; // Address of CUM token contract.
+    Peronio public peronio;
 
-    Peronio private peronio;
-    Cumpa private cumpa;
+    uint256 public rewardPerBlock;
+    uint256 public lastRewardBlock; // Last block number that P distribution occurs.
 
-    uint256 private totalCumpas;
-    EnumerableMap.AddressToUintMap private cumpasByAddress;
+    uint256 public accumulatedPeroniosPerShare; // Accumulated Ps per share, times 1e12.
 
-    uint256 private frozenTotalCumpas;
-    EnumerableMap.AddressToUintMap private frozenCumpasByAddress;
+    uint256 public paidOut;
 
-    mapping(address => uint256) public override rewardsByAddress;
-    uint256 private totalRewards;
+    uint256 public startBlock;
+    uint256 public endBlock;
 
+    uint16 public depositFeeBP; // Deposit fee in basis points
+    address public feeAddress;
 
+    struct UserInfo {
+        uint256 amount; // How many CUM tokens the user has provided.
+        uint256 rewarded; // Reward debt. See explanation below.
+    }
 
-    function distribute() external override {
-        uint256 tips = _collectedTips();
+    mapping(address => UserInfo) public userInfo;
 
-        uint256 length = frozenCumpasByAddress.length();
+    constructor(
+        Cumpa _cumpa,
+        Peronio _peronio,
+        uint256 _rewardPerBlock,
+        uint256 _startBlock,
+        uint16 _depositFeeBP,
+        address _feeAddress
+    ) {
+        require(_depositFeeBP <= 10000, "Farm: invalid deposit fee basis points");
 
-        address[] memory frozenAddresses = new address[](length);
-        uint256[] memory frozenCumpaAmounts = new uint256[](length);
-        for (uint256 i = 0; i < length; i++) {
-            (address to, uint256 cumpas) = frozenCumpasByAddress.at(i);
-            frozenAddresses[i] = to;
-            frozenCumpaAmounts[i] = cumpas;
+        cumpa = _cumpa;
+        peronio = _peronio;
+
+        rewardPerBlock = _rewardPerBlock;
+        lastRewardBlock = Math.max(block.number, startBlock);
+
+        startBlock = _startBlock;
+        endBlock = _startBlock;
+
+        depositFeeBP = _depositFeeBP;
+        feeAddress = _feeAddress;
+    }
+
+    // Fund Ps
+    function fund(uint256 amount) public {
+        require(block.number < endBlock, "Farm: too late, the farm is closed");
+
+        peronio.transferFrom(msg.sender, address(this), amount);
+        endBlock += amount / rewardPerBlock;
+    }
+
+    function deposited(address _user) external view returns (uint256) {
+        return userInfo[_user].amount;
+    }
+
+    function pending(address _user) external view returns (uint256) {
+        UserInfo storage user = userInfo[_user];
+        uint256 _accumulatedPeroniosPerShare = accumulatedPeroniosPerShare;
+        uint256 cumpaSupply = cumpa.balanceOf(address(this));
+
+        if (lastRewardBlock < block.number && cumpaSupply != 0) {
+            uint256 lastBlock = Math.min(block.number, endBlock);
+            uint256 peronioReward = (lastBlock - lastRewardBlock) * rewardPerBlock;
+            _accumulatedPeroniosPerShare += (peronioReward * 1e12) / cumpaSupply;
         }
 
-        uint256 rewards;
-        for (uint256 i = 0; i < length; i++) {
-            address to = frozenAddresses[i];
-            uint cumpas = frozenCumpaAmounts[i];
+        return (user.amount * _accumulatedPeroniosPerShare) / 1e12 - user.rewarded;
+    }
 
-            frozenCumpasByAddress.remove(to);
-
-            uint256 reward = Math.mulDiv(tips, cumpas, frozenTotalCumpas);
-
-            rewardsByAddress[to] += reward;
-            rewards += reward;
+    function totalPending() external view returns (uint256) {
+        if (block.number <= startBlock) {
+            return 0;
         }
-        totalRewards += rewards;
 
-        uint256 newLength = cumpasByAddress.length();
-        for (uint256 i = 0; i < newLength; i++) {
-            (address to, uint256 cumpas) = cumpasByAddress.at(i);
-            frozenCumpasByAddress.set(to, cumpas);
+        uint256 lastBlock = Math.min(block.number, endBlock);
+        return rewardPerBlock * (lastBlock - startBlock) - paidOut;
+    }
+
+    function deposit(uint256 amount) public nonReentrant {
+        UserInfo storage user = userInfo[msg.sender];
+
+        transferRewards();
+
+        if (0 < amount) {
+            cumpa.transferFrom(msg.sender, address(this), amount);
+            user.amount += amount;
+            if (0 < depositFeeBP) {
+                uint256 depositFee = (amount * depositFeeBP) / 10000;
+                cumpa.transfer(feeAddress, depositFee);
+                user.amount -= depositFee;
+            }
         }
-        frozenTotalCumpas = totalCumpas;
     }
 
-    function collectedTips() external view override returns (uint256 tips) {
-        tips = _collectedTips();
+    function withdraw(uint256 amount) public nonReentrant {
+        UserInfo storage user = userInfo[msg.sender];
+        require(amount <= user.amount, "Farm: can't withdraw more than deposit");
+
+        transferRewards();
+
+        user.amount -= amount;
+        cumpa.transfer(msg.sender, amount);
     }
 
-    function _collectedTips() internal view returns (uint256 tips) {
-        tips = peronio.balanceOf(address(this)) - totalRewards;
+    function emergencyWithdraw() public nonReentrant {
+        UserInfo storage user = userInfo[msg.sender];
+        cumpa.transfer(msg.sender, user.amount);
+        user.amount = 0;
+        user.rewarded = 0;
     }
 
-    function deposit(uint256 amount) external override {
-        (, uint256 cumpas) = cumpasByAddress.tryGet(_msgSender());
-        cumpasByAddress.set(_msgSender(), cumpas + amount);
-        totalCumpas += amount;
+    function transferRewards() internal {
+        updatePool();
 
-        cumpa.transferFrom(_msgSender(), address(this), amount);
+        UserInfo storage user = userInfo[msg.sender];
+        if (0 == user.amount) {
+            return;
+        }
 
+        uint256 pendingAmount = (user.amount * accumulatedPeroniosPerShare) / 1e12 - user.rewarded;
+        peronio.transfer(msg.sender, pendingAmount);
+        user.rewarded += pendingAmount;
+        paidOut += pendingAmount;
     }
 
-    function withdraw(address to, uint256 amount) external override {
-        (, uint256 cumpas) = cumpasByAddress.tryGet(_msgSender());
-        require(amount <= cumpas, "CumpaFarm: not enough CUM");
+    function updatePool() public {
+        uint256 lastBlock = Math.min(block.number, endBlock);
 
-        cumpa.transfer(to, amount);
-        cumpasByAddress.set(_msgSender(), cumpas - amount);
-        totalCumpas -= amount;
-    }
+        if (lastBlock <= lastRewardBlock) {
+            return;
+        }
+        uint256 cumpaSupply = cumpa.balanceOf(address(this));
+        if (cumpaSupply == 0) {
+            lastRewardBlock = lastBlock;
+            return;
+        }
 
-    function extract(address to, uint256 amount) external override {
-        uint256 rewards = rewardsByAddress[_msgSender()];
-        require(amount <= rewards, "CumpaFarm: not enough rewards");
+        uint256 peronioReward = (lastBlock - lastRewardBlock) * rewardPerBlock;
+        accumulatedPeroniosPerShare += (peronioReward * 1e12) / cumpaSupply;
 
-        rewardsByAddress[_msgSender()] -= amount;
-        totalRewards -= amount;
-
-        peronio.transfer(to, amount);
+        lastRewardBlock = block.number;
     }
 }

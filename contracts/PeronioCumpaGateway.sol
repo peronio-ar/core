@@ -4,7 +4,6 @@ pragma solidity ^0.8.17;
 import {PeronioGateway} from "./gateways/PeronioGateway.sol";
 
 contract PeronioCumpaGateway is PeronioGateway {
-
     address public immutable cumpaAddress;
     address public immutable peronioAddress;
     address public immutable usdcAddress;

@@ -17,7 +17,6 @@ string constant SYMBOL = "CUM";
 uint256 constant MINIMUM_PERIOD = 12 hours;
 
 contract Cumpa is AccessControl, ICumpa, ERC20, ERC20Permit {
-
     // Roles
     bytes32 public constant override MINTER_ROLE = keccak256("MINTER_ROLE");
 

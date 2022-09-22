@@ -6,7 +6,6 @@ import {IERC20Permit} from "@openzeppelin/contracts_latest/token/ERC20/extension
 import {IERC20Gateway} from "./IERC20Gateway.sol";
 
 interface IERC20PermitGateway is IERC20Gateway {
-
     // --- permit ---------------------------------------------------------------------------------------------------------------------------------------------
 
     /**
@@ -59,7 +58,11 @@ interface IERC20PermitGateway is IERC20Gateway {
      * @param signature  The associated voucher signature
      * @param signer  The address signing the voucher
      */
-    function validatePermitWithVoucher(PermitVoucher memory voucher, bytes memory signature, address signer ) external view;
+    function validatePermitWithVoucher(
+        PermitVoucher memory voucher,
+        bytes memory signature,
+        address signer
+    ) external view;
 
     /**
      * Execute the permit() call to the underlying ERC20Permit token with the parameters in the given voucher

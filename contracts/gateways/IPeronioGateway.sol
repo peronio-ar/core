@@ -4,7 +4,6 @@ pragma solidity ^0.8.17;
 import {IERC20PermitGateway} from "./IERC20PermitGateway.sol";
 
 interface IPeronioGateway is IERC20PermitGateway {
-
     // --- mint -----------------------------------------------------------------------------------------------------------------------------------------------
 
     /**
@@ -37,7 +36,7 @@ interface IPeronioGateway is IERC20PermitGateway {
      */
     function MINT_WITH_VOUCHER_TYPEHASH() external view returns (bytes32);
 
-     /**
+    /**
      * Return the voucher hash associated to the given voucher
      *
      * @param voucher  The voucher to retrieve the hash for
@@ -52,7 +51,11 @@ interface IPeronioGateway is IERC20PermitGateway {
      * @param signature  The associated voucher signature
      * @param signer  The address signing the voucher
      */
-    function validateMintWithVoucher(MintVoucher memory voucher, bytes memory signature, address signer ) external view;
+    function validateMintWithVoucher(
+        MintVoucher memory voucher,
+        bytes memory signature,
+        address signer
+    ) external view;
 
     /**
      * Execute the mint() call to the underlying Peronio token with the parameters in the given voucher
@@ -93,7 +96,7 @@ interface IPeronioGateway is IERC20PermitGateway {
      */
     function WITHDRAW_WITH_VOUCHER_TYPEHASH() external view returns (bytes32);
 
-     /**
+    /**
      * Return the voucher hash associated to the given voucher
      *
      * @param voucher  The voucher to retrieve the hash for
@@ -108,7 +111,11 @@ interface IPeronioGateway is IERC20PermitGateway {
      * @param signature  The associated voucher signature
      * @param signer  The address signing the voucher
      */
-    function validateWithdrawWithVoucher(WithdrawVoucher memory voucher, bytes memory signature, address signer ) external view;
+    function validateWithdrawWithVoucher(
+        WithdrawVoucher memory voucher,
+        bytes memory signature,
+        address signer
+    ) external view;
 
     /**
      * Execute the withdraw() call to the underlying Peronio token with the parameters in the given voucher

@@ -8,7 +8,6 @@ import {ERC20Gateway} from "./ERC20Gateway.sol";
 import {IERC20PermitGateway} from "./IERC20PermitGateway.sol";
 
 abstract contract ERC20PermitGateway is ERC20Gateway, IERC20PermitGateway {
-
     /**
      * Build a new ERC20PermitGateway from the given token address and gateway name
      *
@@ -50,7 +49,11 @@ abstract contract ERC20PermitGateway is ERC20Gateway, IERC20PermitGateway {
      * @param signature  The associated voucher signature
      * @param signer  The address signing the voucher
      */
-    function validatePermitWithVoucher(PermitVoucher memory voucher, bytes memory signature, address signer ) external view override {
+    function validatePermitWithVoucher(
+        PermitVoucher memory voucher,
+        bytes memory signature,
+        address signer
+    ) external view override {
         _validatePermitWithVoucher(voucher, signature, signer);
     }
 
@@ -61,7 +64,7 @@ abstract contract ERC20PermitGateway is ERC20Gateway, IERC20PermitGateway {
      * @param signature  The associated voucher signature
      * @custom:emit  VoucherServed
      */
-    function permitWithVoucher(PermitVoucher memory voucher, bytes memory signature) external nonReentrant override {
+    function permitWithVoucher(PermitVoucher memory voucher, bytes memory signature) external override nonReentrant {
         _beforePermitWithVoucher(voucher);
         _permitWithVoucher(voucher, signature);
         _afterPermitWithVoucher(voucher);
@@ -86,7 +89,11 @@ abstract contract ERC20PermitGateway is ERC20Gateway, IERC20PermitGateway {
      * @param signature  The associated voucher signature
      * @param signer  The address signing the voucher
      */
-    function _validatePermitWithVoucher(PermitVoucher memory voucher, bytes memory signature, address signer) internal view {
+    function _validatePermitWithVoucher(
+        PermitVoucher memory voucher,
+        bytes memory signature,
+        address signer
+    ) internal view {
         _validateVoucher(_hashPermitWithVoucher(voucher), signature, signer);
     }
 
