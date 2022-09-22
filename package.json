@@ -1,6 +1,6 @@
 {
     "name": "peronio-core",
-    "version": "0.9.2",
+    "version": "2.0.0",
     "license": "MIT",
     "repository": {
         "type": "git",
@@ -65,7 +65,7 @@
         "console": "hardhat console",
         "clean": "yarn autoclean --force; yarn hardhat clean; rm -rf node_modules; yarn",
         "deploy": "hardhat deploy",
-        "publish": "hardhat run scripts/publish.ts --network matic",
+        "verify": "hardhat run scripts/publish.ts --network matic",
         "typechain": "yarn preprocess && hardhat typechain",
         "preprocess": "hardhat preprocess",
         "format:fix": "prettier --write \"{,!(node_modules)/**/}*.{ts,js,json}\"",
