@@ -56,18 +56,18 @@ contract Farm is ReentrancyGuard {
     }
 
     // Fund Ps
-    function fund(uint256 amount) public {
+    function fund(uint256 amount) external {
         require(block.number < endBlock, "Farm: too late, the farm is closed");
 
         peronio.transferFrom(msg.sender, address(this), amount);
         endBlock += amount / rewardPerBlock;
     }
 
-    function deposited(address _user) external view returns (uint256) {
-        return userInfo[_user].amount;
+    function deposited(address _user) external view returns (uint256 amount) {
+        amount = userInfo[_user].amount;
     }
 
-    function pending(address _user) external view returns (uint256) {
+    function pending(address _user) external view returns (uint256 amount) {
         UserInfo storage user = userInfo[_user];
         uint256 _accumulatedPeroniosPerShare = accumulatedPeroniosPerShare;
         uint256 cumpaSupply = cumpa.balanceOf(address(this));
@@ -78,22 +78,22 @@ contract Farm is ReentrancyGuard {
             _accumulatedPeroniosPerShare += (peronioReward * 1e12) / cumpaSupply;
         }
 
-        return (user.amount * _accumulatedPeroniosPerShare) / 1e12 - user.rewarded;
+        amount = (user.amount * _accumulatedPeroniosPerShare) / 1e12 - user.rewarded;
     }
 
-    function totalPending() external view returns (uint256) {
+    function totalPending() external view returns (uint256 amount) {
         if (block.number <= startBlock) {
             return 0;
         }
 
         uint256 lastBlock = Math.min(block.number, endBlock);
-        return rewardPerBlock * (lastBlock - startBlock) - paidOut;
+        amount = rewardPerBlock * (lastBlock - startBlock) - paidOut;
     }
 
     function deposit(uint256 amount) public nonReentrant {
         UserInfo storage user = userInfo[msg.sender];
 
-        transferRewards();
+        _transferRewards();
 
         if (0 < amount) {
             cumpa.transferFrom(msg.sender, address(this), amount);
@@ -110,7 +110,7 @@ contract Farm is ReentrancyGuard {
         UserInfo storage user = userInfo[msg.sender];
         require(amount <= user.amount, "Farm: can't withdraw more than deposit");
 
-        transferRewards();
+        _transferRewards();
 
         user.amount -= amount;
         cumpa.transfer(msg.sender, amount);
@@ -123,8 +123,8 @@ contract Farm is ReentrancyGuard {
         user.rewarded = 0;
     }
 
-    function transferRewards() internal {
-        updatePool();
+    function _transferRewards() internal {
+        _updatePool();
 
         UserInfo storage user = userInfo[msg.sender];
         if (0 == user.amount) {
@@ -137,12 +137,13 @@ contract Farm is ReentrancyGuard {
         paidOut += pendingAmount;
     }
 
-    function updatePool() public {
+    function _updatePool() internal {
         uint256 lastBlock = Math.min(block.number, endBlock);
 
         if (lastBlock <= lastRewardBlock) {
             return;
         }
+
         uint256 cumpaSupply = cumpa.balanceOf(address(this));
         if (cumpaSupply == 0) {
             lastRewardBlock = lastBlock;
