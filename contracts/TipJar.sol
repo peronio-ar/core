@@ -8,7 +8,7 @@ import {ReentrancyGuard} from "@openzeppelin/contracts_latest/security/Reentranc
 
 import {IUniswapV2Router02} from "./uniswap/interfaces/IUniswapV2Router02.sol";
 
-import {ITipJar} from "./ITipJar2.sol";
+import {ITipJar} from "./ITipJar.sol";
 
 // Inspired by: https://raw.githubusercontent.com/0xlaozi/qidao/main/contracts/StakingRewards.sol
 contract TipJar is ITipJar, ReentrancyGuard {
