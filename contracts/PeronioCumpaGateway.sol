@@ -24,7 +24,7 @@ contract PeronioCumpaGateway is PeronioGateway {
      * Hook called before the actual mint() call is executed
      *
      */
-    function _beforeMintWithVoucher(Voucher memory) virtual internal override {
+    function _beforeMintWithVoucher(Voucher memory) internal virtual override {
         require(gasUsed == 0, "PeronioCumpaGateway: gas already used");
         gasUsed = gasleft();
         // TODO
@@ -34,7 +34,7 @@ contract PeronioCumpaGateway is PeronioGateway {
      * Hook called after the actual mint() call is executed
      *
      */
-    function _afterMintWithVoucher(Voucher memory) virtual internal override {
+    function _afterMintWithVoucher(Voucher memory) internal virtual override {
         gasUsed -= gasleft();
         // TODO
     }
@@ -43,7 +43,7 @@ contract PeronioCumpaGateway is PeronioGateway {
      * Hook called before the actual withdraw() call is executed
      *
      */
-    function _beforeWithdrawWithVoucher(Voucher memory) virtual internal override {
+    function _beforeWithdrawWithVoucher(Voucher memory) internal virtual override {
         require(gasUsed == 0, "PeronioCumpaGateway: gas already used");
         gasUsed = gasleft();
         // TODO
@@ -53,7 +53,7 @@ contract PeronioCumpaGateway is PeronioGateway {
      * Hook called after the actual withdraw() call is executed
      *
      */
-    function _afterWithdrawWithVoucher(Voucher memory) virtual internal override {
+    function _afterWithdrawWithVoucher(Voucher memory) internal virtual override {
         gasUsed -= gasleft();
         // TODO
     }
@@ -62,7 +62,7 @@ contract PeronioCumpaGateway is PeronioGateway {
      * Hook called before the actual permit() call is executed
      *
      */
-    function _beforePermitWithVoucher(Voucher memory) virtual internal override {
+    function _beforePermitWithVoucher(Voucher memory) internal virtual override {
         require(gasUsed == 0, "PeronioCumpaGateway: gas already used");
         gasUsed = gasleft();
         // TODO
@@ -72,7 +72,7 @@ contract PeronioCumpaGateway is PeronioGateway {
      * Hook called after the actual permit() call is executed
      *
      */
-    function _afterPermitWithVoucher(Voucher memory) virtual internal override {
+    function _afterPermitWithVoucher(Voucher memory) internal virtual override {
         gasUsed -= gasleft();
         // TODO
     }
@@ -81,7 +81,7 @@ contract PeronioCumpaGateway is PeronioGateway {
      * Hook called before the actual transferFrom() call is executed
      *
      */
-    function _beforeTransferFromWithVoucher(Voucher memory) virtual internal override {
+    function _beforeTransferFromWithVoucher(Voucher memory) internal virtual override {
         require(gasUsed == 0, "PeronioCumpaGateway: gas already used");
         gasUsed = gasleft();
         // TODO
@@ -91,7 +91,7 @@ contract PeronioCumpaGateway is PeronioGateway {
      * Hook called after the actual transferFrom() call is executed
      *
      */
-    function _afterTransferFromWithVoucher(Voucher memory) virtual internal override {
+    function _afterTransferFromWithVoucher(Voucher memory) internal virtual override {
         gasUsed -= gasleft();
         // TODO
     }

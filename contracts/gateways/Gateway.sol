@@ -9,7 +9,6 @@ import {SignatureChecker} from "@openzeppelin/contracts_latest/utils/cryptograph
 import "./IGateway.sol";
 
 abstract contract Gateway is Context, EIP712, ERC165, IGateway {
-
     /**
      * Structure used to keep track of handling functions
      *

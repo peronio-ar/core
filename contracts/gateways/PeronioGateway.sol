@@ -94,26 +94,26 @@ abstract contract PeronioGateway is ERC20PermitGateway, IPeronioGateway {
      *
      * @param voucher  The voucher being executed
      */
-    function _beforeMintWithVoucher(Voucher memory voucher) virtual internal {}
+    function _beforeMintWithVoucher(Voucher memory voucher) internal virtual {}
 
     /**
      * Hook called after the actual permit() call is executed
      *
      * @param voucher  The voucher being executed
      */
-    function _afterMintWithVoucher(Voucher memory voucher) virtual internal {}
+    function _afterMintWithVoucher(Voucher memory voucher) internal virtual {}
 
     /**
      * Hook called before the actual permit() call is executed
      *
      * @param voucher  The voucher being executed
      */
-    function _beforeWithdrawWithVoucher(Voucher memory voucher) virtual internal {}
+    function _beforeWithdrawWithVoucher(Voucher memory voucher) internal virtual {}
 
     /**
      * Hook called after the actual permit() call is executed
      *
      * @param voucher  The voucher being executed
      */
-    function _afterWithdrawWithVoucher(Voucher memory voucher) virtual internal {}
+    function _afterWithdrawWithVoucher(Voucher memory voucher) internal virtual {}
 }

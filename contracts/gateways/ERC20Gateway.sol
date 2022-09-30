@@ -68,12 +68,12 @@ abstract contract ERC20Gateway is Gateway, IERC20Gateway {
      *
      * @param voucher  The voucher being executed
      */
-    function _beforeTransferFromWithVoucher(Voucher memory voucher) virtual internal {}
+    function _beforeTransferFromWithVoucher(Voucher memory voucher) internal virtual {}
 
     /**
      * Hook called after the actual transferFrom() call is executed
      *
      * @param voucher  The voucher being executed
      */
-    function _afterTransferFromWithVoucher(Voucher memory voucher) virtual internal {}
+    function _afterTransferFromWithVoucher(Voucher memory voucher) internal virtual {}
 }

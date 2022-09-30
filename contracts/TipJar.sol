@@ -19,9 +19,9 @@ contract TipJar is ITipJar, ReentrancyGuard {
     uint256 public override tipsDealtPerBlock;
     uint256 public override lastTipDealBlock;
 
-    uint256 public override accumulatedTipsPerShare;  // Accumulated tips per share, times 1e12.
+    uint256 public override accumulatedTipsPerShare; // Accumulated tips per share, times 1e12.
 
-    uint16 public override depositFeeBP;  // Deposit fee in basis points
+    uint16 public override depositFeeBP; // Deposit fee in basis points
     address public override feeAddress;
 
     mapping(address => uint256) public override stakedAmount;
@@ -152,7 +152,11 @@ contract TipJar is ITipJar, ReentrancyGuard {
         emit StakeIncreased(amount, from);
     }
 
-    function _unstake(address from, uint256 amount, address to) internal returns (uint256 _stakedAmount) {
+    function _unstake(
+        address from,
+        uint256 amount,
+        address to
+    ) internal returns (uint256 _stakedAmount) {
         require(amount <= stakedAmount[from], "TipJar: can't withdraw more than staked amount");
 
         _dealTips(to);
@@ -165,7 +169,11 @@ contract TipJar is ITipJar, ReentrancyGuard {
         emit StakeDecreased(amount, from);
     }
 
-    function _withdrawTips(address from, uint256 amount, address to) internal returns (uint256 _extractedAmount) {
+    function _withdrawTips(
+        address from,
+        uint256 amount,
+        address to
+    ) internal returns (uint256 _extractedAmount) {
         _dealTips(from);
 
         require(amount <= tipsPending[from], "TipJar: can't extract more than pending amount");
@@ -195,7 +203,13 @@ contract TipJar is ITipJar, ReentrancyGuard {
         if (stakesAdjustment != 0) {
             address[] memory path = new address[](2);
             (path[0], path[1]) = (stakingToken, tipsToken);
-            uint256 swappedAmount = IUniswapV2Router02(quickSwapRouterAddress).swapExactTokensForTokens(stakesAdjustment, 1, path, address(this), block.timestamp + 1 hours)[1];
+            uint256 swappedAmount = IUniswapV2Router02(quickSwapRouterAddress).swapExactTokensForTokens(
+                stakesAdjustment,
+                1,
+                path,
+                address(this),
+                block.timestamp + 1 hours
+            )[1];
             tipsLeftToDeal += swappedAmount;
             tipsIn += swappedAmount;
         }

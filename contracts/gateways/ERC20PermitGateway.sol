@@ -8,9 +8,9 @@ import {ERC20Gateway} from "./ERC20Gateway.sol";
 import {IERC20PermitGateway} from "./IERC20PermitGateway.sol";
 
 abstract contract ERC20PermitGateway is ERC20Gateway, IERC20PermitGateway {
-
     // Tag associated to the PermitVoucher
-    uint32 public constant override PERMIT_VOUCHER_TAG = uint32(bytes4(keccak256(bytes("PermitVoucher{address,address,uint256,uint256,uint8,bytes32,bytes32}"))));
+    uint32 public constant override PERMIT_VOUCHER_TAG =
+        uint32(bytes4(keccak256(bytes("PermitVoucher{address,address,uint256,uint256,uint8,bytes32,bytes32}"))));
 
     /**
      * Build a new ERC20PermitGateway from the given token address and gateway name
@@ -52,7 +52,15 @@ abstract contract ERC20PermitGateway is ERC20Gateway, IERC20PermitGateway {
         _beforePermitWithVoucher(voucher);
 
         PermitVoucher memory decodedVoucher = abi.decode(voucher.payload, (PermitVoucher));
-        IERC20Permit(token).permit(decodedVoucher.owner, decodedVoucher.spender, decodedVoucher.value, decodedVoucher.deadline, decodedVoucher.v, decodedVoucher.r, decodedVoucher.s);
+        IERC20Permit(token).permit(
+            decodedVoucher.owner,
+            decodedVoucher.spender,
+            decodedVoucher.value,
+            decodedVoucher.deadline,
+            decodedVoucher.v,
+            decodedVoucher.r,
+            decodedVoucher.s
+        );
 
         _afterPermitWithVoucher(voucher);
     }
@@ -62,12 +70,12 @@ abstract contract ERC20PermitGateway is ERC20Gateway, IERC20PermitGateway {
      *
      * @param voucher  The voucher being executed
      */
-    function _beforePermitWithVoucher(Voucher memory voucher) virtual internal {}
+    function _beforePermitWithVoucher(Voucher memory voucher) internal virtual {}
 
     /**
      * Hook called after the actual permit() call is executed
      *
      * @param voucher  The voucher being executed
      */
-    function _afterPermitWithVoucher(Voucher memory voucher) virtual internal {}
+    function _afterPermitWithVoucher(Voucher memory voucher) internal virtual {}
 }
