@@ -18,63 +18,23 @@ interface IERC20Gateway is IGateway {
      */
     function name() external view returns (string memory);
 
-    // --- transferFrom ---------------------------------------------------------------------------------------------------------------------------------------
-
     /**
      * transferFrom() voucher
      *
      * @custom:member from  The address from which to transfer funds
      * @custom:member to  The address to which to transfer funds
      * @custom:member amount  The number of tokens to transfer
-     * @custom:member nonce  The voucher nonce to use
-     * @custom:member voucherDeadline  The maximum block timestamp this voucher is valid until
-     * @custom:member metadata  Additional abi.encode()-ed metadata
      */
     struct TransferFromVoucher {
         address from;
         address to;
         uint256 amount;
-        //
-        uint256 nonce;
-        uint256 voucherDeadline;
-        //
-        bytes metadata;
     }
 
     /**
-     * Return the typehash associated to the transferFromWithVoucher() method
+     * Return the tag associated to the TransferFromVoucher voucher itself
      *
-     * @return  The typehash associated to the transferFromWithVoucher() method
+     * @return  The tag associated to the TransferFromVoucher voucher itself
      */
-    function TRANSFER_FROM_WITH_VOUCHER_TYPEHASH() external view returns (bytes32);
-
-    /**
-     * Return the voucher hash associated to the given voucher
-     *
-     * @param voucher  The voucher to retrieve the hash for
-     * @return voucherHash  The voucher hash associated to the given voucher
-     */
-    function hashTransferFromWithVoucher(TransferFromVoucher memory voucher) external view returns (bytes32 voucherHash);
-
-    /**
-     * Validate the given voucher and signature, against the given signer
-     *
-     * @param voucher  Voucher to validate
-     * @param signature  The associated voucher signature
-     * @param signer  The address signing the voucher
-     */
-    function validateTransferFromWithVoucher(
-        TransferFromVoucher memory voucher,
-        bytes memory signature,
-        address signer
-    ) external view;
-
-    /**
-     * Execute the transferFrom() call to the underlying ERC20 token with the parameters in the given voucher
-     *
-     * @param voucher  The voucher to execute
-     * @param signature  The associated voucher signature
-     * @custom:emit  VoucherServed
-     */
-    function transferFromWithVoucher(TransferFromVoucher memory voucher, bytes memory signature) external;
+    function TRANSFER_FROM_VOUCHER_TAG() external view returns (uint32);
 }

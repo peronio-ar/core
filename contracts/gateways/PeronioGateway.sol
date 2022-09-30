@@ -2,6 +2,7 @@
 pragma solidity ^0.8.17;
 
 import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import {IERC20} from "@openzeppelin/contracts_latest/token/ERC20/IERC20.sol";
 
 import {ERC20PermitGateway} from "./ERC20PermitGateway.sol";
 import {IPeronioGateway} from "./IPeronioGateway.sol";
@@ -9,13 +10,22 @@ import {IPeronioGateway} from "./IPeronioGateway.sol";
 import {IPeronio, PeQuantity, UsdcQuantity} from "../IPeronio.sol";
 
 abstract contract PeronioGateway is ERC20PermitGateway, IPeronioGateway {
+    // typehash associated to the mintWithVoucher() method
+    uint32 public constant override MINT_VOUCHER_TAG = uint32(bytes4(keccak256(bytes("MintVoucher{address,address,uint256,uint256}"))));
+
+    // typehash associated to the mintWithVoucher() method
+    uint32 public constant override WITHDRAW_VOUCHER_TAG = uint32(bytes4(keccak256(bytes("WithdrawVoucher{address,address,uint256}"))));
+
     /**
      * Build a new PeronioGateway from the given token address and gateway name
      *
      * @param _token  Underlying ERC20 token
      * @param _name  The name to give the newly created gateway
      */
-    constructor(address _token, string memory _name) ERC20PermitGateway(_token, _name) {}
+    constructor(address _token, string memory _name) ERC20PermitGateway(_token, _name) {
+        _addHandler(MINT_VOUCHER_TAG, HandlerEntry({signer: _extractMintVoucherSigner, execute: _executeMintVoucher}));
+        _addHandler(WITHDRAW_VOUCHER_TAG, HandlerEntry({signer: _extractWithdrawVoucherSigner, execute: _executeWithdrawVoucher}));
+    }
 
     /**
      * Implementation of the IERC165 interface
@@ -23,209 +33,87 @@ abstract contract PeronioGateway is ERC20PermitGateway, IPeronioGateway {
      * @param interfaceId  Interface ID to check against
      * @return  Whether the provided interface ID is supported
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC20PermitGateway, IERC165) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
         return interfaceId == type(IPeronioGateway).interfaceId || super.supportsInterface(interfaceId);
     }
 
-    // --- mint -----------------------------------------------------------------------------------------------------------------------------------------------
-
-    // typehash associated to the mintWithVoucher() method
-    bytes32 public constant override MINT_WITH_VOUCHER_TYPEHASH =
-        keccak256(bytes("mintWithVoucher(MintVoucher{address,address,uint256,uint256,uint256,uint256,bytes})"));
-
     /**
-     * Return the voucher hash associated to the given voucher
+     * Extract the signer from the given voucher
      *
-     * @param voucher  The voucher to retrieve the hash for
-     * @return voucherHash  The voucher hash associated to the given voucher
+     * @param voucher  Voucher to extract the signer of
+     * @return signer  The voucher's signer
      */
-    function hashMintWithVoucher(MintVoucher memory voucher) external view override returns (bytes32 voucherHash) {
-        voucherHash = _hashMintWithVoucher(voucher);
+    function _extractMintVoucherSigner(Voucher memory voucher) private pure returns (address signer) {
+        MintVoucher memory decodedVoucher = abi.decode(voucher.payload, (MintVoucher));
+        signer = decodedVoucher.from;
     }
 
     /**
-     * Validate the given voucher and signature, against the given signer
+     * Extract the signer from the given voucher
      *
-     * @param voucher  Voucher to validate
-     * @param signature  The associated voucher signature
-     * @param signer  The address signing the voucher
+     * @param voucher  Voucher to extract the signer of
+     * @return signer  The voucher's signer
      */
-    function validateMintWithVoucher(
-        MintVoucher memory voucher,
-        bytes memory signature,
-        address signer
-    ) external view override {
-        _validateMintWithVoucher(voucher, signature, signer);
+    function _extractWithdrawVoucherSigner(Voucher memory voucher) private pure returns (address signer) {
+        WithdrawVoucher memory decodedVoucher = abi.decode(voucher.payload, (WithdrawVoucher));
+        signer = decodedVoucher.from;
     }
 
     /**
-     * Execute the mint() call to the underlying Peronio token with the parameters in the given voucher
+     * Execute the given (already validated) voucher
      *
      * @param voucher  The voucher to execute
-     * @param signature  The associated voucher signature
-     * @custom:emit  VoucherServed
      */
-    function mintWithVoucher(MintVoucher memory voucher, bytes memory signature) external override nonReentrant {
+    function _executeMintVoucher(Voucher memory voucher) private {
         _beforeMintWithVoucher(voucher);
-        _mintWithVoucher(voucher, signature);
+
+        MintVoucher memory decodedVoucher = abi.decode(voucher.payload, (MintVoucher));
+        IERC20(IPeronio(token).usdcAddress()).transferFrom(decodedVoucher.from, address(this), decodedVoucher.usdcAmount);
+        IPeronio(token).mint(decodedVoucher.to, UsdcQuantity.wrap(decodedVoucher.usdcAmount), PeQuantity.wrap(decodedVoucher.minReceive));
+
         _afterMintWithVoucher(voucher);
     }
 
-    // --- withdraw -------------------------------------------------------------------------------------------------------------------------------------------
-
-    // typehash associated to the mintWithVoucher() method
-    bytes32 public constant override WITHDRAW_WITH_VOUCHER_TYPEHASH =
-        keccak256(bytes("withdrawWithVoucher(WithdrawVoucher{address,address,uint256,uint256,uint256,bytes})"));
-
     /**
-     * Return the voucher hash associated to the given voucher
-     *
-     * @param voucher  The voucher to retrieve the hash for
-     * @return voucherHash  The voucher hash associated to the given voucher
-     */
-    function hashWithdrawWithVoucher(WithdrawVoucher memory voucher) external view override returns (bytes32 voucherHash) {
-        voucherHash = _hashWithdrawWithVoucher(voucher);
-    }
-
-    /**
-     * Validate the given voucher and signature, against the given signer
-     *
-     * @param voucher  Voucher to validate
-     * @param signature  The associated voucher signature
-     * @param signer  The address signing the voucher
-     */
-    function validateWithdrawWithVoucher(
-        WithdrawVoucher memory voucher,
-        bytes memory signature,
-        address signer
-    ) external view override {
-        _validateWithdrawWithVoucher(voucher, signature, signer);
-    }
-
-    /**
-     * Execute the withdraw() call to the underlying Peronio token with the parameters in the given voucher
+     * Execute the given (already validated) voucher
      *
      * @param voucher  The voucher to execute
-     * @param signature  The associated voucher signature
-     * @custom:emit  VoucherServed
      */
-    function withdrawWithVoucher(WithdrawVoucher memory voucher, bytes memory signature) external override nonReentrant {
+    function _executeWithdrawVoucher(Voucher memory voucher) private {
         _beforeWithdrawWithVoucher(voucher);
-        _withdrawWithVoucher(voucher, signature);
+
+        WithdrawVoucher memory decodedVoucher = abi.decode(voucher.payload, (WithdrawVoucher));
+        IERC20(token).transferFrom(decodedVoucher.from, address(this), decodedVoucher.peAmount);
+        IPeronio(token).withdraw(decodedVoucher.to, PeQuantity.wrap(decodedVoucher.peAmount));
+
         _afterWithdrawWithVoucher(voucher);
     }
 
-    // --- Protected interface --------------------------------------------------------------------------------------------------------------------------------
+    /**
+     * Hook called before the actual permit() call is executed
+     *
+     * @param voucher  The voucher being executed
+     */
+    function _beforeMintWithVoucher(Voucher memory voucher) virtual internal {}
 
     /**
-     * Actually return the voucher hash associated to the given voucher
+     * Hook called after the actual permit() call is executed
      *
-     * @param voucher  The voucher to retrieve the hash for
-     * @return voucherHash  The voucher hash associated to the given voucher
+     * @param voucher  The voucher being executed
      */
-    function _hashMintWithVoucher(MintVoucher memory voucher) internal view returns (bytes32 voucherHash) {
-        voucherHash = _hashTypedDataV4(keccak256(abi.encode(MINT_WITH_VOUCHER_TYPEHASH, voucher)));
-    }
+    function _afterMintWithVoucher(Voucher memory voucher) virtual internal {}
 
     /**
-     * Actually validate the given voucher and signature, against the given signer
+     * Hook called before the actual permit() call is executed
      *
-     * @param voucher  Voucher to validate
-     * @param signature  The associated voucher signature
-     * @param signer  The address signing the voucher
+     * @param voucher  The voucher being executed
      */
-    function _validateMintWithVoucher(
-        MintVoucher memory voucher,
-        bytes memory signature,
-        address signer
-    ) internal view {
-        _validateVoucher(_hashMintWithVoucher(voucher), signature, signer);
-    }
+    function _beforeWithdrawWithVoucher(Voucher memory voucher) virtual internal {}
 
     /**
-     * Actually execute the mint() call to the underlying Peronio token with the parameters in the given voucher
+     * Hook called after the actual permit() call is executed
      *
-     * @param voucher  The voucher to execute
-     * @param signature  The associated voucher signature
-     * @custom:emit  VoucherServed
+     * @param voucher  The voucher being executed
      */
-    function _mintWithVoucher(MintVoucher memory voucher, bytes memory signature) internal {
-        require(block.timestamp <= voucher.voucherDeadline, string.concat(name, ": expired deadline"));
-
-        bytes32 voucherHash = _hashMintWithVoucher(voucher);
-        _validateVoucher(voucherHash, signature, voucher.from);
-        _serveVoucher(voucherHash);
-
-        IPeronio(token).mint(voucher.to, UsdcQuantity.wrap(voucher.usdcAmount), PeQuantity.wrap(voucher.minReceive));
-    }
-
-    /**
-     * Hook called before the actual mint() call is served
-     *
-     * @param voucher  The voucher being served
-     */
-    function _beforeMintWithVoucher(MintVoucher memory voucher) internal {}
-
-    /**
-     * Hook called after the actual mint() call is served
-     *
-     * @param voucher  The voucher being served
-     */
-    function _afterMintWithVoucher(MintVoucher memory voucher) internal {}
-
-    /**
-     * Actually return the voucher hash associated to the given voucher
-     *
-     * @param voucher  The voucher to retrieve the hash for
-     * @return voucherHash  The voucher hash associated to the given voucher
-     */
-    function _hashWithdrawWithVoucher(WithdrawVoucher memory voucher) internal view returns (bytes32 voucherHash) {
-        voucherHash = _hashTypedDataV4(keccak256(abi.encode(WITHDRAW_WITH_VOUCHER_TYPEHASH, voucher)));
-    }
-
-    /**
-     * Actually validate the given voucher and signature, against the given signer
-     *
-     * @param voucher  Voucher to validate
-     * @param signature  The associated voucher signature
-     * @param signer  The address signing the voucher
-     */
-    function _validateWithdrawWithVoucher(
-        WithdrawVoucher memory voucher,
-        bytes memory signature,
-        address signer
-    ) internal view {
-        _validateVoucher(_hashWithdrawWithVoucher(voucher), signature, signer);
-    }
-
-    /**
-     * Actually execute the withdraw() call to the underlying Peronio token with the parameters in the given voucher
-     *
-     * @param voucher  The voucher to execute
-     * @param signature  The associated voucher signature
-     * @custom:emit  VoucherServed
-     */
-    function _withdrawWithVoucher(WithdrawVoucher memory voucher, bytes memory signature) internal {
-        require(block.timestamp <= voucher.voucherDeadline, string.concat(name, ": expired deadline"));
-
-        bytes32 voucherHash = _hashWithdrawWithVoucher(voucher);
-        _validateVoucher(voucherHash, signature, voucher.from);
-        _serveVoucher(voucherHash);
-
-        IPeronio(token).withdraw(voucher.to, PeQuantity.wrap(voucher.peAmount));
-    }
-
-    /**
-     * Hook called before the actual withdraw() call is served
-     *
-     * @param voucher  The voucher being served
-     */
-    function _beforeWithdrawWithVoucher(WithdrawVoucher memory voucher) internal {}
-
-    /**
-     * Hook called after the actual withdraw() call is served
-     *
-     * @param voucher  The voucher being served
-     */
-    function _afterWithdrawWithVoucher(WithdrawVoucher memory voucher) internal {}
+    function _afterWithdrawWithVoucher(Voucher memory voucher) virtual internal {}
 }

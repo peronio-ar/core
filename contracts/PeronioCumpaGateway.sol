@@ -21,85 +21,77 @@ contract PeronioCumpaGateway is PeronioGateway {
     uint256 private gasUsed;
 
     /**
-     * Hook called before the actual mint() call is served
+     * Hook called before the actual mint() call is executed
      *
-     * @param voucher  The voucher being served
      */
-    function _beforeMintWithVoucher(MintVoucher memory voucher) internal override {
+    function _beforeMintWithVoucher(Voucher memory) virtual internal override {
         require(gasUsed == 0, "PeronioCumpaGateway: gas already used");
         gasUsed = gasleft();
         // TODO
     }
 
     /**
-     * Hook called after the actual mint() call is served
+     * Hook called after the actual mint() call is executed
      *
-     * @param voucher  The voucher being served
      */
-    function _afterMintWithVoucher(MintVoucher memory voucher) internal override {
+    function _afterMintWithVoucher(Voucher memory) virtual internal override {
         gasUsed -= gasleft();
         // TODO
     }
 
     /**
-     * Hook called before the actual withdraw() call is served
+     * Hook called before the actual withdraw() call is executed
      *
-     * @param voucher  The voucher being served
      */
-    function _beforeWithdrawWithVoucher(WithdrawVoucher memory voucher) internal override {
+    function _beforeWithdrawWithVoucher(Voucher memory) virtual internal override {
         require(gasUsed == 0, "PeronioCumpaGateway: gas already used");
         gasUsed = gasleft();
         // TODO
     }
 
     /**
-     * Hook called after the actual withdraw() call is served
+     * Hook called after the actual withdraw() call is executed
      *
-     * @param voucher  The voucher being served
      */
-    function _afterWithdrawWithVoucher(WithdrawVoucher memory voucher) internal override {
+    function _afterWithdrawWithVoucher(Voucher memory) virtual internal override {
         gasUsed -= gasleft();
         // TODO
     }
 
     /**
-     * Hook called before the actual permit() call is served
+     * Hook called before the actual permit() call is executed
      *
-     * @param voucher  The voucher being served
      */
-    function _beforePermitWithVoucher(PermitVoucher memory voucher) internal override {
+    function _beforePermitWithVoucher(Voucher memory) virtual internal override {
         require(gasUsed == 0, "PeronioCumpaGateway: gas already used");
         gasUsed = gasleft();
         // TODO
     }
 
     /**
-     * Hook called after the actual permit() call is served
+     * Hook called after the actual permit() call is executed
      *
-     * @param voucher  The voucher being served
      */
-    function _afterPermitWithVoucher(PermitVoucher memory voucher) internal override {
+    function _afterPermitWithVoucher(Voucher memory) virtual internal override {
         gasUsed -= gasleft();
         // TODO
     }
 
     /**
-     * Hook called before the actual transferFrom() call is served
+     * Hook called before the actual transferFrom() call is executed
      *
-     * @param voucher  The voucher being served
      */
-    function _beforeTransferFromWithVoucher(TransferFromVoucher memory voucher) internal override {
+    function _beforeTransferFromWithVoucher(Voucher memory) virtual internal override {
         require(gasUsed == 0, "PeronioCumpaGateway: gas already used");
         gasUsed = gasleft();
         // TODO
     }
 
     /**
-     * Hook called after the actual transferFrom() call is served
+     * Hook called after the actual transferFrom() call is executed
      *
-     * @param voucher  The voucher being served
      */
-    function _afterTransferFromWithVoucher(TransferFromVoucher memory voucher) internal override {
+    function _afterTransferFromWithVoucher(Voucher memory) virtual internal override {
         gasUsed -= gasleft();
         // TODO
     }
