@@ -10,6 +10,8 @@ import {ERC20Permit} from "@openzeppelin/contracts_latest/token/ERC20/extensions
 import {ERC20Burnable} from "@openzeppelin/contracts_latest/token/ERC20/extensions/ERC20Burnable.sol";
 import {SafeERC20} from "@openzeppelin/contracts_latest/token/ERC20/utils/SafeERC20.sol";
 
+import {Multicall} from "@openzeppelin/contracts_latest/utils/Multicall.sol";
+
 // QiDao
 import {IFarm} from "./qidao/IFarm.sol";
 
@@ -24,7 +26,7 @@ import "./PeronioSupport.sol";
 string constant NAME = "Peronio";
 string constant SYMBOL = "P";
 
-contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, ReentrancyGuard {
+contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, ReentrancyGuard, Multicall {
     using SafeERC20 for IERC20;
 
     // Roles
