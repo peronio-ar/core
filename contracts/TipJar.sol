@@ -6,6 +6,7 @@ import {Math} from "@openzeppelin/contracts_latest/utils/math/Math.sol";
 import {SafeERC20} from "@openzeppelin/contracts_latest/token/ERC20/utils/SafeERC20.sol";
 
 import {ReentrancyGuard} from "@openzeppelin/contracts_latest/security/ReentrancyGuard.sol";
+import {Multicall} from "@openzeppelin/contracts_latest/utils/Multicall.sol";
 
 import {IUniswapV2Router02} from "./uniswap/interfaces/IUniswapV2Router02.sol";
 
@@ -23,7 +24,7 @@ import {ITipJar} from "./ITipJar.sol";
  *   - mechanisms have been added so as to prevent funds transferred outside of the "prescribed" interfaces to be lost (this is implemented via "scrubbing")
  *
  */
-contract TipJar is ITipJar, ReentrancyGuard {
+contract TipJar is ITipJar, Multicall, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     // The address of the token to use for staking
