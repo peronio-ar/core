@@ -215,10 +215,10 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         usdcERC20.safeTransferFrom(sender, address(this), UsdcQuantity.unwrap(usdcAmount));
 
         // Unlimited ERC20 approval for Router
-        maiERC20.approve(_quickSwapRouterAddress, maxVal);
-        usdcERC20.approve(_quickSwapRouterAddress, maxVal);
-        lpERC20.approve(_quickSwapRouterAddress, maxVal);
-        qiERC20.approve(_quickSwapRouterAddress, maxVal);
+        maiERC20.safeApprove(_quickSwapRouterAddress, maxVal);
+        usdcERC20.safeApprove(_quickSwapRouterAddress, maxVal);
+        lpERC20.safeApprove(_quickSwapRouterAddress, maxVal);
+        qiERC20.safeApprove(_quickSwapRouterAddress, maxVal);
 
         // Commit the complete initial USDC amount
         _zapIn(usdcAmount);
@@ -784,7 +784,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         // --- Gas Saving -------------------------------------------------------------------------
         address _qiDaoFarmAddress = qiDaoFarmAddress;
 
-        IERC20(lpAddress).approve(_qiDaoFarmAddress, LpQuantity.unwrap(lpAmount));
+        IERC20(lpAddress).safeApprove(_qiDaoFarmAddress, LpQuantity.unwrap(lpAmount));
         IFarm(_qiDaoFarmAddress).deposit(qiDaoPoolId, LpQuantity.unwrap(lpAmount));
     }
 
