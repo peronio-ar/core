@@ -3,6 +3,7 @@ pragma solidity ^0.8.17;
 
 import {IERC20} from "@openzeppelin/contracts_latest/token/ERC20/IERC20.sol";
 import {Math} from "@openzeppelin/contracts_latest/utils/math/Math.sol";
+import {SafeERC20} from "@openzeppelin/contracts_latest/token/ERC20/utils/SafeERC20.sol";
 
 import {ReentrancyGuard} from "@openzeppelin/contracts_latest/security/ReentrancyGuard.sol";
 
@@ -10,35 +11,72 @@ import {IUniswapV2Router02} from "./uniswap/interfaces/IUniswapV2Router02.sol";
 
 import {ITipJar} from "./ITipJar.sol";
 
-// Inspired by: https://raw.githubusercontent.com/0xlaozi/qidao/main/contracts/StakingRewards.sol
+/**
+ * This contract implements a Tip Jar, distributing the tipping tokens accumulated amongst the participants in proportion to each's staking tokens staked.
+ *
+ * This implementation is inspired by https://raw.githubusercontent.com/0xlaozi/qidao/main/contracts/StakingRewards.sol, but it has been
+ * thoroughly modified thus:
+ *   - a pre-existing bug has been fixed: this could allow for incorrect amounts being awarded both in excess and deficiency
+ *   - the farm can be re-started when its funds are exhausted upon re-funding with more tips (this is so that newly acquired tips can be put to use immediately)
+ *   - tips are not transferred eagerly, but rather need to be withdrawn explicitly (this is so that individual transactions need not be performed each time)
+ *   - tips can be directed to an address of one's choice (this is so as to avoid a subsequent transfer therein)
+ *   - mechanisms have been added so as to prevent funds transferred outside of the "prescribed" interfaces to be lost (this is implemented via "scrubbing")
+ *
+ */
 contract TipJar is ITipJar, ReentrancyGuard {
+    using SafeERC20 for IERC20;
+
+    // The address of the token to use for staking
     address public immutable override stakingToken;
-    address public immutable override tipsToken;
 
-    uint256 public override tipsLeftToDeal;
-    uint256 public override tipsDealtPerBlock;
-    uint256 public override lastTipDealBlock;
-
-    uint256 public override accumulatedTipsPerShare; // Accumulated tips per share, times 1e12.
-
-    uint16 public override depositFeeBP; // Deposit fee in basis points
-    address public override feeAddress;
-
-    mapping(address => uint256) public override stakedAmount;
-    mapping(address => uint256) public override tipsPaidOut;
-    mapping(address => uint256) public override tipsPending;
-
-    uint256 private tipsIn;
-    uint256 private tipsOut;
-
+    // The number of staking tokens entered into the contract via the defined interfaces herein
     uint256 private stakesIn;
+
+    // The number of staking tokens withdrawn from the contract via the defined interfaces herein
     uint256 private stakesOut;
 
+    // The address of the token to use for tips accumulation and distribution
+    address public immutable override tippingToken;
+
+    // The number of tipping tokens entered into the contract via the defined interfaces herein
+    uint256 private tipsIn;
+
+    // The number of tipping tokens withdrawn from the contract via the defined interfaces herein
+    uint256 private tipsOut;
+
+    // Number of tip tokens dealt each block
+    uint256 public override tipsDealtPerBlock;
+
+    // Last block number on which an actual tip dealing took place
+    uint256 public override lastTipDealBlock;
+
+    // Number of tip tokens assigned so far per staking share
+    uint256 public override accumulatedTipsPerShare; // times 1e12.
+
+    // Number of tip tokens yet to be dealt
+    uint256 public override tipsLeftToDeal;
+
+    // Number of staking tokens belonging to a given user
+    mapping(address => uint256) public override stakedAmount;
+
+    // Number of tipping tokens paid out and withdrawn by a given user
+    mapping(address => uint256) public override tipsPaidOut;
+
+    // Number of tipping tokens dealt but not yet paid out to a given user
+    mapping(address => uint256) public override tipsPending;
+
+    // The address of the QuickSwap router used for converting scrubbed staking tokens to tipping tokens
     address public immutable override quickSwapRouterAddress;
+
+    // The deposit fee exerted on staking
+    uint16 public override depositFeeBP; // Deposit fee in basis points
+
+    // The address to which
+    address public override feeAddress;
 
     constructor(
         address _stakingToken,
-        address _tipsToken,
+        address _tippingToken,
         uint256 _tipsDealtPerBlock,
         uint16 _depositFeeBP,
         address _feeAddress,
@@ -46,16 +84,16 @@ contract TipJar is ITipJar, ReentrancyGuard {
     ) {
         require(_depositFeeBP <= 10000, "TipJar: invalid deposit fee basis points");
 
-        (stakingToken, tipsToken) = (_stakingToken, _tipsToken);
+        (stakingToken, tippingToken) = (_stakingToken, _tippingToken);
 
         tipsDealtPerBlock = _tipsDealtPerBlock;
         lastTipDealBlock = block.number;
 
+        quickSwapRouterAddress = _quickSwapRouterAddress;
+        IERC20(stakingToken).safeApprove(quickSwapRouterAddress, type(uint256).max);
+
         depositFeeBP = _depositFeeBP;
         feeAddress = _feeAddress;
-
-        quickSwapRouterAddress = _quickSwapRouterAddress;
-        IERC20(stakingToken).approve(quickSwapRouterAddress, type(uint256).max);
     }
 
     function pendingTipsToPayOut(address user) external view override returns (uint256 pendingAmount) {
@@ -63,19 +101,19 @@ contract TipJar is ITipJar, ReentrancyGuard {
     }
 
     function tip(uint256 amount) external override nonReentrant returns (uint256 _tipsLeftToDeal) {
-        _tipsLeftToDeal = _tip(amount, msg.sender);
+        _tipsLeftToDeal = _tip(msg.sender, amount);
     }
 
     function tip(address from, uint256 amount) external override nonReentrant returns (uint256 _tipsLeftToDeal) {
-        _tipsLeftToDeal = _tip(amount, from);
+        _tipsLeftToDeal = _tip(from, amount);
     }
 
     function stake(uint256 amount) external override nonReentrant returns (uint256 _stakedAmount) {
-        _stakedAmount = _stake(amount, msg.sender);
+        _stakedAmount = _stake(msg.sender, amount);
     }
 
     function stake(address from, uint256 amount) external override nonReentrant returns (uint256 _stakedAmount) {
-        _stakedAmount = _stake(amount, from);
+        _stakedAmount = _stake(from, amount);
     }
 
     function unstake(uint256 amount) external override nonReentrant returns (uint256 _stakedAmount) {
@@ -121,18 +159,17 @@ contract TipJar is ITipJar, ReentrancyGuard {
         }
     }
 
-    function _tip(uint256 amount, address from) internal returns (uint256 _tipsLeftToDeal) {
+    function _tip(address from, uint256 amount) internal returns (uint256 _tipsLeftToDeal) {
         _dealTips(from);
 
         _transferTipIn(from, amount);
 
-        tipsLeftToDeal += amount;
-        _tipsLeftToDeal = tipsLeftToDeal;
+        _tipsLeftToDeal = tipsLeftToDeal += amount;
 
         emit TipReceived(amount, from);
     }
 
-    function _stake(uint256 amount, address from) internal returns (uint256 _stakedAmount) {
+    function _stake(address from, uint256 amount) internal returns (uint256 _stakedAmount) {
         _dealTips(from);
 
         if (0 < amount) {
@@ -142,7 +179,7 @@ contract TipJar is ITipJar, ReentrancyGuard {
 
             if (0 < depositFeeBP) {
                 uint256 depositFee = (amount * depositFeeBP) / 10000;
-                _transferStakeOut(feeAddress, depositFee);
+                _transferStakeOut(depositFee, feeAddress);
                 stakedAmount[from] -= depositFee;
             }
         }
@@ -161,10 +198,9 @@ contract TipJar is ITipJar, ReentrancyGuard {
 
         _dealTips(to);
 
-        _transferStakeOut(to, amount);
+        _transferStakeOut(amount, to);
 
-        stakedAmount[from] -= amount;
-        _stakedAmount = stakedAmount[from];
+        _stakedAmount = stakedAmount[from] -= amount;
 
         emit StakeDecreased(amount, from);
     }
@@ -178,7 +214,7 @@ contract TipJar is ITipJar, ReentrancyGuard {
 
         require(amount <= tipsPending[from], "TipJar: can't extract more than pending amount");
 
-        _transferTipOut(to, amount);
+        _transferTipOut(amount, to);
 
         tipsPending[from] -= amount;
         tipsPaidOut[from] += amount;
@@ -187,7 +223,7 @@ contract TipJar is ITipJar, ReentrancyGuard {
     }
 
     function _scrub() internal returns (uint256 tipsAdjustment, uint256 stakesAdjustment) {
-        uint256 tipsInToken = IERC20(tipsToken).balanceOf(address(this));
+        uint256 tipsInToken = IERC20(tippingToken).balanceOf(address(this));
         require(tipsInToken <= tipsIn - tipsOut, "TipJar: tip balance leak detected, aborting!");
 
         tipsAdjustment = tipsInToken - (tipsIn - tipsOut);
@@ -201,21 +237,23 @@ contract TipJar is ITipJar, ReentrancyGuard {
 
         stakesAdjustment = stakesInToken - (stakesIn - stakesOut);
         if (stakesAdjustment != 0) {
-            address[] memory path = new address[](2);
-            (path[0], path[1]) = (stakingToken, tipsToken);
-            uint256 swappedAmount = IUniswapV2Router02(quickSwapRouterAddress).swapExactTokensForTokens(
-                stakesAdjustment,
-                1,
-                path,
-                address(this),
-                block.timestamp + 1 hours
-            )[1];
-            tipsLeftToDeal += swappedAmount;
-            tipsIn += swappedAmount;
+            uint256 convertedAmount = _swapStakingToTips(stakesAdjustment);
+            tipsLeftToDeal += convertedAmount;
+            tipsIn += convertedAmount;
         }
 
         if (tipsAdjustment != 0 || stakesAdjustment != 0) {
             emit Scrubbed(tipsAdjustment, stakesAdjustment);
+        }
+    }
+
+    function _swapStakingToTips(uint256 amountToConvert) internal returns (uint256 convertedAmount) {
+        if (stakingToken != tippingToken) {
+            address[] memory path = new address[](2);
+            (path[0], path[1]) = (stakingToken, tippingToken);
+            convertedAmount = IUniswapV2Router02(quickSwapRouterAddress).swapExactTokensForTokens(amountToConvert, 1, path, address(this), block.timestamp)[1];
+        } else {
+            convertedAmount = amountToConvert;
         }
     }
 
@@ -237,22 +275,30 @@ contract TipJar is ITipJar, ReentrancyGuard {
     }
 
     function _transferTipIn(address from, uint256 amount) internal {
-        IERC20(tipsToken).transferFrom(from, address(this), amount);
+        if (from != address(this)) {
+            IERC20(tippingToken).safeTransferFrom(from, address(this), amount);
+        }
         tipsIn += amount;
     }
 
-    function _transferTipOut(address to, uint256 amount) internal {
-        IERC20(tipsToken).transfer(to, amount);
+    function _transferTipOut(uint256 amount, address to) internal {
+        if (address(this) != to) {
+            IERC20(tippingToken).safeTransfer(to, amount);
+        }
         tipsOut += amount;
     }
 
     function _transferStakeIn(address from, uint256 amount) internal {
-        IERC20(stakingToken).transferFrom(from, address(this), amount);
+        if (from != address(this)) {
+            IERC20(stakingToken).safeTransferFrom(from, address(this), amount);
+        }
         stakesIn += amount;
     }
 
-    function _transferStakeOut(address to, uint256 amount) internal {
-        IERC20(stakingToken).transfer(to, amount);
+    function _transferStakeOut(uint256 amount, address to) internal {
+        if (address(this) != to) {
+            IERC20(stakingToken).safeTransfer(to, amount);
+        }
         stakesOut += amount;
     }
 }

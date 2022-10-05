@@ -9,7 +9,7 @@ interface ITipJar {
 
     function stakingToken() external view returns (address _stakingToken);
 
-    function tipsToken() external view returns (address _tipsToken);
+    function tippingToken() external view returns (address _tipsToken);
 
     function tipsLeftToDeal() external view returns (uint256 _tipsLeftToDeal);
 
