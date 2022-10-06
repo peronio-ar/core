@@ -5,6 +5,7 @@ import {IERC20} from "@openzeppelin/contracts_latest/token/ERC20/IERC20.sol";
 import {Math} from "@openzeppelin/contracts_latest/utils/math/Math.sol";
 import {SafeERC20} from "@openzeppelin/contracts_latest/token/ERC20/utils/SafeERC20.sol";
 
+import {Context} from "@openzeppelin/contracts_latest/utils/Context.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts_latest/security/ReentrancyGuard.sol";
 import {Multicall} from "@openzeppelin/contracts_latest/utils/Multicall.sol";
 
@@ -24,7 +25,7 @@ import {ITipJar} from "./ITipJar.sol";
  *   - mechanisms have been added so as to prevent funds transferred outside of the "prescribed" interfaces to be lost (this is implemented via "scrubbing")
  *
  */
-contract TipJar is ITipJar, Multicall, ReentrancyGuard {
+contract TipJar is Context, ITipJar, Multicall, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     // The address of the token to use for staking
@@ -102,7 +103,7 @@ contract TipJar is ITipJar, Multicall, ReentrancyGuard {
     }
 
     function tip(uint256 amount) external override nonReentrant returns (uint256 _tipsLeftToDeal) {
-        _tipsLeftToDeal = _tip(msg.sender, amount);
+        _tipsLeftToDeal = _tip(_msgSender(), amount);
     }
 
     function tip(address from, uint256 amount) external override nonReentrant returns (uint256 _tipsLeftToDeal) {
@@ -110,7 +111,7 @@ contract TipJar is ITipJar, Multicall, ReentrancyGuard {
     }
 
     function stake(uint256 amount) external override nonReentrant returns (uint256 _stakedAmount) {
-        _stakedAmount = _stake(msg.sender, amount);
+        _stakedAmount = _stake(_msgSender(), amount);
     }
 
     function stake(address from, uint256 amount) external override nonReentrant returns (uint256 _stakedAmount) {
@@ -118,27 +119,27 @@ contract TipJar is ITipJar, Multicall, ReentrancyGuard {
     }
 
     function unstake(uint256 amount) external override nonReentrant returns (uint256 _stakedAmount) {
-        _stakedAmount = _unstake(msg.sender, amount, msg.sender);
+        _stakedAmount = _unstake(_msgSender(), amount, _msgSender());
     }
 
     function unstake(uint256 amount, address to) external override nonReentrant returns (uint256 _stakedAmount) {
-        _stakedAmount = _unstake(msg.sender, amount, to);
+        _stakedAmount = _unstake(_msgSender(), amount, to);
     }
 
     function withdrawTips() external override nonReentrant returns (uint256 _extractedAmount) {
-        _extractedAmount = _withdrawTips(msg.sender, _pendingTipsToPayOut(msg.sender), msg.sender);
+        _extractedAmount = _withdrawTips(_msgSender(), _pendingTipsToPayOut(_msgSender()), _msgSender());
     }
 
     function withdrawTips(address to) external override nonReentrant returns (uint256 _extractedAmount) {
-        _extractedAmount = _withdrawTips(msg.sender, _pendingTipsToPayOut(msg.sender), to);
+        _extractedAmount = _withdrawTips(_msgSender(), _pendingTipsToPayOut(_msgSender()), to);
     }
 
     function withdrawTips(uint256 amount) external override nonReentrant returns (uint256 _extractedAmount) {
-        _extractedAmount = _withdrawTips(msg.sender, amount, msg.sender);
+        _extractedAmount = _withdrawTips(_msgSender(), amount, _msgSender());
     }
 
     function withdrawTips(uint256 amount, address to) external override nonReentrant returns (uint256 _extractedAmount) {
-        _extractedAmount = _withdrawTips(msg.sender, amount, to);
+        _extractedAmount = _withdrawTips(_msgSender(), amount, to);
     }
 
     function scrub() external override nonReentrant returns (uint256 tipsAdjustment, uint256 stakesAdjustment) {
