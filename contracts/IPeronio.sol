@@ -331,10 +331,10 @@ interface IPeronio {
      *
      * @param to  Address to deposit extracted USDC tokens into
      * @param peAmount  Number of PE tokens to withdraw
-     * @return usdcTotal  Number of USDC tokens extracted
+     * @return usdcAmount  Number of USDC tokens extracted
      * @custom:emit  Withdrawal
      */
-    function withdraw(address to, PeQuantity peAmount) external returns (UsdcQuantity usdcTotal);
+    function withdraw(address to, PeQuantity peAmount) external returns (UsdcQuantity usdcAmount);
 
     /**
      * Extract the given number of PE tokens as LP USDC/MAI tokens

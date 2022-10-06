@@ -310,7 +310,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         UsdcQuantity usdcAmount,
         PeQuantity minReceive
     ) external override nonReentrant returns (PeQuantity peAmount) {
-        peAmount = _mintPe(to, usdcAmount, minReceive, markupFee);
+        peAmount = _mintPe(_msgSender(), to, usdcAmount, minReceive, markupFee);
     }
 
     /**
@@ -327,7 +327,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         UsdcQuantity usdcAmount,
         PeQuantity minReceive
     ) external override nonReentrant onlyMigratorRole returns (PeQuantity peAmount) {
-        peAmount = _mintPe(to, usdcAmount, minReceive, RatioWith6Decimals.wrap(0));
+        peAmount = _mintPe(_msgSender(), to, usdcAmount, minReceive, RatioWith6Decimals.wrap(0));
     }
 
     /**
@@ -335,26 +335,11 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
      *
      * @param to  Address to deposit extracted USDC tokens into
      * @param peAmount  Number of PE tokens to withdraw
-     * @return usdcTotal  Number of USDC tokens extracted
+     * @return usdcAmount  Number of USDC tokens extracted
      * @custom:emit  Withdrawal
      */
-    function withdraw(address to, PeQuantity peAmount) external override nonReentrant returns (UsdcQuantity usdcTotal) {
-        // --- Gas Saving -------------------------------------------------------------------------
-        address sender = _msgSender();
-
-        // Calculate equivalent number of LP USDC/MAI tokens for the given burnt PE tokens
-        LpQuantity lpAmount = mulDiv(peAmount, _stakedBalance(), _totalSupply());
-
-        // Extract the given number of LP USDC/MAI tokens as USDC tokens
-        usdcTotal = _zapOut(lpAmount);
-
-        // Transfer USDC tokens the the given address
-        IERC20(usdcAddress).safeTransfer(to, UsdcQuantity.unwrap(usdcTotal));
-
-        // Burn the given number of PE tokens
-        _burn(sender, PeQuantity.unwrap(peAmount));
-
-        emit Withdrawal(sender, usdcTotal, peAmount);
+    function withdraw(address to, PeQuantity peAmount) external override nonReentrant returns (UsdcQuantity usdcAmount) {
+        usdcAmount = _withdraw(_msgSender(), to, peAmount);
     }
 
     /**
@@ -609,6 +594,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
     /**
      * Actually mint PE tokens using the provided USDC tokens as collateral, applying the given markup fee
      *
+     * @param from  The address to transfer the collateral USDC tokens from
      * @param to  The address to transfer the minted PE tokens to
      * @param usdcAmount  Number of USDC tokens to use as collateral
      * @param minReceive  The minimum number of PE tokens to mint
@@ -617,16 +603,14 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
      * @custom:emit  Minted
      */
     function _mintPe(
+        address from,
         address to,
         UsdcQuantity usdcAmount,
         PeQuantity minReceive,
         RatioWith6Decimals _markupFee
     ) internal returns (PeQuantity peAmount) {
-        // --- Gas Saving -------------------------------------------------------------------------
-        address sender = _msgSender();
-
         // Transfer USDC tokens as collateral to this contract
-        IERC20(usdcAddress).safeTransferFrom(sender, address(this), UsdcQuantity.unwrap(usdcAmount));
+        IERC20(usdcAddress).safeTransferFrom(from, address(this), UsdcQuantity.unwrap(usdcAmount));
 
         // Remember the previously staked balance
         LpQuantity stakedAmount = _stakedBalance();
@@ -642,7 +626,36 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         // Actually mint the PE tokens
         _mint(to, PeQuantity.unwrap(peAmount));
 
-        emit Minted(sender, usdcAmount, peAmount);
+        emit Minted(from, usdcAmount, peAmount);
+    }
+
+    /**
+     * Extract the given number of PE tokens as USDC tokens
+     *
+     * @param from  Address to extract PE tokens from
+     * @param to  Address to deposit extracted USDC tokens into
+     * @param peAmount  Number of PE tokens to withdraw
+     * @return usdcAmount  Number of USDC tokens extracted
+     * @custom:emit  Withdrawal
+     */
+    function _withdraw(
+        address from,
+        address to,
+        PeQuantity peAmount
+    ) internal returns (UsdcQuantity usdcAmount) {
+        // Calculate equivalent number of LP USDC/MAI tokens for the given burnt PE tokens
+        LpQuantity lpAmount = mulDiv(peAmount, _stakedBalance(), _totalSupply());
+
+        // Extract the given number of LP USDC/MAI tokens as USDC tokens
+        usdcAmount = _zapOut(lpAmount);
+
+        // Transfer USDC tokens the the given address
+        IERC20(usdcAddress).safeTransfer(to, UsdcQuantity.unwrap(usdcAmount));
+
+        // Burn the given number of PE tokens
+        _burn(from, PeQuantity.unwrap(peAmount));
+
+        emit Withdrawal(from, usdcAmount, peAmount);
     }
 
     /**
