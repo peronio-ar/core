@@ -398,14 +398,18 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         IFarm(qiDaoFarmAddress).deposit(qiDaoPoolId, 0);
 
         // Retrieve the number of QI tokens rewarded and swap them to USDC tokens
-        QiQuantity amount = QiQuantity.wrap(IERC20(qiAddress).balanceOf(address(this)));
-        _swapTokens(amount);
+        QiQuantity qiAmount = QiQuantity.wrap(IERC20(qiAddress).balanceOf(address(this)));
+        _swapTokens(qiAmount);
+
+        // Retrieve the number of QI tokens rewarded and swap them to USDC tokens
+        MaiQuantity maiAmount = MaiQuantity.wrap(IERC20(maiAddress).balanceOf(address(this)));
+        _swapTokens(maiAmount);
 
         // Commit all USDC tokens so converted to the QuickSwap liquidity pool
         usdcAmount = UsdcQuantity.wrap(IERC20(usdcAddress).balanceOf(address(this)));
         lpAmount = _zapIn(usdcAmount);
 
-        emit CompoundRewards(amount, usdcAmount, lpAmount);
+        emit CompoundRewards(qiAmount, maiAmount, usdcAmount, lpAmount);
     }
 
     // --- Quotes ---------------------------------------------------------------------------------------------------------------------------------------------
