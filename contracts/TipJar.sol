@@ -26,6 +26,7 @@ import {ITipJar} from "./ITipJar.sol";
  *
  */
 contract TipJar is Context, ITipJar, Multicall, ReentrancyGuard {
+    // TODO: OJOJOJO CON EL CASO EN EL QUE EL STAKE Y EL TIP SON EL MISMO TOKEN --- SE JODE EL MECANISMO DE EVASION DE DEPOSITS EXTERNOS
     using SafeERC20 for IERC20;
 
     // The address of the token to use for staking
