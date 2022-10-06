@@ -9,7 +9,8 @@ import {IERC20} from "@openzeppelin/contracts_latest/token/ERC20/IERC20.sol";
 import {ERC20Permit} from "@openzeppelin/contracts_latest/token/ERC20/extensions/draft-ERC20Permit.sol";
 import {ERC20Burnable} from "@openzeppelin/contracts_latest/token/ERC20/extensions/ERC20Burnable.sol";
 import {SafeERC20} from "@openzeppelin/contracts_latest/token/ERC20/utils/SafeERC20.sol";
-import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+
+import {Multicall} from "@openzeppelin/contracts_latest/utils/Multicall.sol";
 
 // QiDao
 import {IFarm} from "./qidao/IFarm.sol";
@@ -25,7 +26,7 @@ import "./PeronioSupport.sol";
 string constant NAME = "Peronio";
 string constant SYMBOL = "P";
 
-contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, ERC165, AccessControl, ReentrancyGuard {
+contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, ReentrancyGuard, Multicall {
     using SafeERC20 for IERC20;
 
     // Roles
@@ -154,7 +155,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, ERC165, AccessC
      * @param interfaceId  Interface ID to check against
      * @return  Whether the provided interface ID is supported
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(AccessControl, ERC165) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
         return interfaceId == type(IPeronio).interfaceId || super.supportsInterface(interfaceId);
     }
 
