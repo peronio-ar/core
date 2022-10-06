@@ -9,7 +9,8 @@ import {IERC20} from "@openzeppelin/contracts_latest/token/ERC20/IERC20.sol";
 import {ERC20Permit} from "@openzeppelin/contracts_latest/token/ERC20/extensions/draft-ERC20Permit.sol";
 import {ERC20Burnable} from "@openzeppelin/contracts_latest/token/ERC20/extensions/ERC20Burnable.sol";
 import {SafeERC20} from "@openzeppelin/contracts_latest/token/ERC20/utils/SafeERC20.sol";
-import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+
+import {Multicall} from "@openzeppelin/contracts_latest/utils/Multicall.sol";
 
 // QiDao
 import {IFarm} from "./qidao/IFarm.sol";
@@ -25,7 +26,7 @@ import "./PeronioSupport.sol";
 string constant NAME = "Peronio";
 string constant SYMBOL = "P";
 
-contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, ERC165, AccessControl, ReentrancyGuard {
+contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, ReentrancyGuard, Multicall {
     using SafeERC20 for IERC20;
 
     // Roles
@@ -53,9 +54,6 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, ERC165, AccessC
     // Constant number of significant decimals
     uint8 private constant DECIMALS = 6;
 
-    // One-hour constant
-    uint256 private constant ONE_HOUR = 60 * 60; /* 60 minutes * 60 seconds */
-
     // Rational constant one
     RatioWith6Decimals private constant ONE = RatioWith6Decimals.wrap(10**DECIMALS);
 
@@ -65,6 +63,9 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, ERC165, AccessC
 
     // Initialization can only be run once
     bool public override initialized;
+
+    // Last timestamp on which compoundRewards() was called
+    uint256 public lastCompounded;
 
     /**
      * Allow execution by the default admin only
@@ -157,7 +158,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, ERC165, AccessC
      * @param interfaceId  Interface ID to check against
      * @return  Whether the provided interface ID is supported
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(AccessControl, ERC165) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
         return interfaceId == type(IPeronio).interfaceId || super.supportsInterface(interfaceId);
     }
 
@@ -214,10 +215,10 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, ERC165, AccessC
         usdcERC20.safeTransferFrom(sender, address(this), UsdcQuantity.unwrap(usdcAmount));
 
         // Unlimited ERC20 approval for Router
-        maiERC20.approve(_quickSwapRouterAddress, maxVal);
-        usdcERC20.approve(_quickSwapRouterAddress, maxVal);
-        lpERC20.approve(_quickSwapRouterAddress, maxVal);
-        qiERC20.approve(_quickSwapRouterAddress, maxVal);
+        maiERC20.safeApprove(_quickSwapRouterAddress, maxVal);
+        usdcERC20.safeApprove(_quickSwapRouterAddress, maxVal);
+        lpERC20.safeApprove(_quickSwapRouterAddress, maxVal);
+        qiERC20.safeApprove(_quickSwapRouterAddress, maxVal);
 
         // Commit the complete initial USDC amount
         _zapIn(usdcAmount);
@@ -312,7 +313,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, ERC165, AccessC
         UsdcQuantity usdcAmount,
         PeQuantity minReceive
     ) external override nonReentrant returns (PeQuantity peAmount) {
-        peAmount = _mintPe(to, usdcAmount, minReceive, markupFee);
+        peAmount = _mintPe(_msgSender(), to, usdcAmount, minReceive, markupFee);
     }
 
     /**
@@ -329,7 +330,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, ERC165, AccessC
         UsdcQuantity usdcAmount,
         PeQuantity minReceive
     ) external override nonReentrant onlyMigratorRole returns (PeQuantity peAmount) {
-        peAmount = _mintPe(to, usdcAmount, minReceive, RatioWith6Decimals.wrap(0));
+        peAmount = _mintPe(_msgSender(), to, usdcAmount, minReceive, RatioWith6Decimals.wrap(0));
     }
 
     /**
@@ -337,26 +338,11 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, ERC165, AccessC
      *
      * @param to  Address to deposit extracted USDC tokens into
      * @param peAmount  Number of PE tokens to withdraw
-     * @return usdcTotal  Number of USDC tokens extracted
+     * @return usdcAmount  Number of USDC tokens extracted
      * @custom:emit  Withdrawal
      */
-    function withdraw(address to, PeQuantity peAmount) external override nonReentrant returns (UsdcQuantity usdcTotal) {
-        // --- Gas Saving -------------------------------------------------------------------------
-        address sender = _msgSender();
-
-        // Calculate equivalent number of LP USDC/MAI tokens for the given burnt PE tokens
-        LpQuantity lpAmount = mulDiv(peAmount, _stakedBalance(), _totalSupply());
-
-        // Extract the given number of LP USDC/MAI tokens as USDC tokens
-        usdcTotal = _zapOut(lpAmount);
-
-        // Transfer USDC tokens the the given address
-        IERC20(usdcAddress).safeTransfer(to, UsdcQuantity.unwrap(usdcTotal));
-
-        // Burn the given number of PE tokens
-        _burn(sender, PeQuantity.unwrap(peAmount));
-
-        emit Withdrawal(sender, usdcTotal, peAmount);
+    function withdraw(address to, PeQuantity peAmount) external override nonReentrant returns (UsdcQuantity usdcAmount) {
+        usdcAmount = _withdraw(_msgSender(), to, peAmount);
     }
 
     /**
@@ -405,18 +391,25 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, ERC165, AccessC
      * @custom:emit CompoundRewards
      */
     function compoundRewards() external override onlyRewardsRole returns (UsdcQuantity usdcAmount, LpQuantity lpAmount) {
+        require(12 hours < block.timestamp - lastCompounded, "Peronio: time not elapsed");
+        lastCompounded = block.timestamp;
+
         // Claim rewards from QiDao's Farm
         IFarm(qiDaoFarmAddress).deposit(qiDaoPoolId, 0);
 
         // Retrieve the number of QI tokens rewarded and swap them to USDC tokens
-        QiQuantity amount = QiQuantity.wrap(IERC20(qiAddress).balanceOf(address(this)));
-        _swapTokens(amount);
+        QiQuantity qiAmount = QiQuantity.wrap(IERC20(qiAddress).balanceOf(address(this)));
+        _swapTokens(qiAmount);
+
+        // Retrieve the number of MAI tokens pending and swap them to USDC tokens
+        MaiQuantity maiAmount = MaiQuantity.wrap(IERC20(maiAddress).balanceOf(address(this)));
+        _swapTokens(maiAmount);
 
         // Commit all USDC tokens so converted to the QuickSwap liquidity pool
         usdcAmount = UsdcQuantity.wrap(IERC20(usdcAddress).balanceOf(address(this)));
         lpAmount = _zapIn(usdcAmount);
 
-        emit CompoundRewards(amount, usdcAmount, lpAmount);
+        emit CompoundRewards(qiAmount, maiAmount, usdcAmount, lpAmount);
     }
 
     // --- Quotes ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -611,6 +604,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, ERC165, AccessC
     /**
      * Actually mint PE tokens using the provided USDC tokens as collateral, applying the given markup fee
      *
+     * @param from  The address to transfer the collateral USDC tokens from
      * @param to  The address to transfer the minted PE tokens to
      * @param usdcAmount  Number of USDC tokens to use as collateral
      * @param minReceive  The minimum number of PE tokens to mint
@@ -619,16 +613,14 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, ERC165, AccessC
      * @custom:emit  Minted
      */
     function _mintPe(
+        address from,
         address to,
         UsdcQuantity usdcAmount,
         PeQuantity minReceive,
         RatioWith6Decimals _markupFee
     ) internal returns (PeQuantity peAmount) {
-        // --- Gas Saving -------------------------------------------------------------------------
-        address sender = _msgSender();
-
         // Transfer USDC tokens as collateral to this contract
-        IERC20(usdcAddress).safeTransferFrom(sender, address(this), UsdcQuantity.unwrap(usdcAmount));
+        IERC20(usdcAddress).safeTransferFrom(from, address(this), UsdcQuantity.unwrap(usdcAmount));
 
         // Remember the previously staked balance
         LpQuantity stakedAmount = _stakedBalance();
@@ -644,7 +636,36 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, ERC165, AccessC
         // Actually mint the PE tokens
         _mint(to, PeQuantity.unwrap(peAmount));
 
-        emit Minted(sender, usdcAmount, peAmount);
+        emit Minted(from, usdcAmount, peAmount);
+    }
+
+    /**
+     * Extract the given number of PE tokens as USDC tokens
+     *
+     * @param from  Address to extract PE tokens from
+     * @param to  Address to deposit extracted USDC tokens into
+     * @param peAmount  Number of PE tokens to withdraw
+     * @return usdcAmount  Number of USDC tokens extracted
+     * @custom:emit  Withdrawal
+     */
+    function _withdraw(
+        address from,
+        address to,
+        PeQuantity peAmount
+    ) internal returns (UsdcQuantity usdcAmount) {
+        // Calculate equivalent number of LP USDC/MAI tokens for the given burnt PE tokens
+        LpQuantity lpAmount = mulDiv(peAmount, _stakedBalance(), _totalSupply());
+
+        // Extract the given number of LP USDC/MAI tokens as USDC tokens
+        usdcAmount = _zapOut(lpAmount);
+
+        // Transfer USDC tokens the the given address
+        IERC20(usdcAddress).safeTransfer(to, UsdcQuantity.unwrap(usdcAmount));
+
+        // Burn the given number of PE tokens
+        _burn(from, PeQuantity.unwrap(peAmount));
+
+        emit Withdrawal(from, usdcAmount, peAmount);
     }
 
     /**
@@ -696,8 +717,6 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, ERC165, AccessC
         (UsdcQuantity usdcReserves, ) = _getLpReserves();
         UsdcQuantity amountToSwap = _calculateSwapInAmount(usdcReserves, amount);
 
-        require(lt(UsdcQuantity.wrap(0), amountToSwap), "Nothing to swap");
-
         maiAmount = _swapTokens(amountToSwap);
         usdcAmount = sub(amount, amountToSwap);
     }
@@ -729,7 +748,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, ERC165, AccessC
             1,
             1,
             address(this),
-            block.timestamp + ONE_HOUR
+            block.timestamp + 1 hours
         );
         lpAmount = LpQuantity.wrap(_lpAmount);
     }
@@ -749,7 +768,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, ERC165, AccessC
             1,
             1,
             address(this),
-            block.timestamp + ONE_HOUR
+            block.timestamp + 1 hours
         );
         (usdcAmount, maiAmount) = (UsdcQuantity.wrap(_usdcAmount), MaiQuantity.wrap(_maiAmount));
     }
@@ -763,7 +782,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, ERC165, AccessC
         // --- Gas Saving -------------------------------------------------------------------------
         address _qiDaoFarmAddress = qiDaoFarmAddress;
 
-        IERC20(lpAddress).approve(_qiDaoFarmAddress, LpQuantity.unwrap(lpAmount));
+        IERC20(lpAddress).safeApprove(_qiDaoFarmAddress, LpQuantity.unwrap(lpAmount));
         IFarm(_qiDaoFarmAddress).deposit(qiDaoPoolId, LpQuantity.unwrap(lpAmount));
     }
 
@@ -829,10 +848,12 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, ERC165, AccessC
         address toAddress,
         uint256 amount
     ) internal returns (uint256 swappedAmount) {
-        address[] memory path = new address[](2);
-        (path[0], path[1]) = (fromAddress, toAddress);
+        if (0 < amount) {
+            address[] memory path = new address[](2);
+            (path[0], path[1]) = (fromAddress, toAddress);
 
-        swappedAmount = IUniswapV2Router02(quickSwapRouterAddress).swapExactTokensForTokens(amount, 1, path, address(this), block.timestamp + ONE_HOUR)[1];
+            swappedAmount = IUniswapV2Router02(quickSwapRouterAddress).swapExactTokensForTokens(amount, 1, path, address(this), block.timestamp + 1 hours)[1];
+        }
     }
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------

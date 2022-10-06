@@ -106,10 +106,11 @@ interface IPeronio {
      * Emitted upon compounding rewards from QiDao's Farm back into the vault
      *
      * @param qi  Number of awarded QI tokens
+     * @param mai  Number of scrubbed MAI tokens
      * @param usdc  Equivalent number of USDC tokens
      * @param lp  Number of LP USDC/MAI tokens re-invested
      */
-    event CompoundRewards(QiQuantity qi, UsdcQuantity usdc, LpQuantity lp);
+    event CompoundRewards(QiQuantity qi, MaiQuantity mai, UsdcQuantity usdc, LpQuantity lp);
 
     // --- Roles - Automatic ----------------------------------------------------------------------------------------------------------------------------------
 
@@ -209,6 +210,13 @@ interface IPeronio {
      * @return  True whenever the contract has already been initialized, false otherwise
      */
     function initialized() external view returns (bool);
+
+    /**
+     * Return the last timestamp on which compoundRewards() was called
+     *
+     * @return  The last timestamp on which compoundRewards() was called
+     */
+    function lastCompounded() external view returns (uint256);
 
     // --- Decimals -------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -331,10 +339,10 @@ interface IPeronio {
      *
      * @param to  Address to deposit extracted USDC tokens into
      * @param peAmount  Number of PE tokens to withdraw
-     * @return usdcTotal  Number of USDC tokens extracted
+     * @return usdcAmount  Number of USDC tokens extracted
      * @custom:emit  Withdrawal
      */
-    function withdraw(address to, PeQuantity peAmount) external returns (UsdcQuantity usdcTotal);
+    function withdraw(address to, PeQuantity peAmount) external returns (UsdcQuantity usdcAmount);
 
     /**
      * Extract the given number of PE tokens as LP USDC/MAI tokens
