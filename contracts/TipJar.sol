@@ -264,7 +264,7 @@ contract TipJar is Context, ITipJar, Multicall, ReentrancyGuard {
     }
 
     function _dealTips(address user) internal {
-        require(lastTipDealBlock <= block.number, "TipJar: last tip deal block in the future");
+        require(lastTipDealBlock <= block.number, "TipJar: last tip-deal block in the future");
 
         uint256 stakeSupply = stakesIn - stakesOut;
         if (stakeSupply != 0) {
