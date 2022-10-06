@@ -401,7 +401,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         QiQuantity qiAmount = QiQuantity.wrap(IERC20(qiAddress).balanceOf(address(this)));
         _swapTokens(qiAmount);
 
-        // Retrieve the number of QI tokens rewarded and swap them to USDC tokens
+        // Retrieve the number of MAI tokens pending and swap them to USDC tokens
         MaiQuantity maiAmount = MaiQuantity.wrap(IERC20(maiAddress).balanceOf(address(this)));
         _swapTokens(maiAmount);
 
@@ -717,8 +717,6 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         (UsdcQuantity usdcReserves, ) = _getLpReserves();
         UsdcQuantity amountToSwap = _calculateSwapInAmount(usdcReserves, amount);
 
-        require(lt(UsdcQuantity.wrap(0), amountToSwap), "Nothing to swap");
-
         maiAmount = _swapTokens(amountToSwap);
         usdcAmount = sub(amount, amountToSwap);
     }
@@ -850,10 +848,12 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         address toAddress,
         uint256 amount
     ) internal returns (uint256 swappedAmount) {
-        address[] memory path = new address[](2);
-        (path[0], path[1]) = (fromAddress, toAddress);
+        if (0 < amount) {
+            address[] memory path = new address[](2);
+            (path[0], path[1]) = (fromAddress, toAddress);
 
-        swappedAmount = IUniswapV2Router02(quickSwapRouterAddress).swapExactTokensForTokens(amount, 1, path, address(this), block.timestamp + 1 hours)[1];
+            swappedAmount = IUniswapV2Router02(quickSwapRouterAddress).swapExactTokensForTokens(amount, 1, path, address(this), block.timestamp + 1 hours)[1];
+        }
     }
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------
