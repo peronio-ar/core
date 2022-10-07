@@ -31,5 +31,5 @@ task("polygonscan", "Verify contract on Polyscan").setAction(async (_a, { networ
 
     runVerify("Publishing Peronio to Polygonscan", peronioAddress, getConstructorParams());
     runVerify("Publishing Migrator to Polygonscan", migratorAddress, [peronioV1Address, peronioAddress]);
-    runVerify("Publishing AutoCompounder Polygonscan", autoCompounderAddress, { peronioAddress });
+    runVerify("Publishing AutoCompounder to Polygonscan", autoCompounderAddress, { peronioAddress });
 });
