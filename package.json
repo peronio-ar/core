@@ -71,7 +71,7 @@
         "verify": "hardhat run scripts/publish.ts --network matic",
         "typechain": "yarn preprocess && hardhat typechain",
         "preprocess": "hardhat preprocess",
-        "format:fix": "prettier --write \"{,!(node_modules)/**/}*.{ts,js,json}\"",
+        "format:fix": "prettier --write \"{,!(node_modules)/**/}*.{ts,js,json,sol}\"",
         "prepare": "husky install"
     },
     "dependencies": {
