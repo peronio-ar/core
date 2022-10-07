@@ -12,27 +12,35 @@ import {IPeronio, PeQuantity, UsdcQuantity} from "../IPeronio.sol";
 // ------------------------------------------------------------------------------------------------
 // --- BEGIN REMOVE -------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
-struct Voucher { bytes payload; }
+struct Voucher {
+    bytes payload;
+}
 struct HandlerEntry {
     function(Voucher memory) view returns (string memory) message;
     function(Voucher memory) view returns (address) signer;
     function(Voucher memory) execute;
 }
+
 function _addHandler(uint32, HandlerEntry memory) {}
-function toString(address) pure returns (string memory) { return ""; }
-function toString(uint256, uint8) pure returns (string memory) { return ""; }
+
+function toString(address) pure returns (string memory) {
+    return "";
+}
+
+function toString(uint256, uint8) pure returns (string memory) {
+    return "";
+}
+
 // ------------------------------------------------------------------------------------------------
 // --- END REMOVE ---------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
 
 abstract contract PeronioGateway is IPeronioGateway {
     // typehash associated to the mintWithVoucher() method
-    uint32 public constant override MINT_VOUCHER_TAG =
-        uint32(bytes4(keccak256("MintVoucher(address from,address to,uint256 usdcAmount,uint256 minReceive)")));
+    uint32 public constant override MINT_VOUCHER_TAG = uint32(bytes4(keccak256("MintVoucher(address from,address to,uint256 usdcAmount,uint256 minReceive)")));
 
     // typehash associated to the mintWithVoucher() method
-    uint32 public constant override WITHDRAW_VOUCHER_TAG =
-        uint32(bytes4(keccak256("WithdrawVoucher(address from,address to,uint256 peAmount)")));
+    uint32 public constant override WITHDRAW_VOUCHER_TAG = uint32(bytes4(keccak256("WithdrawVoucher(address from,address to,uint256 peAmount)")));
 
     // address of the Peronio contract
     address public immutable peronio;
@@ -63,16 +71,11 @@ abstract contract PeronioGateway is IPeronioGateway {
         (peSymbol, peDecimals) = (peMetadata.symbol(), peMetadata.decimals());
         (usdcSymbol, usdcDecimals) = (usdcMetadata.symbol(), usdcMetadata.decimals());
 
-        _addHandler(MINT_VOUCHER_TAG, HandlerEntry({
-            message: _generateMintVoucherMessage,
-            signer: _extractMintVoucherSigner,
-            execute: _executeMintVoucher
-        }));
-        _addHandler(WITHDRAW_VOUCHER_TAG, HandlerEntry({
-            message: _generateWithdrawVoucherMessage,
-            signer: _extractWithdrawVoucherSigner,
-            execute: _executeWithdrawVoucher
-        }));
+        _addHandler(MINT_VOUCHER_TAG, HandlerEntry({message: _generateMintVoucherMessage, signer: _extractMintVoucherSigner, execute: _executeMintVoucher}));
+        _addHandler(
+            WITHDRAW_VOUCHER_TAG,
+            HandlerEntry({message: _generateWithdrawVoucherMessage, signer: _extractWithdrawVoucherSigner, execute: _executeWithdrawVoucher})
+        );
     }
 
     // --------------------------------------------------------------------------------------------
@@ -100,11 +103,24 @@ abstract contract PeronioGateway is IPeronioGateway {
     function _generateMintVoucherMessage(Voucher memory voucher) internal view returns (string memory message) {
         MintVoucher memory decodedVoucher = abi.decode(voucher.payload, (MintVoucher));
         message = string.concat(
-            "Mint", "\n",
-            "from: ", toString(decodedVoucher.from), "\n",
-            "to: ", toString(decodedVoucher.to), "\n",
-            "usdcAmount: ", usdcSymbol, ' ', toString(UsdcQuantity.unwrap(decodedVoucher.usdcAmount), usdcDecimals), "\n",
-            "minReceive: ", peSymbol, ' ', toString(PeQuantity.unwrap(decodedVoucher.minReceive), peDecimals), "\n"
+            "Mint",
+            "\n",
+            "from: ",
+            toString(decodedVoucher.from),
+            "\n",
+            "to: ",
+            toString(decodedVoucher.to),
+            "\n",
+            "usdcAmount: ",
+            usdcSymbol,
+            " ",
+            toString(UsdcQuantity.unwrap(decodedVoucher.usdcAmount), usdcDecimals),
+            "\n",
+            "minReceive: ",
+            peSymbol,
+            " ",
+            toString(PeQuantity.unwrap(decodedVoucher.minReceive), peDecimals),
+            "\n"
         );
     }
 
@@ -117,10 +133,19 @@ abstract contract PeronioGateway is IPeronioGateway {
     function _generateWithdrawVoucherMessage(Voucher memory voucher) internal view returns (string memory message) {
         WithdrawVoucher memory decodedVoucher = abi.decode(voucher.payload, (WithdrawVoucher));
         message = string.concat(
-            "Withdraw", "\n",
-            "from: ", toString(decodedVoucher.from), "\n",
-            "to: ", toString(decodedVoucher.to), "\n",
-            "peAmount: ", peSymbol, ' ', toString(PeQuantity.unwrap(decodedVoucher.peAmount), peDecimals), "\n"
+            "Withdraw",
+            "\n",
+            "from: ",
+            toString(decodedVoucher.from),
+            "\n",
+            "to: ",
+            toString(decodedVoucher.to),
+            "\n",
+            "peAmount: ",
+            peSymbol,
+            " ",
+            toString(PeQuantity.unwrap(decodedVoucher.peAmount), peDecimals),
+            "\n"
         );
     }
 
