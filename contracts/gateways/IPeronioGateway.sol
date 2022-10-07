@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import {IERC20PermitGateway} from "./IERC20PermitGateway.sol";
+import {PeQuantity, UsdcQuantity} from "../IPeronio.sol";
 
-interface IPeronioGateway is IERC20PermitGateway {
+interface IPeronioGateway {
     /**
      * mint() voucher
      *
@@ -15,8 +15,8 @@ interface IPeronioGateway is IERC20PermitGateway {
     struct MintVoucher {
         address from;
         address to;
-        uint256 usdcAmount;
-        uint256 minReceive;
+        UsdcQuantity usdcAmount;
+        PeQuantity minReceive;
     }
 
     /**
@@ -29,7 +29,7 @@ interface IPeronioGateway is IERC20PermitGateway {
     struct WithdrawVoucher {
         address from;
         address to;
-        uint256 peAmount;
+        PeQuantity peAmount;
     }
 
     /**

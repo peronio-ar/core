@@ -3,38 +3,125 @@ pragma solidity ^0.8.17;
 
 import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import {IERC20} from "@openzeppelin/contracts_latest/token/ERC20/IERC20.sol";
+import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
-import {ERC20PermitGateway} from "./ERC20PermitGateway.sol";
 import {IPeronioGateway} from "./IPeronioGateway.sol";
 
 import {IPeronio, PeQuantity, UsdcQuantity} from "../IPeronio.sol";
 
-abstract contract PeronioGateway is ERC20PermitGateway, IPeronioGateway {
+// ------------------------------------------------------------------------------------------------
+// --- BEGIN REMOVE -------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------
+struct Voucher { bytes payload; }
+struct HandlerEntry {
+    function(Voucher memory) view returns (string memory) message;
+    function(Voucher memory) view returns (address) signer;
+    function(Voucher memory) execute;
+}
+function _addHandler(uint32, HandlerEntry memory) {}
+function toString(address) pure returns (string memory) { return ""; }
+function toString(uint256, uint8) pure returns (string memory) { return ""; }
+// ------------------------------------------------------------------------------------------------
+// --- END REMOVE ---------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------
+
+abstract contract PeronioGateway is IPeronioGateway {
     // typehash associated to the mintWithVoucher() method
-    uint32 public constant override MINT_VOUCHER_TAG = uint32(bytes4(keccak256(bytes("MintVoucher{address,address,uint256,uint256}"))));
+    uint32 public constant override MINT_VOUCHER_TAG =
+        uint32(bytes4(keccak256("MintVoucher(address from,address to,uint256 usdcAmount,uint256 minReceive)")));
 
     // typehash associated to the mintWithVoucher() method
-    uint32 public constant override WITHDRAW_VOUCHER_TAG = uint32(bytes4(keccak256(bytes("WithdrawVoucher{address,address,uint256}"))));
+    uint32 public constant override WITHDRAW_VOUCHER_TAG =
+        uint32(bytes4(keccak256("WithdrawVoucher(address from,address to,uint256 peAmount)")));
+
+    // address of the Peronio contract
+    address public immutable peronio;
+
+    // symbol used for Peronio tokens
+    string internal peSymbol;
+
+    // symbol used for USDC tokens
+    string internal usdcSymbol;
+
+    // number of decimals used for Peronio tokens
+    uint8 internal peDecimals;
+
+    // number of decimals used for USDC tokens
+    uint8 internal usdcDecimals;
 
     /**
-     * Build a new PeronioGateway from the given token address and gateway name
+     * Build a new PeronioGateway from the given Peronio address
      *
-     * @param _token  Underlying ERC20 token
-     * @param _name  The name to give the newly created gateway
+     * @param _peronio  Peronio address to use
      */
-    constructor(address _token, string memory _name) ERC20PermitGateway(_token, _name) {
-        _addHandler(MINT_VOUCHER_TAG, HandlerEntry({signer: _extractMintVoucherSigner, execute: _executeMintVoucher}));
-        _addHandler(WITHDRAW_VOUCHER_TAG, HandlerEntry({signer: _extractWithdrawVoucherSigner, execute: _executeWithdrawVoucher}));
+    constructor(address _peronio) {
+        peronio = _peronio;
+
+        IERC20Metadata peMetadata = IERC20Metadata(peronio);
+        IERC20Metadata usdcMetadata = IERC20Metadata(IPeronio(peronio).usdcAddress());
+
+        (peSymbol, peDecimals) = (peMetadata.symbol(), peMetadata.decimals());
+        (usdcSymbol, usdcDecimals) = (usdcMetadata.symbol(), usdcMetadata.decimals());
+
+        _addHandler(MINT_VOUCHER_TAG, HandlerEntry({
+            message: _generateMintVoucherMessage,
+            signer: _extractMintVoucherSigner,
+            execute: _executeMintVoucher
+        }));
+        _addHandler(WITHDRAW_VOUCHER_TAG, HandlerEntry({
+            message: _generateWithdrawVoucherMessage,
+            signer: _extractWithdrawVoucherSigner,
+            execute: _executeWithdrawVoucher
+        }));
+    }
+
+    // --------------------------------------------------------------------------------------------
+    // --- BEGIN UNCOMMENT ------------------------------------------------------------------------
+    // --------------------------------------------------------------------------------------------
+    // /**
+    //  * Implementation of the IERC165 interface
+    //  *
+    //  * @param interfaceId  Interface ID to check against
+    //  * @return  Whether the provided interface ID is supported
+    //  */
+    // function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
+    //     return interfaceId == type(IPeronioGateway).interfaceId || super.supportsInterface(interfaceId);
+    // }
+    // --------------------------------------------------------------------------------------------
+    // --- END UNCOMMENT --------------------------------------------------------------------------
+    // --------------------------------------------------------------------------------------------
+
+    /**
+     * Generate the user-readable message from the given voucher
+     *
+     * @param voucher  Voucher to generate the user-readable message of
+     * @return message  The voucher's generated user-readable message
+     */
+    function _generateMintVoucherMessage(Voucher memory voucher) internal view returns (string memory message) {
+        MintVoucher memory decodedVoucher = abi.decode(voucher.payload, (MintVoucher));
+        message = string.concat(
+            "Mint", "\n",
+            "from: ", toString(decodedVoucher.from), "\n",
+            "to: ", toString(decodedVoucher.to), "\n",
+            "usdcAmount: ", usdcSymbol, ' ', toString(UsdcQuantity.unwrap(decodedVoucher.usdcAmount), usdcDecimals), "\n",
+            "minReceive: ", peSymbol, ' ', toString(PeQuantity.unwrap(decodedVoucher.minReceive), peDecimals), "\n"
+        );
     }
 
     /**
-     * Implementation of the IERC165 interface
+     * Generate the user-readable message from the given voucher
      *
-     * @param interfaceId  Interface ID to check against
-     * @return  Whether the provided interface ID is supported
+     * @param voucher  Voucher to generate the user-readable message of
+     * @return message  The voucher's generated user-readable message
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
-        return interfaceId == type(IPeronioGateway).interfaceId || super.supportsInterface(interfaceId);
+    function _generateWithdrawVoucherMessage(Voucher memory voucher) internal view returns (string memory message) {
+        WithdrawVoucher memory decodedVoucher = abi.decode(voucher.payload, (WithdrawVoucher));
+        message = string.concat(
+            "Withdraw", "\n",
+            "from: ", toString(decodedVoucher.from), "\n",
+            "to: ", toString(decodedVoucher.to), "\n",
+            "peAmount: ", peSymbol, ' ', toString(PeQuantity.unwrap(decodedVoucher.peAmount), peDecimals), "\n"
+        );
     }
 
     /**
@@ -68,8 +155,8 @@ abstract contract PeronioGateway is ERC20PermitGateway, IPeronioGateway {
         _beforeMintWithVoucher(voucher);
 
         MintVoucher memory decodedVoucher = abi.decode(voucher.payload, (MintVoucher));
-        IERC20(IPeronio(token).usdcAddress()).transferFrom(decodedVoucher.from, address(this), decodedVoucher.usdcAmount);
-        IPeronio(token).mint(decodedVoucher.to, UsdcQuantity.wrap(decodedVoucher.usdcAmount), PeQuantity.wrap(decodedVoucher.minReceive));
+        IERC20(IPeronio(peronio).usdcAddress()).transferFrom(decodedVoucher.from, address(this), UsdcQuantity.unwrap(decodedVoucher.usdcAmount));
+        IPeronio(peronio).mint(decodedVoucher.to, decodedVoucher.usdcAmount, decodedVoucher.minReceive);
 
         _afterMintWithVoucher(voucher);
     }
@@ -83,8 +170,8 @@ abstract contract PeronioGateway is ERC20PermitGateway, IPeronioGateway {
         _beforeWithdrawWithVoucher(voucher);
 
         WithdrawVoucher memory decodedVoucher = abi.decode(voucher.payload, (WithdrawVoucher));
-        IERC20(token).transferFrom(decodedVoucher.from, address(this), decodedVoucher.peAmount);
-        IPeronio(token).withdraw(decodedVoucher.to, PeQuantity.wrap(decodedVoucher.peAmount));
+        IERC20(peronio).transferFrom(decodedVoucher.from, address(this), PeQuantity.unwrap(decodedVoucher.peAmount));
+        IPeronio(peronio).withdraw(decodedVoucher.to, decodedVoucher.peAmount);
 
         _afterWithdrawWithVoucher(voucher);
     }
