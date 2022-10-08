@@ -119,6 +119,14 @@ contract TipJar is Context, ITipJar, Multicall, ReentrancyGuard {
         _stakedAmount = _stake(from, amount);
     }
 
+    function unstake() external override nonReentrant returns (uint256 _stakedAmount) {
+        _stakedAmount = _unstake(_msgSender(), stakedAmount[_msgSender()], _msgSender());
+    }
+
+    function unstake(address to) external override nonReentrant returns (uint256 _stakedAmount) {
+        _stakedAmount = _unstake(_msgSender(), stakedAmount[_msgSender()], to);
+    }
+
     function unstake(uint256 amount) external override nonReentrant returns (uint256 _stakedAmount) {
         _stakedAmount = _unstake(_msgSender(), amount, _msgSender());
     }

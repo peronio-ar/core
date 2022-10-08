@@ -41,6 +41,10 @@ interface ITipJar {
 
     function stake(address from, uint256 amount) external returns (uint256 _stakedAmount);
 
+    function unstake() external returns (uint256 _stakedAmount);
+
+    function unstake(address to) external returns (uint256 _stakedAmount);
+
     function unstake(uint256 amount) external returns (uint256 _stakedAmount);
 
     function unstake(uint256 amount, address to) external returns (uint256 _stakedAmount);
