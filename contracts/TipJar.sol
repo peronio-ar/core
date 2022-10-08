@@ -23,10 +23,15 @@ import {ITipJar} from "./ITipJar.sol";
  *   - tips are not transferred eagerly, but rather need to be withdrawn explicitly (this is so that individual transactions need not be performed each time)
  *   - tips can be directed to an address of one's choice (this is so as to avoid a subsequent transfer therein)
  *   - mechanisms have been added so as to prevent funds transferred outside of the "prescribed" interfaces to be lost (this is implemented via "scrubbing")
+ *     - this will make any tips sent to the tip jar address by any means other than the "tip()" method to be available for dealing
+ *     - additionally, any staking token sent by means other than the "stake()" method are swapped to the tipping token and made available
+ *   - if the fee address is the same as the tip jar's address, stakes will be dealt with as if being received outside of "stake()" (ie. swapped and made into tips)
+ *   - finally, the tipping and staking tokens can safely be the same, any extra amounts (in the sense above) need not be swapped, but everything works as expected
  *
  */
 contract TipJar is Context, ITipJar, Multicall, ReentrancyGuard {
-    // TODO: OJOJOJO CON EL CASO EN EL QUE EL STAKE Y EL TIP SON EL MISMO TOKEN --- SE JODE EL MECANISMO DE EVASION DE DEPOSITS EXTERNOS
+    // TODO: unchecked!!!
+    // TODO: mulDiv!!!
     using SafeERC20 for IERC20;
 
     // The address of the token to use for staking
