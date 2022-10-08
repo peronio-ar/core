@@ -97,6 +97,10 @@ contract TipJar is Context, ITipJar, Multicall, ReentrancyGuard {
 
         depositFeeBP = _depositFeeBP;
         feeAddress = _feeAddress;
+
+        // Setting these to 1 instead of 0 makes the deploy slightly more expensive, but all subsequent increments will be at constant cost
+        stakesIn = stakesOut = 1;
+        tipsIn = tipsOut = 1;
     }
 
     function pendingTipsToPayOut(address user) external view override returns (uint256 pendingAmount) {
