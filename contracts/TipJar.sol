@@ -175,7 +175,7 @@ contract TipJar is Context, ITipJar, Multicall, ReentrancyGuard {
     }
 
     function _tip(address from, uint256 amount) internal returns (uint256 _tipsLeftToDeal) {
-        _dealTips(from);
+        _dealTips(address(0));
 
         _transferTipIn(from, amount);
 
