@@ -238,27 +238,37 @@ contract TipJar is Context, ITipJar, Multicall, ReentrancyGuard {
     }
 
     function _scrub() internal returns (uint256 tipsAdjustment, uint256 stakesAdjustment) {
-        {
-            uint256 tipsInToken = IERC20(tippingToken).balanceOf(address(this));
-            require(tipsInToken <= tipsIn - tipsOut, "TipJar: tip balance leak detected, aborting!");
+        if (tippingToken == stakingToken) {
+            uint256 inToken = IERC20(tippingToken).balanceOf(address(this));
+            require(inToken <= (tipsIn + stakesIn) - (tipsOut + stakesOut), "TipJar: balance leak detected, aborting!");
 
-            tipsAdjustment = tipsInToken - (tipsIn - tipsOut);
+            tipsAdjustment = inToken - ((tipsIn + stakesIn) - (tipsOut + stakesOut));
             if (tipsAdjustment != 0) {
                 tipsLeftToDeal += tipsAdjustment;
                 tipsIn += tipsAdjustment;
             }
-        }
+        } else {
+            {
+                uint256 stakesInToken = IERC20(stakingToken).balanceOf(address(this));
+                require(stakesInToken <= stakesIn - stakesOut, "TipJar: stakes balance leak detected, aborting!");
 
-        {
-            uint256 stakesInToken = IERC20(stakingToken).balanceOf(address(this));
-            require(stakesInToken <= stakesIn - stakesOut, "TipJar: stakes balance leak detected, aborting!");
-
-            stakesAdjustment = stakesInToken - (stakesIn - stakesOut);
-            if (stakesAdjustment != 0) {
-                uint256 convertedAmount = _swapStakingToTips(stakesAdjustment);
-                tipsLeftToDeal += convertedAmount;
-                tipsIn += convertedAmount;
+                stakesAdjustment = stakesInToken - (stakesIn - stakesOut);
+                if (stakesAdjustment != 0) {
+                    _swapStakingToTips(stakesAdjustment);
+                }
             }
+
+            {
+                uint256 tipsInToken = IERC20(tippingToken).balanceOf(address(this));
+                require(tipsInToken <= tipsIn - tipsOut, "TipJar: tip balance leak detected, aborting!");
+
+                tipsAdjustment = tipsInToken - (tipsIn - tipsOut);
+                if (tipsAdjustment != 0) {
+                    tipsLeftToDeal += tipsAdjustment;
+                    tipsIn += tipsAdjustment;
+                }
+            }
+
         }
 
         if (tipsAdjustment != 0 || stakesAdjustment != 0) {
