@@ -273,7 +273,6 @@ contract TipJar is Context, ITipJar, Multicall, ReentrancyGuard {
                     tipsIn += tipsAdjustment;
                 }
             }
-
         }
 
         if (tipsAdjustment != 0 || stakesAdjustment != 0) {
