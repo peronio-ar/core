@@ -350,6 +350,9 @@ contract LinearTipJar is ILinearTipJar, TipJar {
     // Number of tip tokens dealt each block
     uint256 public immutable override tipsDealtPerBlock;
 
+    // Number of decimals the tip tokens dealt each block are expressed in
+    uint8 public immutable override tipsDealtPerBlockDecimals;
+
     constructor(
         address _stakingToken,
         address _tippingToken,
@@ -357,9 +360,13 @@ contract LinearTipJar is ILinearTipJar, TipJar {
         uint8 _depositFeeDecimals,
         address _feeAddress,
         address _quickSwapRouterAddress,
-        uint256 _tipsDealtPerBlock
+        uint256 _tipsDealtPerBlock,
+        uint8 _tipsDealtPerBlockDecimals
     ) TipJar(_stakingToken, _tippingToken, _depositFee, _depositFeeDecimals, _feeAddress, _quickSwapRouterAddress) {
+        require(_tipsDealtPerBlockDecimals < 78, "LinearTipJar: tips dealt per block decimals too big");
+
         tipsDealtPerBlock = _tipsDealtPerBlock;
+        tipsDealtPerBlockDecimals = _tipsDealtPerBlockDecimals;
     }
 
     function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
@@ -367,6 +374,6 @@ contract LinearTipJar is ILinearTipJar, TipJar {
     }
 
     function _getTipsToDistribute() internal view override returns (uint256 tipsToDistribute) {
-        tipsToDistribute = (block.number - lastTipDealBlock) * tipsDealtPerBlock;
+        tipsToDistribute = Math.mulDiv(block.number - lastTipDealBlock, tipsDealtPerBlock, 10**tipsDealtPerBlockDecimals);
     }
 }

@@ -70,4 +70,6 @@ interface ITipJar {
 
 interface ILinearTipJar is ITipJar {
     function tipsDealtPerBlock() external view returns (uint256 _tipsDealtPerBlock);
+
+    function tipsDealtPerBlockDecimals() external view returns (uint8 _tipsDealtPerBlockDecimals);
 }
