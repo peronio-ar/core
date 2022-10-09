@@ -221,10 +221,7 @@ abstract contract TipJar is Context, ERC165, ITipJar, Multicall, ReentrancyGuard
         emit StakeIncreased(amount, from);
     }
 
-    function _unstake(
-        uint256 amount,
-        address to
-    ) internal returns (uint256 _stakedAmount) {
+    function _unstake(uint256 amount, address to) internal returns (uint256 _stakedAmount) {
         address from = _msgSender();
 
         require(amount <= stakedAmount[from], "TipJar: can't withdraw more than staked amount");
@@ -240,10 +237,7 @@ abstract contract TipJar is Context, ERC165, ITipJar, Multicall, ReentrancyGuard
         emit StakeDecreased(amount, from);
     }
 
-    function _withdrawTips(
-        uint256 amount,
-        address to
-    ) internal returns (uint256 _extractedAmount) {
+    function _withdrawTips(uint256 amount, address to) internal returns (uint256 _extractedAmount) {
         address from = _msgSender();
 
         _dealTips(from);
