@@ -28,11 +28,11 @@ import {ILinearTipJar, ITipJar} from "./ITipJar.sol";
  *     - this will make any tips sent to the tip jar address by any means other than the "tip()" method to be available for dealing
  *     - additionally, any staking token sent by means other than the "stake()" method are swapped to the tipping token and made available
  *   - if the fee address is the same as the tip jar's address, stakes will be dealt with as if being received outside of "stake()" (ie. swapped and made into tips)
- *   - finally, the tipping and staking tokens can safely be the same, any extra amounts (in the sense above) need not be swapped, but everything works as expected
- *
+ *   - the tipping and staking tokens can safely be the same, any extra amounts (in the sense above) need not be swapped, but everything works as expected
+ *   - the actual distribution of tips can be controlled by overriding the "_getTipsToDistribute()" method
+ *   - deposit fees can have an arbitrary number of decimals (up to 77, otherwise 256 bits fail to represent it)
  */
 abstract contract TipJar is Context, ERC165, ITipJar, Multicall, ReentrancyGuard {
-    // TODO: decimals!!!
     // TODO: unchecked!!!
     using SafeERC20 for IERC20;
 
@@ -76,7 +76,9 @@ abstract contract TipJar is Context, ERC165, ITipJar, Multicall, ReentrancyGuard
     address public immutable override quickSwapRouterAddress;
 
     // The deposit fee exerted on staking
-    uint16 public override depositFeeBP; // Deposit fee in basis points
+    uint256 public override depositFee; // Deposit fee in basis points
+
+    uint8 public override depositFeeDecimals;
 
     // The address to which
     address public override feeAddress;
@@ -84,18 +86,20 @@ abstract contract TipJar is Context, ERC165, ITipJar, Multicall, ReentrancyGuard
     constructor(
         address _stakingToken,
         address _tippingToken,
-        uint16 _depositFeeBP,
+        uint256 _depositFee,
+        uint8 _depositFeeDecimals,
         address _feeAddress,
         address _quickSwapRouterAddress
     ) {
-        require(_depositFeeBP <= 10000, "TipJar: invalid deposit fee basis points");
+        require(depositFeeDecimals < 78, "TipJar: deposit fee decimals too big");
 
         (stakingToken, tippingToken) = (_stakingToken, _tippingToken);
 
         quickSwapRouterAddress = _quickSwapRouterAddress;
         IERC20(stakingToken).safeApprove(quickSwapRouterAddress, type(uint256).max);
 
-        depositFeeBP = _depositFeeBP;
+        depositFee = _depositFee;
+        depositFeeDecimals = _depositFeeDecimals;
         feeAddress = _feeAddress;
 
         // Setting these to 1 instead of 0 makes the deploy slightly more expensive, but all subsequent increments will be at constant cost
@@ -200,10 +204,10 @@ abstract contract TipJar is Context, ERC165, ITipJar, Multicall, ReentrancyGuard
 
             stakedAmount[from] += amount;
 
-            if (0 < depositFeeBP) {
-                uint256 depositFee = Math.mulDiv(amount, depositFeeBP, 10000);
-                _transferStakeOut(depositFee, feeAddress);
-                stakedAmount[from] -= depositFee;
+            if (0 < depositFee) {
+                uint256 depositFeeAmount = Math.mulDiv(amount, depositFee, 10**depositFeeDecimals);
+                _transferStakeOut(depositFeeAmount, feeAddress);
+                stakedAmount[from] -= depositFeeAmount;
             }
         }
 
@@ -346,11 +350,12 @@ contract LinearTipJar is ILinearTipJar, TipJar {
     constructor(
         address _stakingToken,
         address _tippingToken,
-        uint16 _depositFeeBP,
+        uint256 _depositFee,
+        uint8 _depositFeeDecimals,
         address _feeAddress,
         address _quickSwapRouterAddress,
         uint256 _tipsDealtPerBlock
-    ) TipJar(_stakingToken, _tippingToken, _depositFeeBP, _feeAddress, _quickSwapRouterAddress) {
+    ) TipJar(_stakingToken, _tippingToken, _depositFee, _depositFeeDecimals, _feeAddress, _quickSwapRouterAddress) {
         tipsDealtPerBlock = _tipsDealtPerBlock;
     }
 

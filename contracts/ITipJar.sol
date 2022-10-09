@@ -25,7 +25,9 @@ interface ITipJar {
 
     function accumulatedTipsPerShare() external view returns (uint256 _accumulatedTipsPerShare);
 
-    function depositFeeBP() external view returns (uint16 _depositFeeBP);
+    function depositFee() external view returns (uint256 _depositFee);
+
+    function depositFeeDecimals() external view returns (uint8 _depositFeeDecimals);
 
     function feeAddress() external view returns (address _feeAddress);
 
