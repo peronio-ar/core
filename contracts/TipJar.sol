@@ -109,6 +109,8 @@ abstract contract TipJar is Context, ERC165, ITipJar, Multicall, ReentrancyGuard
         lastTipDealBlock = block.number;
     }
 
+    function _getTipsToDistribute() internal view virtual returns (uint256 tipsToDistribute);
+
     function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
         return interfaceId == type(ITipJar).interfaceId;
     }
@@ -168,8 +170,6 @@ abstract contract TipJar is Context, ERC165, ITipJar, Multicall, ReentrancyGuard
     function scrub() external override nonReentrant returns (uint256 tipsAdjustment, uint256 stakesAdjustment) {
         (tipsAdjustment, stakesAdjustment) = _scrub();
     }
-
-    function _getTipsToDistribute() internal view virtual returns (uint256 tipsToDistribute);
 
     function _pendingTipsToPayOut(address user) internal view returns (uint256 pendingAmount) {
         require(lastTipDealBlock <= block.number, "TipJar: last tip deal block in the future");
