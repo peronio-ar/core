@@ -91,7 +91,7 @@ abstract contract TipJar is Context, ERC165, ITipJar, Multicall, ReentrancyGuard
         address _feeAddress,
         address _quickSwapRouterAddress
     ) {
-        require(depositFeeDecimals < 78, "TipJar: deposit fee decimals too big");
+        require(_depositFeeDecimals < 78, "TipJar: deposit fee decimals too big");
 
         (stakingToken, tippingToken) = (_stakingToken, _tippingToken);
 
