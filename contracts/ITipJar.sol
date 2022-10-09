@@ -9,10 +9,17 @@ interface ITipJar {
 
     function stakingToken() external view returns (address _stakingToken);
 
+    function stakesIn() external view returns (uint256 _stakesIn);
+
+    function stakesOut() external view returns (uint256 _stakesOut);
+
     function tippingToken() external view returns (address _tipsToken);
 
-    function tipsLeftToDeal() external view returns (uint256 _tipsLeftToDeal);
+    function tipsIn() external view returns (uint256 _tipsIn);
 
+    function tipsOut() external view returns (uint256 _tipsOut);
+
+    function tipsLeftToDeal() external view returns (uint256 _tipsLeftToDeal);
     function tipsDealtPerBlock() external view returns (uint256 _tipsDealtPerBlock);
 
     function lastTipDealBlock() external view returns (uint256 _lastTipDealBlock);

@@ -38,19 +38,19 @@ contract TipJar is Context, ITipJar, Multicall, ReentrancyGuard {
     address public immutable override stakingToken;
 
     // The number of staking tokens entered into the contract via the defined interfaces herein
-    uint256 private stakesIn;
+    uint256 public override stakesIn;
 
     // The number of staking tokens withdrawn from the contract via the defined interfaces herein
-    uint256 private stakesOut;
+    uint256 public override stakesOut;
 
     // The address of the token to use for tips accumulation and distribution
     address public immutable override tippingToken;
 
     // The number of tipping tokens entered into the contract via the defined interfaces herein
-    uint256 private tipsIn;
+    uint256 public override tipsIn;
 
     // The number of tipping tokens withdrawn from the contract via the defined interfaces herein
-    uint256 private tipsOut;
+    uint256 public override tipsOut;
 
     // Number of tip tokens dealt each block
     uint256 public override tipsDealtPerBlock;
