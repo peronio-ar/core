@@ -20,7 +20,6 @@ interface ITipJar {
     function tipsOut() external view returns (uint256 _tipsOut);
 
     function tipsLeftToDeal() external view returns (uint256 _tipsLeftToDeal);
-    function tipsDealtPerBlock() external view returns (uint256 _tipsDealtPerBlock);
 
     function lastTipDealBlock() external view returns (uint256 _lastTipDealBlock);
 
@@ -65,4 +64,8 @@ interface ITipJar {
     function withdrawTips(uint256 amount, address to) external returns (uint256 _extractedAmount);
 
     function scrub() external returns (uint256 tipsAdjustment, uint256 stakesAdjustment);
+}
+
+interface ILinearTipJar is ITipJar {
+    function tipsDealtPerBlock() external view returns (uint256 _tipsDealtPerBlock);
 }

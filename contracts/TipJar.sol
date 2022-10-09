@@ -5,13 +5,15 @@ import {IERC20} from "@openzeppelin/contracts_latest/token/ERC20/IERC20.sol";
 import {Math} from "@openzeppelin/contracts_latest/utils/math/Math.sol";
 import {SafeERC20} from "@openzeppelin/contracts_latest/token/ERC20/utils/SafeERC20.sol";
 
+import {ERC165} from "@openzeppelin/contracts_latest/utils/introspection/ERC165.sol";
+
 import {Context} from "@openzeppelin/contracts_latest/utils/Context.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts_latest/security/ReentrancyGuard.sol";
 import {Multicall} from "@openzeppelin/contracts_latest/utils/Multicall.sol";
 
 import {IUniswapV2Router02} from "./uniswap/interfaces/IUniswapV2Router02.sol";
 
-import {ITipJar} from "./ITipJar.sol";
+import {ILinearTipJar, ITipJar} from "./ITipJar.sol";
 
 /**
  * This contract implements a Tip Jar, distributing the tipping tokens accumulated amongst the participants in proportion to each's staking tokens staked.
@@ -29,7 +31,8 @@ import {ITipJar} from "./ITipJar.sol";
  *   - finally, the tipping and staking tokens can safely be the same, any extra amounts (in the sense above) need not be swapped, but everything works as expected
  *
  */
-contract TipJar is Context, ITipJar, Multicall, ReentrancyGuard {
+abstract contract TipJar is Context, ERC165, ITipJar, Multicall, ReentrancyGuard {
+    // TODO: decimals!!!
     // TODO: unchecked!!!
     using SafeERC20 for IERC20;
 
@@ -50,9 +53,6 @@ contract TipJar is Context, ITipJar, Multicall, ReentrancyGuard {
 
     // The number of tipping tokens withdrawn from the contract via the defined interfaces herein
     uint256 public override tipsOut;
-
-    // Number of tip tokens dealt each block
-    uint256 public override tipsDealtPerBlock;
 
     // Last block number on which an actual tip dealing took place
     uint256 public override lastTipDealBlock;
@@ -84,7 +84,6 @@ contract TipJar is Context, ITipJar, Multicall, ReentrancyGuard {
     constructor(
         address _stakingToken,
         address _tippingToken,
-        uint256 _tipsDealtPerBlock,
         uint16 _depositFeeBP,
         address _feeAddress,
         address _quickSwapRouterAddress
@@ -92,9 +91,6 @@ contract TipJar is Context, ITipJar, Multicall, ReentrancyGuard {
         require(_depositFeeBP <= 10000, "TipJar: invalid deposit fee basis points");
 
         (stakingToken, tippingToken) = (_stakingToken, _tippingToken);
-
-        tipsDealtPerBlock = _tipsDealtPerBlock;
-        lastTipDealBlock = block.number;
 
         quickSwapRouterAddress = _quickSwapRouterAddress;
         IERC20(stakingToken).safeApprove(quickSwapRouterAddress, type(uint256).max);
@@ -105,6 +101,12 @@ contract TipJar is Context, ITipJar, Multicall, ReentrancyGuard {
         // Setting these to 1 instead of 0 makes the deploy slightly more expensive, but all subsequent increments will be at constant cost
         stakesIn = stakesOut = 1;
         tipsIn = tipsOut = 1;
+
+        lastTipDealBlock = block.number;
+    }
+
+    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
+        return interfaceId == type(ITipJar).interfaceId;
     }
 
     function pendingTipsToPayOut(address user) external view override returns (uint256 pendingAmount) {
@@ -163,13 +165,15 @@ contract TipJar is Context, ITipJar, Multicall, ReentrancyGuard {
         (tipsAdjustment, stakesAdjustment) = _scrub();
     }
 
+    function _getTipsToDistribute() internal view virtual returns (uint256 tipsToDistribute);
+
     function _pendingTipsToPayOut(address user) internal view returns (uint256 pendingAmount) {
         require(lastTipDealBlock <= block.number, "TipJar: last tip deal block in the future");
 
         uint256 _accumulatedTipsPerShare = accumulatedTipsPerShare;
         uint256 stakeSupply = stakesIn - stakesOut;
         if (stakeSupply != 0) {
-            _accumulatedTipsPerShare += Math.min(tipsLeftToDeal, (block.number - lastTipDealBlock) * tipsDealtPerBlock) / stakeSupply;
+            _accumulatedTipsPerShare += Math.min(tipsLeftToDeal, _getTipsToDistribute()) / stakeSupply;
         }
 
         uint256 userStakedAmount = stakedAmount[user];
@@ -294,7 +298,7 @@ contract TipJar is Context, ITipJar, Multicall, ReentrancyGuard {
 
         uint256 stakeSupply = stakesIn - stakesOut;
         if (stakeSupply != 0) {
-            uint256 tipsToDistribute = Math.min(tipsLeftToDeal, (block.number - lastTipDealBlock) * tipsDealtPerBlock);
+            uint256 tipsToDistribute = Math.min(tipsLeftToDeal, _getTipsToDistribute());
             accumulatedTipsPerShare += tipsToDistribute / stakeSupply;
             tipsLeftToDeal -= tipsToDistribute;
             lastTipDealBlock = block.number;
@@ -332,5 +336,29 @@ contract TipJar is Context, ITipJar, Multicall, ReentrancyGuard {
             IERC20(stakingToken).safeTransfer(to, amount);
         }
         stakesOut += amount;
+    }
+}
+
+contract LinearTipJar is ILinearTipJar, TipJar {
+    // Number of tip tokens dealt each block
+    uint256 public immutable override tipsDealtPerBlock;
+
+    constructor(
+        address _stakingToken,
+        address _tippingToken,
+        uint16 _depositFeeBP,
+        address _feeAddress,
+        address _quickSwapRouterAddress,
+        uint256 _tipsDealtPerBlock
+    ) TipJar(_stakingToken, _tippingToken, _depositFeeBP, _feeAddress, _quickSwapRouterAddress) {
+        tipsDealtPerBlock = _tipsDealtPerBlock;
+    }
+
+    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
+        return interfaceId == type(ILinearTipJar).interfaceId;
+    }
+
+    function _getTipsToDistribute() internal view override returns (uint256 tipsToDistribute) {
+        tipsToDistribute = (block.number - lastTipDealBlock) * tipsDealtPerBlock;
     }
 }
