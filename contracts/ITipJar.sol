@@ -13,7 +13,7 @@ interface ITipJar {
 
     function stakesOut() external view returns (uint256 _stakesOut);
 
-    function tippingToken() external view returns (address _tipsToken);
+    function tippingToken() external view returns (address _tippingToken);
 
     function tipsIn() external view returns (uint256 _tipsIn);
 
@@ -25,45 +25,45 @@ interface ITipJar {
 
     function accumulatedTipsPerShare() external view returns (uint256 _accumulatedTipsPerShare);
 
-    function depositFee() external view returns (uint256 _depositFee);
-
-    function depositFeeDecimals() external view returns (uint8 _depositFeeDecimals);
-
-    function feeAddress() external view returns (address _feeAddress);
-
     function stakedAmount(address user) external view returns (uint256 _stakedAmount);
 
     function tipsAwarded(address user) external view returns (uint256 _tipsAwarded);
 
     function tipsPaidOut(address user) external view returns (uint256 _tipsPaidOut);
 
-    function pendingTipsToPayOut(address user) external view returns (uint256 pendingAmount);
-
     function quickSwapRouterAddress() external view returns (address _quickSwapRouterAddress);
 
-    function tip(uint256 amount) external returns (uint256 _tipsLeftToDeal);
+    function depositFee() external view returns (uint256 _depositFee);
 
-    function tip(address from, uint256 amount) external returns (uint256 _tipsLeftToDeal);
+    function depositFeeDecimals() external view returns (uint8 _depositFeeDecimals);
 
-    function stake(uint256 amount) external returns (uint256 _stakedAmount);
+    function feeAddress() external view returns (address _feeAddress);
 
-    function stake(address from, uint256 amount) external returns (uint256 _stakedAmount);
+    function pendingTipsToPayOut(address user) external view returns (uint256 pendingAmount);
 
-    function unstake() external returns (uint256 _stakedAmount);
+    function tip(uint256 amount) external returns (uint256 newTipsLeftToDeal);
 
-    function unstake(address to) external returns (uint256 _stakedAmount);
+    function tip(address from, uint256 amount) external returns (uint256 newTipsLeftToDeal);
 
-    function unstake(uint256 amount) external returns (uint256 _stakedAmount);
+    function stake(uint256 amount) external returns (uint256 newStakedAmount);
 
-    function unstake(uint256 amount, address to) external returns (uint256 _stakedAmount);
+    function stake(address from, uint256 amount) external returns (uint256 newStakedAmount);
 
-    function withdrawTips() external returns (uint256 _extractedAmount);
+    function unstake() external returns (uint256 newStakedAmount);
 
-    function withdrawTips(address to) external returns (uint256 _extractedAmount);
+    function unstake(address to) external returns (uint256 newStakedAmount);
 
-    function withdrawTips(uint256 amount) external returns (uint256 _extractedAmount);
+    function unstake(uint256 amount) external returns (uint256 newStakedAmount);
 
-    function withdrawTips(uint256 amount, address to) external returns (uint256 _extractedAmount);
+    function unstake(uint256 amount, address to) external returns (uint256 newStakedAmount);
+
+    function withdrawTips() external returns (uint256 extractedAmount);
+
+    function withdrawTips(address to) external returns (uint256 extractedAmount);
+
+    function withdrawTips(uint256 amount) external returns (uint256 extractedAmount);
+
+    function withdrawTips(uint256 amount, address to) external returns (uint256 extractedAmount);
 
     function scrub() external returns (uint256 tipsAdjustment, uint256 stakesAdjustment);
 }

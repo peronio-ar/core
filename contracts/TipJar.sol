@@ -57,7 +57,7 @@ abstract contract TipJar is Context, ERC165, ITipJar, Multicall, ReentrancyGuard
     uint256 public override lastTipDealBlock;
 
     // Number of tip tokens assigned so far per staking share
-    uint256 public override accumulatedTipsPerShare; // times 1e12.
+    uint256 public override accumulatedTipsPerShare;
 
     // Number of tip tokens yet to be dealt
     uint256 public override tipsLeftToDeal;
@@ -119,52 +119,52 @@ abstract contract TipJar is Context, ERC165, ITipJar, Multicall, ReentrancyGuard
         pendingAmount = _pendingTipsToPayOut(user);
     }
 
-    function tip(uint256 amount) external override nonReentrant returns (uint256 _tipsLeftToDeal) {
-        _tipsLeftToDeal = _tip(_msgSender(), amount);
+    function tip(uint256 amount) external override nonReentrant returns (uint256 newTipsLeftToDeal) {
+        newTipsLeftToDeal = _tip(_msgSender(), amount);
     }
 
-    function tip(address from, uint256 amount) external override nonReentrant returns (uint256 _tipsLeftToDeal) {
-        _tipsLeftToDeal = _tip(from, amount);
+    function tip(address from, uint256 amount) external override nonReentrant returns (uint256 newTipsLeftToDeal) {
+        newTipsLeftToDeal = _tip(from, amount);
     }
 
-    function stake(uint256 amount) external override nonReentrant returns (uint256 _stakedAmount) {
-        _stakedAmount = _stake(_msgSender(), amount);
+    function stake(uint256 amount) external override nonReentrant returns (uint256 newStakedAmount) {
+        newStakedAmount = _stake(_msgSender(), amount);
     }
 
-    function stake(address from, uint256 amount) external override nonReentrant returns (uint256 _stakedAmount) {
-        _stakedAmount = _stake(from, amount);
+    function stake(address from, uint256 amount) external override nonReentrant returns (uint256 newStakedAmount) {
+        newStakedAmount = _stake(from, amount);
     }
 
-    function unstake() external override nonReentrant returns (uint256 _stakedAmount) {
-        _stakedAmount = _unstake(stakedAmount[_msgSender()], _msgSender());
+    function unstake() external override nonReentrant returns (uint256 newStakedAmount) {
+        newStakedAmount = _unstake(stakedAmount[_msgSender()], _msgSender());
     }
 
-    function unstake(address to) external override nonReentrant returns (uint256 _stakedAmount) {
-        _stakedAmount = _unstake(stakedAmount[_msgSender()], to);
+    function unstake(address to) external override nonReentrant returns (uint256 newStakedAmount) {
+        newStakedAmount = _unstake(stakedAmount[_msgSender()], to);
     }
 
-    function unstake(uint256 amount) external override nonReentrant returns (uint256 _stakedAmount) {
-        _stakedAmount = _unstake(amount, _msgSender());
+    function unstake(uint256 amount) external override nonReentrant returns (uint256 newStakedAmount) {
+        newStakedAmount = _unstake(amount, _msgSender());
     }
 
-    function unstake(uint256 amount, address to) external override nonReentrant returns (uint256 _stakedAmount) {
-        _stakedAmount = _unstake(amount, to);
+    function unstake(uint256 amount, address to) external override nonReentrant returns (uint256 newStakedAmount) {
+        newStakedAmount = _unstake(amount, to);
     }
 
-    function withdrawTips() external override nonReentrant returns (uint256 _extractedAmount) {
-        _extractedAmount = _withdrawTips(_pendingTipsToPayOut(_msgSender()), _msgSender());
+    function withdrawTips() external override nonReentrant returns (uint256 extractedAmount) {
+        extractedAmount = _withdrawTips(_pendingTipsToPayOut(_msgSender()), _msgSender());
     }
 
-    function withdrawTips(address to) external override nonReentrant returns (uint256 _extractedAmount) {
-        _extractedAmount = _withdrawTips(_pendingTipsToPayOut(_msgSender()), to);
+    function withdrawTips(address to) external override nonReentrant returns (uint256 extractedAmount) {
+        extractedAmount = _withdrawTips(_pendingTipsToPayOut(_msgSender()), to);
     }
 
-    function withdrawTips(uint256 amount) external override nonReentrant returns (uint256 _extractedAmount) {
-        _extractedAmount = _withdrawTips(amount, _msgSender());
+    function withdrawTips(uint256 amount) external override nonReentrant returns (uint256 extractedAmount) {
+        extractedAmount = _withdrawTips(amount, _msgSender());
     }
 
-    function withdrawTips(uint256 amount, address to) external override nonReentrant returns (uint256 _extractedAmount) {
-        _extractedAmount = _withdrawTips(amount, to);
+    function withdrawTips(uint256 amount, address to) external override nonReentrant returns (uint256 extractedAmount) {
+        extractedAmount = _withdrawTips(amount, to);
     }
 
     function scrub() external override nonReentrant returns (uint256 tipsAdjustment, uint256 stakesAdjustment) {
@@ -189,17 +189,17 @@ abstract contract TipJar is Context, ERC165, ITipJar, Multicall, ReentrancyGuard
         }
     }
 
-    function _tip(address from, uint256 amount) internal returns (uint256 _tipsLeftToDeal) {
+    function _tip(address from, uint256 amount) internal returns (uint256 newTipsLeftToDeal) {
         _dealTips(address(0));
 
         _transferTipIn(from, amount);
 
-        _tipsLeftToDeal = tipsLeftToDeal += amount;
+        newTipsLeftToDeal = tipsLeftToDeal += amount;
 
         emit TipReceived(amount, from);
     }
 
-    function _stake(address from, uint256 amount) internal returns (uint256 _stakedAmount) {
+    function _stake(address from, uint256 amount) internal returns (uint256 newStakedAmount) {
         _dealTips(from);
 
         if (0 < amount) {
@@ -216,12 +216,12 @@ abstract contract TipJar is Context, ERC165, ITipJar, Multicall, ReentrancyGuard
             }
         }
 
-        _stakedAmount = stakedAmount[from];
+        newStakedAmount = stakedAmount[from];
 
         emit StakeIncreased(amount, from);
     }
 
-    function _unstake(uint256 amount, address to) internal returns (uint256 _stakedAmount) {
+    function _unstake(uint256 amount, address to) internal returns (uint256 newStakedAmount) {
         address from = _msgSender();
 
         require(amount <= stakedAmount[from], "TipJar: can't withdraw more than staked amount");
@@ -231,13 +231,13 @@ abstract contract TipJar is Context, ERC165, ITipJar, Multicall, ReentrancyGuard
         _transferStakeOut(amount, to);
 
         unchecked {
-            _stakedAmount = stakedAmount[from] -= amount;
+            newStakedAmount = stakedAmount[from] -= amount;
         }
 
         emit StakeDecreased(amount, from);
     }
 
-    function _withdrawTips(uint256 amount, address to) internal returns (uint256 _extractedAmount) {
+    function _withdrawTips(uint256 amount, address to) internal returns (uint256 extractedAmount) {
         address from = _msgSender();
 
         _dealTips(from);
@@ -250,7 +250,7 @@ abstract contract TipJar is Context, ERC165, ITipJar, Multicall, ReentrancyGuard
 
         tipsPaidOut[from] += amount;
 
-        _extractedAmount = amount;
+        extractedAmount = amount;
     }
 
     function _scrub() internal returns (uint256 tipsAdjustment, uint256 stakesAdjustment) {
