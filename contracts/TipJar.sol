@@ -76,8 +76,9 @@ abstract contract TipJar is Context, ERC165, ITipJar, Multicall, ReentrancyGuard
     address public immutable override quickSwapRouterAddress;
 
     // The deposit fee exerted on staking
-    uint256 public override depositFee; // Deposit fee in basis points
+    uint256 public override depositFee;
 
+    // The number of decimals the deposit fee exerted on staking is expressed in
     uint8 public override depositFeeDecimals;
 
     // The address to which
