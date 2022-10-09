@@ -31,7 +31,6 @@ import {ITipJar} from "./ITipJar.sol";
  */
 contract TipJar is Context, ITipJar, Multicall, ReentrancyGuard {
     // TODO: unchecked!!!
-    // TODO: mulDiv!!!
     using SafeERC20 for IERC20;
 
     // The address of the token to use for staking
@@ -198,7 +197,7 @@ contract TipJar is Context, ITipJar, Multicall, ReentrancyGuard {
             stakedAmount[from] += amount;
 
             if (0 < depositFeeBP) {
-                uint256 depositFee = (amount * depositFeeBP) / 10000;
+                uint256 depositFee = Math.mulDiv(amount, depositFeeBP, 10000);
                 _transferStakeOut(depositFee, feeAddress);
                 stakedAmount[from] -= depositFee;
             }
