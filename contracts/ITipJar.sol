@@ -33,9 +33,9 @@ interface ITipJar {
 
     function stakedAmount(address user) external view returns (uint256 _stakedAmount);
 
-    function tipsPaidOut(address user) external view returns (uint256 _stakedAmount);
+    function tipsAwarded(address user) external view returns (uint256 _tipsAwarded);
 
-    function tipsPending(address user) external view returns (uint256 _stakedAmount);
+    function tipsPaidOut(address user) external view returns (uint256 _tipsPaidOut);
 
     function pendingTipsToPayOut(address user) external view returns (uint256 pendingAmount);
 

@@ -66,11 +66,11 @@ abstract contract TipJar is Context, ERC165, ITipJar, Multicall, ReentrancyGuard
     // Number of staking tokens belonging to a given user
     mapping(address => uint256) public override stakedAmount;
 
+    // Number of tipping tokens awarded to a given user
+    mapping(address => uint256) public override tipsAwarded;
+
     // Number of tipping tokens paid out and withdrawn by a given user
     mapping(address => uint256) public override tipsPaidOut;
-
-    // Number of tipping tokens dealt but not yet paid out to a given user
-    mapping(address => uint256) public override tipsPending;
 
     // The address of the QuickSwap router used for converting scrubbed staking tokens to tipping tokens
     address public immutable override quickSwapRouterAddress;
@@ -183,7 +183,7 @@ abstract contract TipJar is Context, ERC165, ITipJar, Multicall, ReentrancyGuard
 
         uint256 userStakedAmount = stakedAmount[user];
         if (userStakedAmount != 0) {
-            pendingAmount = tipsPending[user] + userStakedAmount * _accumulatedTipsPerShare - tipsPaidOut[user];
+            pendingAmount = tipsAwarded[user] + userStakedAmount * _accumulatedTipsPerShare - tipsPaidOut[user];
         }
     }
 
@@ -242,11 +242,10 @@ abstract contract TipJar is Context, ERC165, ITipJar, Multicall, ReentrancyGuard
 
         _dealTips(from);
 
-        require(amount <= tipsPending[from], "TipJar: can't extract more than pending amount");
+            require(amount <= tipsAwarded[from] - tipsPaidOut[from], "TipJar: can't extract more than pending amount");
 
         _transferTipOut(amount, to);
 
-        tipsPending[from] -= amount;
         tipsPaidOut[from] += amount;
 
         _extractedAmount = amount;
@@ -313,7 +312,7 @@ abstract contract TipJar is Context, ERC165, ITipJar, Multicall, ReentrancyGuard
 
         uint256 userStakedAmount = stakedAmount[user];
         if (userStakedAmount != 0) {
-            tipsPending[user] += userStakedAmount * accumulatedTipsPerShare - tipsPaidOut[user];
+            tipsAwarded[user] += userStakedAmount * accumulatedTipsPerShare;
         }
     }
 
