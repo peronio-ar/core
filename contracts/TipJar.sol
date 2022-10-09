@@ -33,7 +33,6 @@ import {ILinearTipJar, ITipJar} from "./ITipJar.sol";
  *   - deposit fees can have an arbitrary number of decimals (up to 77, otherwise 256 bits fail to represent it)
  */
 abstract contract TipJar is Context, ERC165, ITipJar, Multicall, ReentrancyGuard {
-    // TODO: unchecked!!!
     using SafeERC20 for IERC20;
 
     // The address of the token to use for staking
@@ -176,7 +175,10 @@ abstract contract TipJar is Context, ERC165, ITipJar, Multicall, ReentrancyGuard
         require(lastTipDealBlock <= block.number, "TipJar: last tip deal block in the future");
 
         uint256 _accumulatedTipsPerShare = accumulatedTipsPerShare;
-        uint256 stakeSupply = stakesIn - stakesOut;
+        uint256 stakeSupply;
+        unchecked {
+            stakeSupply = stakesIn - stakesOut;
+        }
         if (stakeSupply != 0) {
             _accumulatedTipsPerShare += Math.min(tipsLeftToDeal, _getTipsToDistribute()) / stakeSupply;
         }
@@ -208,7 +210,9 @@ abstract contract TipJar is Context, ERC165, ITipJar, Multicall, ReentrancyGuard
             if (0 < depositFee) {
                 uint256 depositFeeAmount = Math.mulDiv(amount, depositFee, 10**depositFeeDecimals);
                 _transferStakeOut(depositFeeAmount, feeAddress);
-                stakedAmount[from] -= depositFeeAmount;
+                unchecked {
+                    stakedAmount[from] -= depositFeeAmount;
+                }
             }
         }
 
@@ -229,7 +233,9 @@ abstract contract TipJar is Context, ERC165, ITipJar, Multicall, ReentrancyGuard
 
         _transferStakeOut(amount, to);
 
-        _stakedAmount = stakedAmount[from] -= amount;
+        unchecked {
+            _stakedAmount = stakedAmount[from] -= amount;
+        }
 
         emit StakeDecreased(amount, from);
     }
@@ -242,7 +248,9 @@ abstract contract TipJar is Context, ERC165, ITipJar, Multicall, ReentrancyGuard
 
         _dealTips(from);
 
+        unchecked {
             require(amount <= tipsAwarded[from] - tipsPaidOut[from], "TipJar: can't extract more than pending amount");
+        }
 
         _transferTipOut(amount, to);
 
@@ -254,9 +262,11 @@ abstract contract TipJar is Context, ERC165, ITipJar, Multicall, ReentrancyGuard
     function _scrub() internal returns (uint256 tipsAdjustment, uint256 stakesAdjustment) {
         if (tippingToken == stakingToken) {
             uint256 inToken = IERC20(tippingToken).balanceOf(address(this));
-            require(inToken <= (tipsIn + stakesIn) - (tipsOut + stakesOut), "TipJar: balance leak detected, aborting!");
+            unchecked {
+                require(inToken <= (tipsIn + stakesIn) - (tipsOut + stakesOut), "TipJar: balance leak detected, aborting!");
 
-            tipsAdjustment = inToken - ((tipsIn + stakesIn) - (tipsOut + stakesOut));
+                tipsAdjustment = inToken - ((tipsIn + stakesIn) - (tipsOut + stakesOut));
+            }
             if (tipsAdjustment != 0) {
                 tipsLeftToDeal += tipsAdjustment;
                 tipsIn += tipsAdjustment;
@@ -264,9 +274,11 @@ abstract contract TipJar is Context, ERC165, ITipJar, Multicall, ReentrancyGuard
         } else {
             {
                 uint256 stakesInToken = IERC20(stakingToken).balanceOf(address(this));
-                require(stakesInToken <= stakesIn - stakesOut, "TipJar: stakes balance leak detected, aborting!");
+                unchecked {
+                    require(stakesInToken <= stakesIn - stakesOut, "TipJar: stakes balance leak detected, aborting!");
 
-                stakesAdjustment = stakesInToken - (stakesIn - stakesOut);
+                    stakesAdjustment = stakesInToken - (stakesIn - stakesOut);
+                }
                 if (stakesAdjustment != 0) {
                     _swapStakingToTips(stakesAdjustment);
                 }
@@ -274,9 +286,11 @@ abstract contract TipJar is Context, ERC165, ITipJar, Multicall, ReentrancyGuard
 
             {
                 uint256 tipsInToken = IERC20(tippingToken).balanceOf(address(this));
-                require(tipsInToken <= tipsIn - tipsOut, "TipJar: tip balance leak detected, aborting!");
+                unchecked {
+                    require(tipsInToken <= tipsIn - tipsOut, "TipJar: tip balance leak detected, aborting!");
 
-                tipsAdjustment = tipsInToken - (tipsIn - tipsOut);
+                    tipsAdjustment = tipsInToken - (tipsIn - tipsOut);
+                }
                 if (tipsAdjustment != 0) {
                     tipsLeftToDeal += tipsAdjustment;
                     tipsIn += tipsAdjustment;
@@ -302,11 +316,16 @@ abstract contract TipJar is Context, ERC165, ITipJar, Multicall, ReentrancyGuard
     function _dealTips(address user) internal {
         require(lastTipDealBlock <= block.number, "TipJar: last tip-deal block in the future");
 
-        uint256 stakeSupply = stakesIn - stakesOut;
+        uint256 stakeSupply;
+        unchecked {
+            stakeSupply = stakesIn - stakesOut;
+        }
         if (stakeSupply != 0) {
             uint256 tipsToDistribute = Math.min(tipsLeftToDeal, _getTipsToDistribute());
             accumulatedTipsPerShare += tipsToDistribute / stakeSupply;
-            tipsLeftToDeal -= tipsToDistribute;
+            unchecked {
+                tipsLeftToDeal -= tipsToDistribute;
+            }
             lastTipDealBlock = block.number;
         }
 
@@ -373,6 +392,10 @@ contract LinearTipJar is ILinearTipJar, TipJar {
     }
 
     function _getTipsToDistribute() internal view override returns (uint256 tipsToDistribute) {
-        tipsToDistribute = Math.mulDiv(block.number - lastTipDealBlock, tipsDealtPerBlock, 10**tipsDealtPerBlockDecimals);
+        uint256 blocksElapsed;
+        unchecked {
+            blocksElapsed = block.number - lastTipDealBlock;
+        }
+        tipsToDistribute = Math.mulDiv(blocksElapsed, tipsDealtPerBlock, 10**tipsDealtPerBlockDecimals);
     }
 }
