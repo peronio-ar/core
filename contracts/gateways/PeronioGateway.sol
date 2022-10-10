@@ -103,24 +103,11 @@ abstract contract PeronioGateway is IPeronioGateway {
     function _generateMintVoucherMessage(Voucher memory voucher) internal view returns (string memory message) {
         MintVoucher memory decodedVoucher = abi.decode(voucher.payload, (MintVoucher));
         message = string.concat(
-            "Mint",
-            "\n",
-            "from: ",
-            toString(decodedVoucher.from),
-            "\n",
-            "to: ",
-            toString(decodedVoucher.to),
-            "\n",
-            "usdcAmount: ",
-            usdcSymbol,
-            " ",
-            toString(UsdcQuantity.unwrap(decodedVoucher.usdcAmount), usdcDecimals),
-            "\n",
-            "minReceive: ",
-            peSymbol,
-            " ",
-            toString(PeQuantity.unwrap(decodedVoucher.minReceive), peDecimals),
-            "\n"
+            "Mint\n",
+            string.concat("from: ", toString(decodedVoucher.from), "\n"),
+            string.concat("to: ", toString(decodedVoucher.to), "\n"),
+            string.concat("usdcAmount: ", usdcSymbol, " ", toString(UsdcQuantity.unwrap(decodedVoucher.usdcAmount), usdcDecimals), "\n"),
+            string.concat("minReceive: ", peSymbol, " ", toString(PeQuantity.unwrap(decodedVoucher.minReceive), peDecimals), "\n")
         );
     }
 
@@ -133,19 +120,10 @@ abstract contract PeronioGateway is IPeronioGateway {
     function _generateWithdrawVoucherMessage(Voucher memory voucher) internal view returns (string memory message) {
         WithdrawVoucher memory decodedVoucher = abi.decode(voucher.payload, (WithdrawVoucher));
         message = string.concat(
-            "Withdraw",
-            "\n",
-            "from: ",
-            toString(decodedVoucher.from),
-            "\n",
-            "to: ",
-            toString(decodedVoucher.to),
-            "\n",
-            "peAmount: ",
-            peSymbol,
-            " ",
-            toString(PeQuantity.unwrap(decodedVoucher.peAmount), peDecimals),
-            "\n"
+            "Withdraw\n",
+            string.concat("from: ", toString(decodedVoucher.from), "\n"),
+            string.concat("to: ", toString(decodedVoucher.to), "\n"),
+            string.concat("peAmount: ", peSymbol, " ", toString(PeQuantity.unwrap(decodedVoucher.peAmount), peDecimals), "\n")
         );
     }
 
