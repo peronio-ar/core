@@ -45,7 +45,7 @@
         "ethereum-waffle": "^3.4.4",
         "ethers": "^5.7.1",
         "hardhat": "^2.11.2",
-        "hardhat-deploy": "^0.11.16",
+        "hardhat-deploy": "^0.11.18",
         "hardhat-gas-reporter": "^1.0.9",
         "husky": "^8.0.1",
         "lodash": "^4.17.21",
