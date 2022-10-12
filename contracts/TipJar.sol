@@ -113,7 +113,7 @@ abstract contract TipJar is Context, ERC165, ITipJar, Multicall, ReentrancyGuard
     function _getTipsToDistribute() internal view virtual returns (uint256 tipsToDistribute);
 
     function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
-        return interfaceId == type(ITipJar).interfaceId;
+        return interfaceId == type(ITipJar).interfaceId || super.supportsInterface(interfaceId);
     }
 
     function pendingTipsToPayOut(address user) external view override returns (uint256 pendingAmount) {
