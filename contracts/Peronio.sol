@@ -29,6 +29,36 @@ string constant SYMBOL = "P";
 contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, ReentrancyGuard, Multicall {
     using SafeERC20 for IERC20;
 
+    /**
+     * Raised upon trying to initialize an already initialized instance
+     *
+     */
+    error AlreadyInitialized();
+
+    /**
+     * Raised upon encountering a last rewards-composition time in the future
+     *
+     * @param last  Last rewards-composition time
+     * @param actual  Current time
+     */
+    error LastRewardsCompositionTimeInTheFuture(uint256 last, uint256 actual);
+
+    /**
+     * Raised upon trying to compound rewards before the rewards-composition time has elapsed
+     *
+     * @param elapsed  Time actually elapsed
+     * @param required  Rewards-composition time required
+     */
+    error RewardsCompositionTimeNotElapsed(uint256 elapsed, uint256 required);
+
+    /**
+     * Raised upon minting less than the required minimum
+     *
+     * @param minimum  Minimum amount asked for
+     * @param actual  Actually amount minted
+     */
+    error MinimumMintingNotMet(PeQuantity minimum, PeQuantity actual);
+
     // Roles
     RoleId public constant override MARKUP_ROLE = RoleId.wrap(keccak256("MARKUP_ROLE"));
     RoleId public constant override REWARDS_ROLE = RoleId.wrap(keccak256("REWARDS_ROLE"));
@@ -199,7 +229,9 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
      */
     function initialize(UsdcQuantity usdcAmount, PePerUsdcQuantity startingRatio) external override onlyAdminRole {
         // Prevent double initialization
-        require(!initialized, "Contract already initialized");
+        if (initialized) {
+            revert AlreadyInitialized();
+        }
         initialized = true;
 
         // --- Gas Saving -------------------------------------------------------------------------
@@ -393,7 +425,12 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
      * @custom:emit CompoundRewards
      */
     function compoundRewards() external override onlyRewardsRole returns (UsdcQuantity usdcAmount, LpQuantity lpAmount) {
-        require(12 hours < block.timestamp - lastCompounded, "Peronio: time not elapsed");
+        if (block.timestamp < lastCompounded) {
+            revert LastRewardsCompositionTimeInTheFuture(lastCompounded, block.timestamp);
+        }
+        if (block.timestamp - lastCompounded < 12 hours) {
+            revert RewardsCompositionTimeNotElapsed(block.timestamp - lastCompounded, 12 hours);
+        }
         lastCompounded = block.timestamp;
 
         // Claim rewards from QiDao's Farm
@@ -633,7 +670,9 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         // Calculate the number of PE tokens as the proportion of liquidity provided
         peAmount = mulDiv(lpAmount, _totalSupply(), stakedAmount);
 
-        require(lte(minReceive, peAmount), "Minimum required not met");
+        if (lt(peAmount, minReceive)) {
+            revert MinimumMintingNotMet(minReceive, peAmount);
+        }
 
         // Actually mint the PE tokens
         _mint(to, PeQuantity.unwrap(peAmount));
