@@ -24,9 +24,6 @@ import {IUniswapV2Router02} from "./uniswap/interfaces/IUniswapV2Router02.sol";
 // Interface & support
 import "./PeronioSupport.sol";
 
-string constant NAME = "Peronio";
-string constant SYMBOL = "P";
-
 contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, ReentrancyGuard, Multicall {
     using SafeERC20 for IERC20;
 
@@ -141,6 +138,8 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
     /**
      * Construct a new Peronio contract
      *
+     * @param _name  Token name to use
+     * @param _symbol  Token symbol to use
      * @param _usdcAddress  Address used for the USDC tokens in vault
      * @param _maiAddress  Address used for the MAI tokens in vault
      * @param _lpAddress  LP Address for MAI/USDC
@@ -150,6 +149,8 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
      * @param _qiDaoPoolId  Pool ID within the QiDao Farm
      */
     constructor(
+        string memory _name,
+        string memory _symbol,
         address _usdcAddress,
         address _maiAddress,
         address _lpAddress,
@@ -157,7 +158,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         address _quickSwapRouterAddress,
         address _qiDaoFarmAddress,
         uint256 _qiDaoPoolId
-    ) ERC20(NAME, SYMBOL) ERC20Permit(NAME) {
+    ) ERC20(_name, _symbol) ERC20Permit(_name) {
         // --- Gas Saving -------------------------------------------------------------------------
         address sender = _msgSender();
 
