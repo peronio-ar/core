@@ -227,6 +227,8 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         // Mints exactly startingRatio for each collateral USDC token
         _mint(sender, PeQuantity.unwrap(mulDiv(usdcAmount, startingRatio, ONE)));
 
+        lastCompounded = block.timestamp;
+
         emit Initialized(sender, usdcAmount, startingRatio);
     }
 
