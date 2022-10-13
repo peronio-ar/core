@@ -164,7 +164,9 @@ describe("Peronio", function () {
             try {
                 await call;
             } catch (error: any) {
-                expect(error.message).to.be.equal("VM Exception while processing transaction: reverted with custom error 'MinimumMintingNotMet(250000000, 236786586)'");
+                expect(error.message).to.be.equal(
+                    "VM Exception while processing transaction: reverted with custom error 'MinimumMintingNotMet(250000000, 236786586)'",
+                );
             }
         });
 
@@ -320,7 +322,9 @@ describe("Peronio", function () {
             try {
                 await contract.connect(signers[1]).setMarkupFee("5000");
             } catch (error: any) {
-                expect(error.message).to.be.equal(`VM Exception while processing transaction: reverted with reason string 'AccessControl: account ${tester.toLowerCase()} is missing role ${MARKUP_ROLE}'`);
+                expect(error.message).to.be.equal(
+                    `VM Exception while processing transaction: reverted with reason string 'AccessControl: account ${tester.toLowerCase()} is missing role ${MARKUP_ROLE}'`,
+                );
             }
         });
 
@@ -328,7 +332,9 @@ describe("Peronio", function () {
             try {
                 await contract.connect(signers[1]).compoundRewards();
             } catch (error: any) {
-                expect(error.message).to.be.equal(`VM Exception while processing transaction: reverted with reason string 'AccessControl: account ${tester.toLowerCase()} is missing role ${REWARDS_ROLE}'`);
+                expect(error.message).to.be.equal(
+                    `VM Exception while processing transaction: reverted with reason string 'AccessControl: account ${tester.toLowerCase()} is missing role ${REWARDS_ROLE}'`,
+                );
             }
         });
 
@@ -336,7 +342,9 @@ describe("Peronio", function () {
             try {
                 await contract.connect(signers[1]).mintForMigration(deployer, 1, 1);
             } catch (error: any) {
-                expect(error.message).to.be.equal(`VM Exception while processing transaction: reverted with reason string 'AccessControl: account ${tester.toLowerCase()} is missing role ${MIGRATOR_ROLE}'`);
+                expect(error.message).to.be.equal(
+                    `VM Exception while processing transaction: reverted with reason string 'AccessControl: account ${tester.toLowerCase()} is missing role ${MIGRATOR_ROLE}'`,
+                );
             }
         });
     });
