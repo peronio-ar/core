@@ -17,6 +17,7 @@ import { IPeronioInitializeParams } from "../utils/interfaces/IPeronioInitialize
 import { getConstructorParams, getInitializeParams } from "../utils/helpers";
 // eslint-disable-next-line node/no-unpublished-import
 import { setBalance, mine } from "@nomicfoundation/hardhat-network-helpers";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 
 const MARKUP_ROLE: string = keccak256(new TextEncoder().encode("MARKUP_ROLE"));
 const REWARDS_ROLE: string = keccak256(new TextEncoder().encode("REWARDS_ROLE"));
@@ -68,24 +69,28 @@ const swapMATICtoUSDC = async (
 // --- Tests --------------------------------------------------------------------------------------------------------------------------------------------------
 
 describe("Peronio", function () {
-    let accounts: { [name: string]: string };
+    let signers: SignerWithAddress[];
     let usdcContract: ERC20;
+    let deployer: string;
+    let tester: string;
 
     before(async () => {
-        accounts = await hre.getNamedAccounts();
+        signers = await hre.ethers.getSigners();
         usdcContract = await ethers.getContractAt("ERC20", process.env.USDC_ADDRESS ?? "");
+        deployer = await signers[0].getAddress();
+        tester = await signers[1].getAddress();
     });
 
     before(async () => {
         // Mint MATIC to deployer account
-        await setBalance(accounts.deployer, BigNumber.from("1000000000000000000000000000"));
+        await setBalance(deployer, BigNumber.from("1000000000000000000000000000"));
 
         // Swap MATIC into USDC from QuickSwap Router
         await swapMATICtoUSDC(
             process.env.QUICKSWAP_ROUTER_ADDRESS ?? "",
             process.env.WMATIC_ADDRESS ?? "",
             process.env.USDC_ADDRESS ?? "",
-            accounts.deployer,
+            deployer,
             "10000000000000000000000000",
         );
     });
@@ -154,14 +159,20 @@ describe("Peronio", function () {
 
             // Mint
             const minReceive: BigNumber = BigNumber.from(250_000000);
-            const call: Promise<ContractTransaction> = contract.mint(accounts.deployer, amount, minReceive);
+            const call: Promise<ContractTransaction> = contract.mint(deployer, amount, minReceive);
 
-            expect(call).to.be.revertedWith("Minimum required not met");
+            try {
+                await call;
+            } catch (error: any) {
+                expect(error.message).to.be.equal(
+                    "VM Exception while processing transaction: reverted with custom error 'MinimumMintingNotMet(250000000, 236786586)'",
+                );
+            }
         });
 
         it("should quote IN correctly", async function () {
-            const peBalanceOld: BigNumber = await contract.balanceOf(accounts.deployer);
-            const usdcBalanceOld: BigNumber = await usdcContract.balanceOf(accounts.deployer);
+            const peBalanceOld: BigNumber = await contract.balanceOf(deployer);
+            const usdcBalanceOld: BigNumber = await usdcContract.balanceOf(deployer);
 
             // Amount of USDCs to mint, expected PE amount, and minimum PEs to receive
             const amount: BigNumber = BigNumber.from(1_000000);
@@ -172,10 +183,10 @@ describe("Peronio", function () {
             await usdcContract.approve(contract.address, amount);
 
             // Mint
-            await contract.mint(accounts.deployer, amount, minReceive);
+            await contract.mint(deployer, amount, minReceive);
 
-            const peBalance: BigNumber = await contract.balanceOf(accounts.deployer);
-            const usdcBalance: BigNumber = await usdcContract.balanceOf(accounts.deployer);
+            const peBalance: BigNumber = await contract.balanceOf(deployer);
+            const usdcBalance: BigNumber = await usdcContract.balanceOf(deployer);
             const receivedPe: BigNumber = peBalance.sub(peBalanceOld);
             const mintedUsdc: BigNumber = usdcBalanceOld.sub(usdcBalance);
 
@@ -184,8 +195,8 @@ describe("Peronio", function () {
         });
 
         it("should quote OUT correctly", async function () {
-            const peBalanceOld: BigNumber = await contract.balanceOf(accounts.deployer);
-            const usdcBalanceOld: BigNumber = await usdcContract.balanceOf(accounts.deployer);
+            const peBalanceOld: BigNumber = await contract.balanceOf(deployer);
+            const usdcBalanceOld: BigNumber = await usdcContract.balanceOf(deployer);
 
             // Amount of PEs to withdraw, and expected USDC amount
             const amount: BigNumber = BigNumber.from(250_000000);
@@ -195,10 +206,10 @@ describe("Peronio", function () {
             await contract.approve(contract.address, amount);
 
             // Withdraw
-            await contract.withdraw(accounts.deployer, amount);
+            await contract.withdraw(deployer, amount);
 
-            const peBalance: BigNumber = await contract.balanceOf(accounts.deployer);
-            const usdcBalance: BigNumber = await usdcContract.balanceOf(accounts.deployer);
+            const peBalance: BigNumber = await contract.balanceOf(deployer);
+            const usdcBalance: BigNumber = await usdcContract.balanceOf(deployer);
 
             const withdrawnPe: BigNumber = peBalanceOld.sub(peBalance);
             const receivedUsdc: BigNumber = usdcBalance.sub(usdcBalanceOld);
@@ -292,7 +303,11 @@ describe("Peronio", function () {
             const initUsdcAmount: BigNumber = peronioInitializeParams.usdcAmount;
             const initRatio: BigNumber = peronioInitializeParams.startingRatio;
 
-            expect(contract.initialize(initUsdcAmount, initRatio)).to.be.revertedWith("Contract already initialized");
+            try {
+                await contract.initialize(initUsdcAmount, initRatio);
+            } catch (error: any) {
+                expect(error.message).to.be.equal("VM Exception while processing transaction: reverted with custom error 'AlreadyInitialized()'");
+            }
         });
     });
 
@@ -304,21 +319,33 @@ describe("Peronio", function () {
         });
 
         it("should revert when setMarkupFee as not MARKUP_ROLE", async function () {
-            expect(contract.connect(accounts.tester).setMarkupFee("5000")).to.be.revertedWith(
-                `AccessControl: account ${accounts.tester.toLowerCase()} is missing role ${MARKUP_ROLE}`,
-            );
+            try {
+                await contract.connect(signers[1]).setMarkupFee("5000");
+            } catch (error: any) {
+                expect(error.message).to.be.equal(
+                    `VM Exception while processing transaction: reverted with reason string 'AccessControl: account ${tester.toLowerCase()} is missing role ${MARKUP_ROLE}'`,
+                );
+            }
         });
 
         it("should revert when compoundRewards as not REWARDS_ROLE", async function () {
-            expect(contract.connect(accounts.tester).compoundRewards()).to.be.revertedWith(
-                `AccessControl: account ${accounts.tester.toLowerCase()} is missing role ${REWARDS_ROLE}`,
-            );
+            try {
+                await contract.connect(signers[1]).compoundRewards();
+            } catch (error: any) {
+                expect(error.message).to.be.equal(
+                    `VM Exception while processing transaction: reverted with reason string 'AccessControl: account ${tester.toLowerCase()} is missing role ${REWARDS_ROLE}'`,
+                );
+            }
         });
 
         it("should revert when minForMigration as not MIGRATOR_ROLE", async function () {
-            expect(contract.connect(accounts.tester).mintForMigration(accounts.deployer, 1, 1)).to.be.revertedWith(
-                `AccessControl: account ${accounts.tester.toLowerCase()} is missing role ${MIGRATOR_ROLE}`,
-            );
+            try {
+                await contract.connect(signers[1]).mintForMigration(deployer, 1, 1);
+            } catch (error: any) {
+                expect(error.message).to.be.equal(
+                    `VM Exception while processing transaction: reverted with reason string 'AccessControl: account ${tester.toLowerCase()} is missing role ${MIGRATOR_ROLE}'`,
+                );
+            }
         });
     });
 
@@ -331,8 +358,8 @@ describe("Peronio", function () {
         });
 
         it("should compound rewards", async function () {
-            // Mine 250 Blocks
-            await mine(250);
+            // Mine 12 hours' worth of blocks, at 1 block a second
+            await mine(12 * 60 * 60);
 
             expect(await contract.getPendingRewardsAmount()).to.be.gt(0);
 
@@ -370,7 +397,7 @@ describe("Peronio", function () {
 
             // Mint Peronio V1 tokens
             await usdcContract.approve(peronioV1Address, BigNumber.from(1000_000000));
-            await peronioV1.mint(accounts.deployer, BigNumber.from(1000_000000), "1");
+            await peronioV1.mint(deployer, BigNumber.from(1000_000000), "1");
         });
 
         it("migrate 1 PE(v1) to PE(v2)", async function () {
@@ -379,8 +406,8 @@ describe("Peronio", function () {
             await oldContract.approve(migrator.address, peV1Amount);
 
             // Save initial balance for future comparison
-            const peV1BalanceOld: BigNumber = await oldContract.balanceOf(accounts.deployer);
-            const peV2BalanceOld: BigNumber = await contract.balanceOf(accounts.deployer);
+            const peV1BalanceOld: BigNumber = await oldContract.balanceOf(deployer);
+            const peV2BalanceOld: BigNumber = await contract.balanceOf(deployer);
 
             const { pe: quotedPE, usdc: quotedUSDC } = await migrator.quote(peV1Amount);
 
@@ -394,8 +421,8 @@ describe("Peronio", function () {
             await migrator.migrate(peV1Amount);
 
             // Calculate current balance
-            const peV1BalanceNew: BigNumber = await oldContract.balanceOf(accounts.deployer);
-            const peV2BalanceNew: BigNumber = await contract.balanceOf(accounts.deployer);
+            const peV1BalanceNew: BigNumber = await oldContract.balanceOf(deployer);
+            const peV2BalanceNew: BigNumber = await contract.balanceOf(deployer);
 
             // Difference
             const withdrawnPeV1: BigNumber = peV1BalanceOld.sub(peV1BalanceNew);
