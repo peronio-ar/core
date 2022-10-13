@@ -7,10 +7,6 @@ import {Ownable} from "@openzeppelin/contracts_latest/access/Ownable.sol";
 contract AutoCompounder is Ownable {
     IPeronio internal peronio;
 
-    uint256 public constant MINIMUM_PERIOD = 12 * 60 * 60;
-
-    uint256 public lastExecuted;
-
     constructor(address _peronio) {
         peronio = IPeronio(_peronio);
     }
