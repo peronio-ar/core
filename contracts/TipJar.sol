@@ -36,6 +36,60 @@ import {ILinearTipJar, ITipJar} from "./ITipJar.sol";
 abstract contract TipJar is Context, ERC165, ITipJar, Multicall, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
+    /**
+     * Raised upon encountering too big a decimal amount for deposit fees
+     *
+     * @param given  The number of decimals given, which must be at most 77
+     */
+    error DepositFeeDecimalsTooBig(uint8 given);
+
+    /**
+     * Raised upon determining that the last tip-deal block is in the future
+     *
+     * @param _lastTipDealBlock  Last tip-deal block registered
+     */
+    error LastTipDealBlockInTheFuture(uint256 _lastTipDealBlock);
+
+    /**
+     * Raised upon determining that a withdrawal above the stake amount is requested
+     *
+     * @param allowed  The maximum allowed withdrawal amount
+     * @param requested  The withdrawal amount requested
+     */
+    error WithdrawOverAllowedAmount(uint256 allowed, uint256 requested);
+
+    /**
+     * Raised upon determining that an extraction above the pending amount is requested
+     *
+     * @param allowed  The maximum allowed pending amount
+     * @param requested  The extraction amount requested
+     */
+    error ExtractOverPendingAmount(uint256 allowed, uint256 requested);
+
+    /**
+     * Raised upon determining that a balance leak exists (only when staking and tipping tokens coincide)
+     *
+     * @param expected  The expected number of tokens
+     * @param actual  The actual number of tokens found
+     */
+    error BalanceLeakDetected(uint256 expected, uint256 actual);
+
+    /**
+     * Raised upon determining that a balance leak exists in the staking tokens
+     *
+     * @param expected  The expected number of staking tokens
+     * @param actual  The actual number of staking tokens found
+     */
+    error StakesBalanceLeakDetected(uint256 expected, uint256 actual);
+
+    /**
+     * Raised upon determining that a balance leak exists in the tipping tokens
+     *
+     * @param expected  The expected number of tipping tokens
+     * @param actual  The actual number of tipping tokens found
+     */
+    error TipsBalanceLeakDetected(uint256 expected, uint256 actual);
+
     // The address of the token to use for staking
     address public immutable override stakingToken;
 
@@ -92,7 +146,9 @@ abstract contract TipJar is Context, ERC165, ITipJar, Multicall, ReentrancyGuard
         address _feeAddress,
         address _quickSwapRouterAddress
     ) {
-        require(_depositFeeDecimals < 78, "TipJar: deposit fee decimals too big");
+        if (77 < _depositFeeDecimals) {
+            revert DepositFeeDecimalsTooBig(_depositFeeDecimals);
+        }
 
         (stakingToken, tippingToken) = (_stakingToken, _tippingToken);
 
@@ -173,7 +229,9 @@ abstract contract TipJar is Context, ERC165, ITipJar, Multicall, ReentrancyGuard
     }
 
     function _pendingTipsToPayOut(address user) internal view returns (uint256 pendingAmount) {
-        require(lastTipDealBlock <= block.number, "TipJar: last tip deal block in the future");
+        if (block.number < lastTipDealBlock) {
+            revert LastTipDealBlockInTheFuture(lastTipDealBlock);
+        }
 
         uint256 _accumulatedTipsPerShare = accumulatedTipsPerShare;
         uint256 stakeSupply;
@@ -225,7 +283,9 @@ abstract contract TipJar is Context, ERC165, ITipJar, Multicall, ReentrancyGuard
     function _unstake(uint256 amount, address to) internal returns (uint256 newStakedAmount) {
         address from = _msgSender();
 
-        require(amount <= stakedAmount[from], "TipJar: can't withdraw more than staked amount");
+        if (stakedAmount[from] < amount) {
+            revert WithdrawOverAllowedAmount(stakedAmount[from], amount);
+        }
 
         _dealTips(to);
 
@@ -244,7 +304,10 @@ abstract contract TipJar is Context, ERC165, ITipJar, Multicall, ReentrancyGuard
         _dealTips(from);
 
         unchecked {
-            require(amount <= tipsAwarded[from] - tipsPaidOut[from], "TipJar: can't extract more than pending amount");
+            uint256 pending = tipsAwarded[from] - tipsPaidOut[from];
+            if (pending < amount) {
+                revert ExtractOverPendingAmount(pending, amount);
+            }
         }
 
         _transferTipOut(amount, to);
@@ -258,9 +321,12 @@ abstract contract TipJar is Context, ERC165, ITipJar, Multicall, ReentrancyGuard
         if (tippingToken == stakingToken) {
             uint256 inToken = IERC20(tippingToken).balanceOf(address(this));
             unchecked {
-                require(inToken <= (tipsIn + stakesIn) - (tipsOut + stakesOut), "TipJar: balance leak detected, aborting!");
+                uint256 expectedToken = (tipsIn + stakesIn) - (tipsOut + stakesOut);
+                if (expectedToken < inToken) {
+                    revert BalanceLeakDetected(expectedToken, inToken);
+                }
 
-                tipsAdjustment = inToken - ((tipsIn + stakesIn) - (tipsOut + stakesOut));
+                tipsAdjustment = inToken - expectedToken;
             }
             if (tipsAdjustment != 0) {
                 tipsLeftToDeal += tipsAdjustment;
@@ -270,9 +336,12 @@ abstract contract TipJar is Context, ERC165, ITipJar, Multicall, ReentrancyGuard
             {
                 uint256 stakesInToken = IERC20(stakingToken).balanceOf(address(this));
                 unchecked {
-                    require(stakesInToken <= stakesIn - stakesOut, "TipJar: stakes balance leak detected, aborting!");
+                    uint256 expectedStakes = stakesIn - stakesOut;
+                    if (expectedStakes < stakesInToken) {
+                        revert StakesBalanceLeakDetected(expectedStakes, stakesInToken);
+                    }
 
-                    stakesAdjustment = stakesInToken - (stakesIn - stakesOut);
+                    stakesAdjustment = stakesInToken - expectedStakes;
                 }
                 if (stakesAdjustment != 0) {
                     _swapStakingToTips(stakesAdjustment);
@@ -282,9 +351,12 @@ abstract contract TipJar is Context, ERC165, ITipJar, Multicall, ReentrancyGuard
             {
                 uint256 tipsInToken = IERC20(tippingToken).balanceOf(address(this));
                 unchecked {
-                    require(tipsInToken <= tipsIn - tipsOut, "TipJar: tip balance leak detected, aborting!");
+                    uint256 expectedTips = tipsIn - tipsOut;
+                    if (expectedTips < tipsInToken) {
+                        revert TipsBalanceLeakDetected(expectedTips, tipsInToken);
+                    }
 
-                    tipsAdjustment = tipsInToken - (tipsIn - tipsOut);
+                    tipsAdjustment = tipsInToken - expectedTips;
                 }
                 if (tipsAdjustment != 0) {
                     tipsLeftToDeal += tipsAdjustment;
@@ -309,7 +381,9 @@ abstract contract TipJar is Context, ERC165, ITipJar, Multicall, ReentrancyGuard
     }
 
     function _dealTips(address user) internal {
-        require(lastTipDealBlock <= block.number, "TipJar: last tip-deal block in the future");
+        if (block.number < lastTipDealBlock) {
+            revert LastTipDealBlockInTheFuture(lastTipDealBlock);
+        }
 
         uint256 stakeSupply;
         unchecked {
@@ -360,6 +434,13 @@ abstract contract TipJar is Context, ERC165, ITipJar, Multicall, ReentrancyGuard
 }
 
 contract LinearTipJar is ILinearTipJar, TipJar {
+    /**
+     * Raised upon encountering too big a decimal amount for tips dealt per block
+     *
+     * @param given  The number of decimals given, which must be at most 77
+     */
+    error TipsDealtPerBlockDecimalsTooBig(uint8 given);
+
     // Number of tip tokens dealt each block
     uint256 public immutable override tipsDealtPerBlock;
 
@@ -376,7 +457,9 @@ contract LinearTipJar is ILinearTipJar, TipJar {
         uint256 _tipsDealtPerBlock,
         uint8 _tipsDealtPerBlockDecimals
     ) TipJar(_stakingToken, _tippingToken, _depositFee, _depositFeeDecimals, _feeAddress, _quickSwapRouterAddress) {
-        require(_tipsDealtPerBlockDecimals < 78, "LinearTipJar: tips dealt per block decimals too big");
+        if (77 < _tipsDealtPerBlockDecimals) {
+            revert TipsDealtPerBlockDecimalsTooBig(_tipsDealtPerBlockDecimals);
+        }
 
         tipsDealtPerBlock = _tipsDealtPerBlock;
         tipsDealtPerBlockDecimals = _tipsDealtPerBlockDecimals;
