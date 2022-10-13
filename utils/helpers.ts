@@ -1,4 +1,4 @@
-import { BigNumber, ethers } from "ethers";
+import { ethers } from "ethers";
 
 import { IPeronioConstructorParams } from "./interfaces/IPeronioConstructorParams";
 import { IPeronioInitializeParams } from "./interfaces/IPeronioInitializeParams";
