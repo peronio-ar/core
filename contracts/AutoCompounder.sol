@@ -16,9 +16,6 @@ contract AutoCompounder is Ownable {
     }
 
     function autoCompound() public onlyOwner {
-        require(MINIMUM_PERIOD < block.timestamp - lastExecuted, "autoCompound: Time not elapsed");
-
-        lastExecuted = block.timestamp;
         peronio.compoundRewards();
     }
 }
