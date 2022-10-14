@@ -2,14 +2,15 @@
 pragma solidity ^0.8.17;
 
 // OpenZeppelin imports
-import {AccessControl} from "@openzeppelin/contracts_latest/access/AccessControl.sol";
-import {ReentrancyGuard} from "@openzeppelin/contracts_latest/security/ReentrancyGuard.sol";
-import {ERC20} from "@openzeppelin/contracts_latest/token/ERC20/ERC20.sol";
 import {IERC20} from "@openzeppelin/contracts_latest/token/ERC20/IERC20.sol";
+import {ERC20} from "@openzeppelin/contracts_latest/token/ERC20/ERC20.sol";
 import {ERC20Permit} from "@openzeppelin/contracts_latest/token/ERC20/extensions/draft-ERC20Permit.sol";
 import {ERC20Burnable} from "@openzeppelin/contracts_latest/token/ERC20/extensions/ERC20Burnable.sol";
+
 import {SafeERC20} from "@openzeppelin/contracts_latest/token/ERC20/utils/SafeERC20.sol";
 
+import {AccessControl} from "@openzeppelin/contracts_latest/access/AccessControl.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts_latest/security/ReentrancyGuard.sol";
 import {Multicall} from "@openzeppelin/contracts_latest/utils/Multicall.sol";
 
 // QiDao
@@ -22,9 +23,6 @@ import {IUniswapV2Router02} from "./uniswap/interfaces/IUniswapV2Router02.sol";
 
 // Interface & support
 import "./PeronioSupport.sol";
-
-string constant NAME = "Peronio";
-string constant SYMBOL = "P";
 
 contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, ReentrancyGuard, Multicall {
     using SafeERC20 for IERC20;
@@ -140,6 +138,8 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
     /**
      * Construct a new Peronio contract
      *
+     * @param _name  Token name to use
+     * @param _symbol  Token symbol to use
      * @param _usdcAddress  Address used for the USDC tokens in vault
      * @param _maiAddress  Address used for the MAI tokens in vault
      * @param _lpAddress  LP Address for MAI/USDC
@@ -149,6 +149,8 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
      * @param _qiDaoPoolId  Pool ID within the QiDao Farm
      */
     constructor(
+        string memory _name,
+        string memory _symbol,
         address _usdcAddress,
         address _maiAddress,
         address _lpAddress,
@@ -156,7 +158,7 @@ contract Peronio is IPeronio, ERC20, ERC20Burnable, ERC20Permit, AccessControl, 
         address _quickSwapRouterAddress,
         address _qiDaoFarmAddress,
         uint256 _qiDaoPoolId
-    ) ERC20(NAME, SYMBOL) ERC20Permit(NAME) {
+    ) ERC20(_name, _symbol) ERC20Permit(_name) {
         // --- Gas Saving -------------------------------------------------------------------------
         address sender = _msgSender();
 
