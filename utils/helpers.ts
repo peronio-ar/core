@@ -1,10 +1,12 @@
-import { BigNumber, ethers } from "ethers";
+import { ethers } from "ethers";
 
 import { IPeronioConstructorParams } from "./interfaces/IPeronioConstructorParams";
 import { IPeronioInitializeParams } from "./interfaces/IPeronioInitializeParams";
 
 export function getConstructorParams(): IPeronioConstructorParams {
     return {
+        name: process.env.PERONIO_NAME ?? "",
+        symbol: process.env.PERONIO_SYMBOL ?? "",
         usdcAddress: process.env.USDC_ADDRESS ?? "",
         maiAddress: process.env.MAI_ADDRESS ?? "",
         lpAddress: process.env.LP_ADDRESS ?? "",
