@@ -16,7 +16,7 @@
     "devDependencies": {
         "@ethersproject/abi": "^5.7.0",
         "@ethersproject/bytes": "^5.7.0",
-        "@ethersproject/providers": "^5.7.1",
+        "@ethersproject/providers": "^5.7.2",
         "@nomicfoundation/hardhat-network-helpers": "^1.0.6",
         "@nomiclabs/hardhat-ethers": "^2.2.0",
         "@nomiclabs/hardhat-etherscan": "^3.1.1",
