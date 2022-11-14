@@ -49,7 +49,7 @@
         "hardhat-gas-reporter": "^1.0.9",
         "husky": "^8.0.2",
         "lodash": "^4.17.21",
-        "node-fetch": "^3.2.10",
+        "node-fetch": "^3.3.0",
         "prettier": "^2.7.1",
         "prettier-plugin-sh": "^0.12.8",
         "prettier-plugin-solidity": "^1.0.0-beta.20",
